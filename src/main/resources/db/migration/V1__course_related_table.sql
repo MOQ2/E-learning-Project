@@ -1,4 +1,14 @@
 
+-- PLACEHOLDER FOR THE ROLES AND USER TABLE TILL GETTING THE REAL TABLES .
+CREATE TABLE users
+(
+    id SERIAL PRIMARY KEY
+);
+
+CREATE  TABLE roles (
+    id SERIAL PRIMARY KEY
+);
+-- PLACEHOLDER FOR ROLES AND USERS TILL GETTING THE REAL TABLE
 
 CREATE TABLE courses (
                          id SERIAL PRIMARY KEY,
@@ -203,8 +213,6 @@ CREATE TABLE payments (
                           amount DECIMAL(10, 2) NOT NULL,
                           payment_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                           payment_method VARCHAR(50) NOT NULL,
-                          status VARCHAR(50) DEFAULT 'completed',
-                          is_active BOOLEAN DEFAULT TRUE,
                           state VARCHAR(50) DEFAULT 'pending',
                           updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                           created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
