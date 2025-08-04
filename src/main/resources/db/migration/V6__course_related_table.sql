@@ -13,11 +13,12 @@ CREATE  TABLE roles (
 CREATE TABLE courses (
                          id SERIAL PRIMARY KEY,
                          name VARCHAR(250) NOT NULL,
+                         creator INTEGER REFERENCES users(id),
                          description VARCHAR(1000),
                          status VARCHAR(250) NOT NULL,
                          created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                          updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                         is_active BOOLEAN DEFAULT TRUE
+
 );
 
 CREATE TABLE attachments (
