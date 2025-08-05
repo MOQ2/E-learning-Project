@@ -1,17 +1,19 @@
 package com.example.e_learning_system.DTOs;
+
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import lombok.experimental.SuperBuilder;
 import org.springframework.http.HttpStatus;
 
 import java.time.LocalDateTime;
 import java.util.Map;
 
 @Data
-@Builder
+@SuperBuilder
 @NoArgsConstructor
 @AllArgsConstructor
 @JsonInclude(JsonInclude.Include.NON_NULL)
@@ -32,7 +34,7 @@ public class BaseErrorResponse {
     // for additional info
     private Map<String, Object> metadata;
 
-
+    // Keep your existing factory methods
     public static BaseErrorResponse from(String message, String errorCode, HttpStatus httpStatus, String path) {
         return BaseErrorResponse.builder()
                 .message(message)

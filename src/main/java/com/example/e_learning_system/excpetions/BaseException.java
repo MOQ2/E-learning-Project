@@ -3,6 +3,7 @@ package com.example.e_learning_system.excpetions;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
+import lombok.experimental.SuperBuilder;
 import org.springframework.http.HttpStatus;
 
 import java.time.LocalDateTime;
@@ -10,7 +11,6 @@ import java.util.List;
 
 @Getter
 @Setter
-@Builder
 public abstract class BaseException extends RuntimeException {
 
     private  String  errorCode;
