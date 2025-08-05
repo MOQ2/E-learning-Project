@@ -8,18 +8,15 @@ import lombok.Setter;
 @Table(name = "role_permissions")
 @Getter
 @Setter
-public class Roles_permissions extends BaseEntity {
+public class RolesPermissionsEntity extends BaseEntity {
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "role_permission_id")
-    private Long rolePermissionId;
 
     @ManyToOne
     @JoinColumn(name = "role_id", nullable = false)
-    private Roles role;
+    private RolesEntity role;
 
     @ManyToOne
     @JoinColumn(name = "permission_id", nullable = false)
-    private Permissions permission;
+    private PermissionsEntity permission;
+
 }

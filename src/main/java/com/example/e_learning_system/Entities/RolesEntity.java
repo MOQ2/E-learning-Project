@@ -10,16 +10,10 @@ import lombok.*;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class Roles extends BaseEntity {
-
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "role_id")
-    private Long roleId;
+public class RolesEntity extends BaseEntity {
 
     @Enumerated(EnumType.STRING)
     @Column(name = "name", length = 100, nullable = false, unique = true)
     private RolesName name;
-
 
 }
