@@ -1,0 +1,46 @@
+package com.example.e_learning_system.excpetions;
+
+import lombok.Builder;
+import lombok.Data;
+import org.springframework.http.HttpStatus;
+
+public class ResourceNotFound extends BaseException{
+    public ResourceNotFound(String resouseName , String resouseValue) {
+        super( "%s with value %s was not not found".formatted(resouseName, resouseValue),"ResourceNotFound", HttpStatus.NOT_FOUND,null);
+    }
+
+    //may use factory mehtod for making exception ...
+    public static ResourceNotFound userNotFound(String studnetId){
+        return new ResourceNotFound("Student", studnetId);
+    }
+
+    public static ResourceNotFound courseNotFound(String courseId){
+        return new ResourceNotFound("Course", courseId);
+    }
+    public static ResourceNotFound teacherNotFound (String teacherId){
+        return new ResourceNotFound("Teacher", teacherId);
+    }
+
+    public static ResourceNotFound quizzNotFound(String quizzId){
+        return new ResourceNotFound("Quizz", quizzId);
+    }
+    public static ResourceNotFound questionNotFound(String questionId){
+        return new ResourceNotFound("Question", questionId);
+    }
+    public static ResourceNotFound answerNotFound(String answerId){
+        return new ResourceNotFound("Answer", answerId);
+    }
+    public static ResourceNotFound quizzAttempNotFound(String quizzAttemptId){
+        return new ResourceNotFound("Quizz Attempt", quizzAttemptId);
+    }
+    public static ResourceNotFound  moduleNotFound(String moduleId){
+        return new ResourceNotFound("Module", moduleId);
+    }
+    public static ResourceNotFound coursNotFound(String courseId){
+        return new ResourceNotFound("Course", courseId);
+    }
+
+
+
+
+}
