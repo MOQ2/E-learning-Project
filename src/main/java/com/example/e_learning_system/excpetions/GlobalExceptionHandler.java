@@ -1,8 +1,8 @@
 package com.example.e_learning_system.excpetions;
 
-import com.example.e_learning_system.DTOs.BaseErrorResponse;
-import com.example.e_learning_system.DTOs.SecurityErrorResponse;
-import com.example.e_learning_system.DTOs.ValidationErrorResponse;
+import com.example.e_learning_system.ExceptionsResponses.BaseErrorResponse;
+import com.example.e_learning_system.ExceptionsResponses.SecurityErrorResponse;
+import com.example.e_learning_system.ExceptionsResponses.ValidationErrorResponse;
 
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.ConstraintViolation;

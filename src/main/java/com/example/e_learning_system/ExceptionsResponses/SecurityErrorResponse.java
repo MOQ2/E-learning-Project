@@ -1,29 +1,28 @@
-
-package com.example.e_learning_system.DTOs;
+package com.example.e_learning_system.ExceptionsResponses;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
-import lombok.Builder;
+import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.experimental.SuperBuilder;
 import org.springframework.http.HttpStatus;
 
-import java.util.List;
-import java.util.Map;
-
 @Data
 @SuperBuilder
 @EqualsAndHashCode(callSuper = true)
 @JsonInclude(JsonInclude.Include.NON_NULL)
-public class ValidationErrorResponse extends BaseErrorResponse {
+@AllArgsConstructor
+public class SecurityErrorResponse extends BaseErrorResponse {
 
 
-    private List<String> validationErrors;
-    private Map<String, String> fieldErrors;
+    private String authenticationScheme;
+    private String requiredRole;
+    private String requiredPermission;
 
-    public static ValidationErrorResponse from(String message, String errorCode, HttpStatus httpStatus,
-                                               String path, String method, List<String> validationErrors) {
-        return ValidationErrorResponse.builder()
+    public static SecurityErrorResponse from(String message, String errorCode, HttpStatus httpStatus,
+                                             String path, String method) {
+
+        return SecurityErrorResponse.builder()
                 .message(message)
                 .errorCode(errorCode)
                 .status(httpStatus.value())
@@ -31,7 +30,6 @@ public class ValidationErrorResponse extends BaseErrorResponse {
                 .timestamp(java.time.LocalDateTime.now())
                 .path(path)
                 .method(method)
-                .validationErrors(validationErrors)
                 .build();
     }
 }
