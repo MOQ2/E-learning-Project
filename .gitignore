@@ -33,5 +33,5 @@ build/
 .vscode/
 .env
 
-###
+### ignore the log file
 logs/
