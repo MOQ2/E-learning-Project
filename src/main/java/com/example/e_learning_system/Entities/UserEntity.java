@@ -3,14 +3,10 @@ import jakarta.persistence.*;
 import lombok.*;
 @Setter
 @Getter
+@ToString
 @Entity
 @Table(name = "users")
-public class Users extends BaseEntity {
-
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "user_id")
-    private Long userId;
+public class UserEntity extends BaseEntity {
 
     @Column(name = "name", length = 250, nullable = false)
     private String name;
@@ -24,9 +20,9 @@ public class Users extends BaseEntity {
     @Column(name = "password", length = 250, nullable = false)
     private String password;
 
-    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @ManyToOne(fetch = FetchType.EAGER, optional = false)
     @JoinColumn(name = "role_id", nullable = false)
-    private Roles role;
+    private RolesEntity role;
 
     @Column(name = "is_active", nullable = false)
     private Boolean isActive;

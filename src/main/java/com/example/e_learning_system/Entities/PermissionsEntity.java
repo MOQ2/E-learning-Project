@@ -9,12 +9,8 @@ import lombok.*;
 @AllArgsConstructor
 @Entity
 @Table(name = "permissions")
-public class Permissions extends BaseEntity {
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "permission_id")
-    private Long permissionId;
+public class PermissionsEntity extends BaseEntity {
     @NotBlank
-    @Column(name = "permission_name")
+    @Column(name = "name")
     private String name;
 }
