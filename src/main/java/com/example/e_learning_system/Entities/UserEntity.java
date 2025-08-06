@@ -3,6 +3,7 @@ import jakarta.persistence.*;
 import lombok.*;
 @Setter
 @Getter
+@ToString
 @Entity
 @Table(name = "users")
 public class UserEntity extends BaseEntity {
@@ -19,7 +20,7 @@ public class UserEntity extends BaseEntity {
     @Column(name = "password", length = 250, nullable = false)
     private String password;
 
-    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @ManyToOne(fetch = FetchType.EAGER, optional = false)
     @JoinColumn(name = "role_id", nullable = false)
     private RolesEntity role;
 

@@ -16,6 +16,12 @@ CREATE TABLE permissions (
                              updated_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
 );
 
+INSERT INTO permissions (name) VALUES
+                                   ('user:write'),
+                                   ('user:read'),
+                                   ('course:write'),
+                                   ('course:read');
+
 CREATE TABLE role_permissions (
                                   id SERIAL PRIMARY KEY,
                                   role_id INTEGER NOT NULL,
@@ -28,6 +34,17 @@ CREATE TABLE role_permissions (
 
                                   CONSTRAINT unique_role_permission UNIQUE(role_id, permission_id)
 );
+INSERT INTO role_permissions (role_id, permission_id) VALUES
+                                                          (1, 1),
+                                                          (1, 2),
+                                                          (1, 3),
+                                                          (1, 4),
+                                                          (2, 3),
+                                                          (2, 4),
+                                                          (3, 4);
+
+CREATE INDEX idx_role_permissions_role_id ON role_permissions(role_id);
+CREATE INDEX idx_role_permissions_permission_id ON role_permissions(permission_id);
 
 CREATE TABLE users (
                        id SERIAL PRIMARY KEY,
@@ -40,5 +57,6 @@ CREATE TABLE users (
                        created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
                        updated_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
 
-                       CONSTRAINT fk_role FOREIGN KEY (role_id) REFERENCES roles(id)
+                       CONSTRAINT fk_user_role FOREIGN KEY (role_id) REFERENCES roles(id)
 );
+CREATE INDEX idx_users_email ON users(email);

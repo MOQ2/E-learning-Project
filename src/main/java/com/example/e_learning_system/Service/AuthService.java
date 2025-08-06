@@ -1,7 +1,7 @@
 package com.example.e_learning_system.Service;
 
 import com.example.e_learning_system.Config.RolesName;
-import com.example.e_learning_system.Dto.RegisterRequest;
+import com.example.e_learning_system.Dto.RegisterRequestDTO;
 import com.example.e_learning_system.Entities.RolesEntity;
 import com.example.e_learning_system.Entities.UserEntity;
 import com.example.e_learning_system.Interfaces.AuthInterface;
@@ -29,12 +29,13 @@ public class AuthService implements AuthInterface {
     private final BCryptPasswordEncoder bCryptPasswordEncoder;
 
 
-    public String register(RegisterRequest registerRequest){
+
+    public String register(RegisterRequestDTO registerRequestDTO){
         RolesEntity defaultRole = rolesRepository.findByName(RolesName.USER)
                 .orElseThrow(() -> new RuntimeException("Default role USER not found"));
 
-        UserEntity userEntity = authMapper.DtoToEntity(registerRequest, defaultRole);
-        userEntity.setPassword(bCryptPasswordEncoder.encode(registerRequest.getPassword()));
+        UserEntity userEntity = authMapper.dtoToEntity(registerRequestDTO, defaultRole);
+        userEntity.setPassword(bCryptPasswordEncoder.encode(registerRequestDTO.getPassword()));
         userRepository.save(userEntity);
 
         return jwtUtil.generateToken(userEntity);

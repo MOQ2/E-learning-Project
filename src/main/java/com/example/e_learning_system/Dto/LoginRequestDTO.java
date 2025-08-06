@@ -6,7 +6,7 @@ import lombok.*;
 @Setter
 @Getter
 
-public class LoginRequest {
+public class LoginRequestDTO {
     @NotBlank(message = "email should be exist")
     @Email(message = "invalid email format")
     private String email;

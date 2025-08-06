@@ -1,11 +1,12 @@
 package com.example.e_learning_system.Controller;
 
-import com.example.e_learning_system.Dto.LoginRequest;
-import com.example.e_learning_system.Dto.AuthResponse;
-import com.example.e_learning_system.Dto.RegisterRequest;
+import com.example.e_learning_system.Dto.LoginRequestDTO;
+import com.example.e_learning_system.Dto.AuthResponseDTO;
+import com.example.e_learning_system.Dto.RegisterRequestDTO;
 import com.example.e_learning_system.Interfaces.AuthInterface;
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
@@ -20,26 +21,27 @@ public class AuthController {
     }
 
     @PostMapping("/register")
-    public ResponseEntity<AuthResponse> register(@Valid @RequestBody RegisterRequest registerRequest) {
+    public ResponseEntity<AuthResponseDTO> register(@Valid @RequestBody RegisterRequestDTO registerRequestDTO) {
         try {
-            String token = authInterface.register(registerRequest);
+            String token = authInterface.register(registerRequestDTO);
 
-            return ResponseEntity.ok(new AuthResponse(token));
+            return ResponseEntity.ok(new AuthResponseDTO(token));
         } catch (Exception ex) {
-            return ResponseEntity.badRequest().body(new AuthResponse(ex.getMessage()));
+            return ResponseEntity.badRequest().body(new AuthResponseDTO(ex.getMessage()));
         }
     }
 
 
 
     @PostMapping("/login")
-    public ResponseEntity<?> login(@Valid @RequestBody LoginRequest loginRequest) {
+    public ResponseEntity<?> login(@Valid @RequestBody LoginRequestDTO loginRequestDTO) {
         try {
-            String token = authInterface.login(loginRequest.getEmail(), loginRequest.getPassword());
-            return ResponseEntity.ok(new AuthResponse(token));
+            String token = authInterface.login(loginRequestDTO.getEmail(), loginRequestDTO.getPassword());
+            return ResponseEntity.ok(new AuthResponseDTO(token));
         }catch (Exception ex){
 
             return ResponseEntity.badRequest().body(ex.getMessage());
         }
     }
+
 }
