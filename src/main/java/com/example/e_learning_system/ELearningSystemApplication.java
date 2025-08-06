@@ -9,7 +9,9 @@ import org.springframework.data.jpa.repository.config.EnableJpaAuditing;
 public class ELearningSystemApplication {
 
 	public static void main(String[] args) {
+
 		SpringApplication.run(ELearningSystemApplication.class, args);
+
 	}
 
 }
