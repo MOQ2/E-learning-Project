@@ -39,7 +39,9 @@ public class ResourceNotFound extends BaseException{
     public static ResourceNotFound coursNotFound(String courseId){
         return new ResourceNotFound("Course", courseId);
     }
-
+    public static ResourceNotFound roleNotFound(String roleId){
+        return new ResourceNotFound("Role", roleId);
+    }
 
 
 
