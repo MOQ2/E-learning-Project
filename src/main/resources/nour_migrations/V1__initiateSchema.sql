@@ -281,7 +281,7 @@ CREATE TABLE course_teachers (
                                  id SERIAL PRIMARY KEY,
                                  course_id INTEGER NOT NULL REFERENCES courses(id),
                                  user_id INTEGER NOT NULL REFERENCES users(id),
-                                 role_id INTEGER NOT NULL REFERENCES roles(id),
+                                 role_id INTEGER  REFERENCES roles(id),
                                  assigned_date TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
                                  is_active BOOLEAN DEFAULT TRUE,
                                  created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
