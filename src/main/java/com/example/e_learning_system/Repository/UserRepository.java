@@ -17,12 +17,12 @@ import java.util.Optional;
 @Repository
 public interface UserRepository extends JpaRepository<UserEntity, Long> {
 
-    Optional<UserEntity> findByEmail(String email);
-    Optional<UserEntity> findById(long id);
+    public Optional<UserEntity> findByEmail(String email);
+    public Optional<UserEntity> findById(long id);
 
 
-    Page<UserEntity> findAll(Pageable pageable);
-    Page<UserEntity> findByIsActiveTrue(Pageable pageable);
+    public Page<UserEntity> findAll(Pageable pageable);
+    public Page<UserEntity> findByIsActiveTrue(Pageable pageable);
 
 
 

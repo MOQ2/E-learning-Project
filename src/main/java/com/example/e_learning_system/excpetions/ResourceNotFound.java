@@ -42,6 +42,14 @@ public class ResourceNotFound extends BaseException{
     public static ResourceNotFound roleNotFound(String roleId){
         return new ResourceNotFound("Role", roleId);
     }
+    
+    public static ResourceNotFound permissionNotFound(String permissionId){
+        return new ResourceNotFound("Permission", permissionId);
+    }
+    
+    public static ResourceNotFound rolePermissionNotFound(String roleId, String permissionId){
+        return new ResourceNotFound("Role-Permission relationship", "roleId: " + roleId + ", permissionId: " + permissionId);
+    }
 
 
 
