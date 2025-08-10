@@ -122,8 +122,7 @@ public class VideoController {
                 return ResponseEntity.badRequest().body(Map.of("error", "Video is not active"));
             }
 
-            // TODO: Add permission check here before generating URL
-            // Example: checkUserPermission(currentUserId, video.getUploadedBy().getId());
+            //to-do check if the user is enrloed ....
 
             // Validate duration (max 60 minutes for security)
             if (durationMinutes > 60) {
@@ -243,9 +242,5 @@ public class VideoController {
         }
     }
 
-    // Health check endpoint
-    @GetMapping("/health")
-    public ResponseEntity<Map<String, String>> health() {
-        return ResponseEntity.ok(Map.of("status", "Video service is running"));
-    }
+
 }
