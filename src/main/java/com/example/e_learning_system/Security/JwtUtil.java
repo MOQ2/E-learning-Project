@@ -46,7 +46,9 @@ public class JwtUtil {
         final String email = extractEmail(token);
         return (email.equals(userDetails.getUsername()) && !isTokenExpired(token));
     }
-
+    public String extractRole(String token) {
+        return extractAllClaims(token).get("role").toString();
+    }
     private Claims extractAllClaims(String token) {
         return Jwts.parserBuilder()
                 .setSigningKey(getSigningKey())
