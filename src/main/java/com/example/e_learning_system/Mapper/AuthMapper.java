@@ -5,6 +5,7 @@ import com.example.e_learning_system.Entities.UserEntity;
 import org.springframework.stereotype.Component;
 
 @Component
+
 public class AuthMapper {
     public UserEntity dtoToEntity(RegisterRequestDTO registerRequestDTO, RolesEntity rolesEntity){
         UserEntity userEntity = new UserEntity();
