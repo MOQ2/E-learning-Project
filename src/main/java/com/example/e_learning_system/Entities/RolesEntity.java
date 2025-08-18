@@ -18,6 +18,7 @@ public class RolesEntity extends BaseEntity {
     @Enumerated(EnumType.STRING)
     @Column(name = "name", length = 100, nullable = false, unique = true)
     private RolesName name;
+
     @OneToMany(mappedBy = "role", fetch = FetchType.EAGER, cascade = CascadeType.ALL)
     private Set<RolesPermissionsEntity> rolePermissions;
 

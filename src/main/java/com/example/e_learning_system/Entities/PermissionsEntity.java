@@ -16,7 +16,7 @@ public class PermissionsEntity extends BaseEntity {
     @NotBlank
     @Column(name = "name")
     private String name;
-
+    @Column(name = "description")
     private String description;
     @OneToMany(mappedBy = "permission", fetch = FetchType.EAGER, cascade = CascadeType.ALL)
     private Set<RolesPermissionsEntity> rolePermissions;

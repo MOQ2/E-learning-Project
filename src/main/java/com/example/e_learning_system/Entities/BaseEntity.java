@@ -11,7 +11,7 @@ import lombok.*;
 @Setter
 @MappedSuperclass
 @EntityListeners(AuditingEntityListener.class)
-
+@Data
 public abstract class BaseEntity {
 
     @Id
@@ -24,5 +24,7 @@ public abstract class BaseEntity {
     @LastModifiedDate
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
+
+    //! create createdBy , updatedBy feilds
 }
 

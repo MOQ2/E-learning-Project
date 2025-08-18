@@ -4,10 +4,11 @@ import com.example.e_learning_system.Entities.BaseEntity;
 import com.example.e_learning_system.Entities.UserEntity;
 import jakarta.persistence.*;
 import lombok.*;
+import org.hibernate.annotations.Fetch;
 import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.type.SqlTypes;
 
-import java.util.Map;
+import java.util.*;
 
 @Getter
 @Setter
@@ -26,19 +27,46 @@ public class VideoEntity extends BaseEntity {
 
     @Column(name = "video_url", columnDefinition = "TEXT")
     private String videoKey;
-
+    // this is the picture we will use as a cover to the video . can be removed
     @Column(name = "thumbnail_url", columnDefinition = "TEXT")
     private String thumbnailUrl;
 
     @Column(name = "duration_seconds")
     private Integer durationSeconds;
 
-    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @Column(name = "is_active", nullable = false)
+    private Boolean isActive = true;
+
+
+    // relations
+    // done
+    // uploded by
+
+    // not done
+    // attachemnt need to create seperate table for the many to many relation
+
+    @ManyToOne(fetch = FetchType.LAZY, optional = false, cascade = CascadeType.ALL)
     @JoinColumn(name = "uploaded_by", nullable = false)
     private UserEntity uploadedBy;
 
-    @Column(name = "is_active", nullable = false)
-    private Boolean isActive = true;
+
+    @OneToMany(
+            mappedBy = "video",
+            fetch = FetchType.LAZY
+    )
+    @OrderBy("videoOrder ASC")
+    private List<ModuleVideos> moduleVideos = new ArrayList<>();
+
+    @OneToMany(
+            mappedBy = "video",
+            fetch = FetchType.LAZY,
+            orphanRemoval = true,
+            cascade = CascadeType.ALL
+    )
+    private Set <VideoAttachments> videoAttachments = new HashSet<>();
+
+
+
 
 
 }
