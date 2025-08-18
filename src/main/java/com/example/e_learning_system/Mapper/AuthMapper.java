@@ -4,6 +4,8 @@ import com.example.e_learning_system.Entities.RolesEntity;
 import com.example.e_learning_system.Entities.UserEntity;
 import org.springframework.stereotype.Component;
 
+import java.time.LocalDateTime;
+
 @Component
 
 public class AuthMapper {
@@ -15,6 +17,11 @@ public class AuthMapper {
         userEntity.setEmail(registerRequestDTO.getEmail());
         userEntity.setRole(rolesEntity);
         userEntity.setIsActive(true);
+        userEntity.setEmailVerified(false);
+        userEntity.setLastLoginAt(LocalDateTime.now());
+        userEntity.setBio(registerRequestDTO.getBio());
+        //todo later
+        userEntity.setProfilePictureUrl("profilePictureUrl");
         return userEntity;
     }
 }

@@ -27,21 +27,21 @@ public class RoleResponseDTO {
         if(role != null) {
             this.id = role.getId();
             this.role=role.getName().name();
-            this.description = "null";
+            this.description = role.getDescription();
 
-            this.rolePermissions = setPermissions(role.getRolePermissions());
+            this.rolePermissions = setPermissions(role.getPermissions());
         }
 
     }
 
 
-    private Set<PermissionsResponsDTO> setPermissions(Set<RolesPermissionsEntity> rolePermissions) {
-        return rolePermissions == null ? new HashSet<>() :
-                rolePermissions.stream()
-                        .map(RolesPermissionsEntity::getPermission)                   // get PermissionsEntity
-                        .map(PermissionsResponsDTO::new)                 // convert to DTO
+    private Set<PermissionsResponsDTO> setPermissions(Set<PermissionsEntity> permissions) {
+        return permissions == null ? new HashSet<>() :
+                permissions.stream()
+                        .map(PermissionsResponsDTO::new)
                         .collect(Collectors.toSet());
     }
+
 
 
 }
