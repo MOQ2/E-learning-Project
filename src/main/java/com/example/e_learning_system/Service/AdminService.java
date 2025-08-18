@@ -72,7 +72,7 @@ public class AdminService {
         userEntity.setName(adminUserUpdateDTO.getName());
         userEntity.setEmail(adminUserUpdateDTO.getEmail());
         userEntity.setPhone(adminUserUpdateDTO.getPhone());
-        rolesRepository.findByName(RolesName.valueOf(adminUserUpdateDTO.getName())).ifPresent(userEntity::setRole);
+        rolesRepository.findByName(RolesName.valueOf(adminUserUpdateDTO.getRole())).ifPresent(userEntity::setRole);
         userRepository.save(userEntity);
     }
 

@@ -39,7 +39,7 @@ INSERT INTO permissions (name, description) VALUES
 CREATE TABLE role_permissions (
                                   id SERIAL PRIMARY KEY,
                                   role_id INTEGER NOT NULL,
-                                  permission_id INTEGER NOT NULL,
+                                   permission_id INTEGER NOT NULL,
                                   created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
                                   updated_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
 
@@ -573,9 +573,12 @@ CREATE TABLE user_feedback (
                                    UNIQUE(user_id, course_id)
 );
 
+
 -- ================================
 -- COMPREHENSIVE INDEXING STRATEGY
 -- ================================
+
+
 
 -- Users Table Indexes
 CREATE INDEX idx_users_email ON users(email) WHERE is_active = true;

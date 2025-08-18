@@ -65,6 +65,13 @@ public class ValidationException extends BaseException {
                 List.of("Invalid email format: " + email)
         );
     }
+    public static ValidationException emailAlreadyExists(String email) {
+        return new ValidationException(
+                "Email already exists",
+                List.of("Email already exists: " + email)
+        );
+    }
+
 
     public static ValidationException passwordStrength(List<String> requirements) {
         List<String> errors = requirements.stream()
