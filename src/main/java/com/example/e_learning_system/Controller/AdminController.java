@@ -52,6 +52,7 @@ public class AdminController {
     }
 
     // Create new role
+    // remove the id
     @PostMapping("/roles")
     public ResponseEntity<Void> createRole(@RequestBody RoleUpdateDTO roleDto) {
         adminService.createRole(roleDto);

@@ -38,8 +38,8 @@ public class RoleResponseDTO {
     private Set<PermissionsResponsDTO> setPermissions(Set<RolesPermissionsEntity> rolePermissions) {
         return rolePermissions == null ? new HashSet<>() :
                 rolePermissions.stream()
-                        .map(RolesPermissionsEntity::getPermission)                   // get PermissionsEntity
-                        .map(PermissionsResponsDTO::new)                 // convert to DTO
+                        .map(RolesPermissionsEntity::getPermission)
+                        .map(PermissionsResponsDTO::new)
                         .collect(Collectors.toSet());
     }
 
