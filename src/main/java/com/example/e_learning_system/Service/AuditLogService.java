@@ -21,7 +21,7 @@ public class AuditLogService implements AuditLogInterface {
     private final AuditMapper auditMapper;
 
     @Override
-    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    @Transactional(propagation = Propagation.REQUIRED)
     public void logChange(Long userId, BaseEntity entity, String action,
                           Map<String, Object> oldData,
                           Map<String, Object> newData) {

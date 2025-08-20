@@ -17,11 +17,14 @@ public class AuditMapper {
 
         Map<String, Object> changes = new HashMap<>();
 
+        Map<String, Object> oldDataSafe = oldData != null ? oldData : Map.of();
+        Map<String, Object> newDataSafe = newData != null ? newData : Map.of();
+
         switch (action) {
             case "UPDATE":
-                for (String key : newData.keySet()) {
-                    Object oldValue = oldData.get(key);
-                    Object newValue = newData.get(key);
+                for (String key : newDataSafe.keySet()) {
+                    Object oldValue = oldDataSafe.get(key);
+                    Object newValue = newDataSafe.get(key);
                     if (!Objects.equals(oldValue, newValue)) {
                         changes.put(key, Arrays.asList(serializeValue(oldValue), serializeValue(newValue)));
                     }
@@ -29,11 +32,11 @@ public class AuditMapper {
                 break;
 
             case "CREATE":
-                newData.forEach((k, v) -> changes.put(k, Arrays.asList(null, serializeValue(v))));
+                newDataSafe.forEach((k, v) -> changes.put(k, Arrays.asList(null, serializeValue(v))));
                 break;
 
             case "DELETE":
-                oldData.forEach((k, v) -> changes.put(k, Arrays.asList(serializeValue(v), null)));
+                oldDataSafe.forEach((k, v) -> changes.put(k, Arrays.asList(serializeValue(v), null)));
                 break;
         }
 
@@ -43,6 +46,7 @@ public class AuditMapper {
                 changes
         );
     }
+
 
     private Object serializeValue(Object value) {
         if (value == null) return null;
