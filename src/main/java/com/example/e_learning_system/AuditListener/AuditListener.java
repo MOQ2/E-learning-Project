@@ -2,12 +2,10 @@ package com.example.e_learning_system.AuditListener;
 
 import com.example.e_learning_system.Entities.AuditLogEntity;
 import com.example.e_learning_system.Entities.BaseEntity;
-import com.example.e_learning_system.Security.CustomUserDetails;
+import com.example.e_learning_system.Security.UserUtil;
 import com.example.e_learning_system.Service.Interfaces.AuditLogInterface;
 import jakarta.persistence.*;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
 
 import java.lang.reflect.Field;
@@ -30,7 +28,7 @@ public class AuditListener {
         if (entity instanceof AuditLogEntity) return;
 
         Map<String, Object> newData = extractData(entity);
-        Long userId = getUserId();
+        Long userId = UserUtil.getCurrentUserId();
 
         if (userId == null) userId = 2L;
 
@@ -46,7 +44,7 @@ public class AuditListener {
         Map<String, Object> oldData = base.getOldState();
         Map<String, Object> newData = extractData(entity);
 
-        Long userId = getUserId();
+        Long userId = UserUtil.getCurrentUserId();
         if (userId == null) return;
 
         auditLogInterface.logChange(userId, base, "UPDATE", oldData, newData);
@@ -58,28 +56,13 @@ public class AuditListener {
         if (entity instanceof AuditLogEntity) return;
 
         Map<String, Object> oldData = extractData(entity);
-        Long userId = getUserId();
+        Long userId = UserUtil.getCurrentUserId();
         if (userId == null) return;
 
         auditLogInterface.logChange(userId, (BaseEntity) entity, "DELETE",
                 oldData, Collections.emptyMap());
     }
 
-    private Long getUserId() {
-        try {
-            Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-            if (authentication == null || !authentication.isAuthenticated()) return null;
-
-            Object principal = authentication.getPrincipal();
-            if (principal instanceof CustomUserDetails userDetails) {
-                return userDetails.getId();
-            }
-
-            return null;
-        } catch (Exception e) {
-            return null;
-        }
-    }
 
 
 
