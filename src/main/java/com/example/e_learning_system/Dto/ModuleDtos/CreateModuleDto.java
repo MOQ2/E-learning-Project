@@ -12,17 +12,23 @@ import lombok.experimental.SuperBuilder;
 
 @SuperBuilder
 @Data
-@AllArgsConstructor
 @NoArgsConstructor
-public class UpdateModuleDto  {
-
-
+@AllArgsConstructor
+public class CreateModuleDto {
+    @NotBlank
+    @NotEmpty
+    @Size(min = 4, max = 200)
     private String moduleName;
-
+    @NotBlank
+    @NotEmpty
+    @Size(min = 50 )
     private String moduleDescription;
-    private Boolean isAcitve = false;
-
-    private Integer estimatedDuration;
+    @NotNull
+    private boolean isAcitve = false;
+    @Min(1)
+    @NotBlank
+    @NotEmpty
+    private int estimatedDuration;
 
     private CourseStatus courseStatus = CourseStatus.DRAFT;
 
