@@ -1,6 +1,5 @@
 package com.example.e_learning_system.Controller;
 
-import com.example.e_learning_system.Config.RolesName;
 import com.example.e_learning_system.Dto.*;
 import com.example.e_learning_system.Entities.PermissionsEntity;
 import com.example.e_learning_system.Service.AdminService;
