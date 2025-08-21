@@ -14,11 +14,16 @@ import java.util.Optional;
 @Repository
 public interface AttachmentRepository extends JpaRepository<Attachment, Integer> {
 
+    Optional<Attachment> findById(int id);
+
     // Find by active status
     List<Attachment> findByIsActive(boolean isActive);
 
-    // Find by file type
-    List<Attachment> findByFileType(String fileType);
+    @Query(
+            value = "SELECT * FROM attachments WHERE metadata ->> 'fileType' = :fileType",
+            nativeQuery = true
+    )
+    List<Attachment> findByFileType(@Param("fileType") String fileType);
 
     // Find by uploaded user
     List<Attachment> findByUploadedBy(UserEntity uploadedBy);
@@ -29,8 +34,11 @@ public interface AttachmentRepository extends JpaRepository<Attachment, Integer>
     // Find by title containing (case insensitive)
     List<Attachment> findByTitleContainingIgnoreCase(String title);
 
-    // Find by file size range
-    List<Attachment> findBySizeBetween(long minSize, long maxSize);
+    @Query(
+            value = "SELECT * FROM attachments WHERE CAST(metadata ->> 'size' AS bigint) BETWEEN :minSize AND :maxSize",
+            nativeQuery = true
+    )
+    List<Attachment> findBySizeBetween(@Param("minSize") long minSize, @Param("maxSize") long maxSize);
 
     // Custom query to find attachments by metadata key
     @Query("SELECT a FROM Attachment a WHERE JSON_EXTRACT(a.metadata, :key) IS NOT NULL")

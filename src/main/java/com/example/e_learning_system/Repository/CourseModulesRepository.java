@@ -41,4 +41,6 @@ public interface CourseModulesRepository extends JpaRepository<CourseModules, In
 
     // Find active status
     List<CourseModules> findByIsActive(boolean isActive);
+
+    Optional<CourseModules> findByCourseIdAndModuleId(Integer courseId, Integer moduleId);
 }

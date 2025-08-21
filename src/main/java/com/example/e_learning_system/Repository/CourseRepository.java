@@ -35,8 +35,6 @@ public interface CourseRepository extends JpaRepository<Course, Integer> {
     // Find by difficulty level
     List<Course> findByDifficultyLevel(DifficultyLevel difficultyLevel);
 
-    // Find by access model
-    List<Course> findByAccessModel(AccessModel accessModel);
 
     // Find courses by name containing (case insensitive)
     List<Course> findByNameContainingIgnoreCase(String name);

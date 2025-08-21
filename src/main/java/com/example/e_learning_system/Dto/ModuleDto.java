@@ -1,6 +1,7 @@
 package com.example.e_learning_system.Dto;
 
 import com.example.e_learning_system.Config.CourseStatus;
+import com.example.e_learning_system.Dto.VideoDtos.VideoDto;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;

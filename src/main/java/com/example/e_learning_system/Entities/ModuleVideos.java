@@ -22,7 +22,6 @@ import java.time.LocalDateTime;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-
 public class ModuleVideos extends BaseEntity {
 
     @Column(name = "video_order", nullable = false)

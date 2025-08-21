@@ -393,9 +393,7 @@ CREATE TABLE attachments (
                              id SERIAL PRIMARY KEY,
                              title VARCHAR(250),
                              metadata JSONB NOT NULL,
-                             file_url TEXT,
-                             file_size_bytes BIGINT,
-                             file_type VARCHAR(100),
+                             data BYTEA,
                              uploaded_by INTEGER NOT NULL,
                              is_active BOOLEAN DEFAULT TRUE,
                              created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
@@ -653,8 +651,6 @@ CREATE INDEX idx_videos_duration ON videos(duration_seconds) WHERE is_active = t
 CREATE INDEX idx_videos_uploader ON videos(uploaded_by) WHERE is_active = true;
 CREATE INDEX idx_videos_metadata ON videos USING gin(metadata);
 CREATE INDEX idx_attachments_active ON attachments(is_active, created_at);
-CREATE INDEX idx_attachments_type ON attachments(file_type) WHERE is_active = true;
-CREATE INDEX idx_attachments_size ON attachments(file_size_bytes) WHERE is_active = true;
 CREATE INDEX idx_attachments_uploader ON attachments(uploaded_by) WHERE is_active = true;
 
 -- Module Videos Indexes

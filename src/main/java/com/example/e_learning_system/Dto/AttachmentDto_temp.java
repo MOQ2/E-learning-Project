@@ -12,7 +12,7 @@ import java.util.Map;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class AttachmentDto {
+public class AttachmentDto_temp {
     private Integer id;
     private String title;
     private Map<String, Object> metadata;

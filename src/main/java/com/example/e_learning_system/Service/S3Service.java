@@ -218,7 +218,7 @@ public class S3Service {
 
         Optional<Attachment> attachment = attachmentRepository.findById(attachmentId);
         if (attachment.isEmpty()) {
-            throw new RuntimeException("Attachment not found with ID: " + videoId);
+            throw new RuntimeException("Attachment not found with ID: " + attachmentId);
         }
         Optional<VideoEntity> videoEntity = videoRepository.findById(videoId);
         if (videoEntity.isEmpty()) {
@@ -237,9 +237,9 @@ public class S3Service {
     }
     @Transactional
     void removeAttachemntFromVideo(int videoId , int attachmentId) {
-        Optional<Attachment> attachment = attachmentRepository.findById(videoId);
+        Optional<Attachment> attachment = attachmentRepository.findById(attachmentId);
         if (attachment.isEmpty()) {
-            throw new RuntimeException("Attachment not found with ID: " + videoId);
+            throw new RuntimeException("Attachment not found with ID: " + attachmentId);
         }
         Optional<VideoEntity> videoEntity = videoRepository.findById(videoId);
         if (videoEntity.isEmpty()) {
