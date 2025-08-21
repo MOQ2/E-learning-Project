@@ -21,4 +21,10 @@ public class PermissionsEntity extends BaseEntity {
 
     @ManyToMany(mappedBy = "permissions", fetch = FetchType.LAZY)
     private Set<RolesEntity> roles;
+    @Override
+    @Transient
+    public String getEntityType() {
+        return "PermissionsEntity";
+    }
+}
 }

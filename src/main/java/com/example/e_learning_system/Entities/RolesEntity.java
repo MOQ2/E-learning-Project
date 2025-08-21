@@ -27,4 +27,11 @@ public class RolesEntity extends BaseEntity {
             inverseJoinColumns = @JoinColumn(name = "permission_id")
     )
     private Set<PermissionsEntity> permissions;
+
+    @Override
+    @Transient
+    public String getEntityType() {
+        return "RolesEntity";
+    }
+}
 }

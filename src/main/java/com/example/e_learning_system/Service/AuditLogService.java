@@ -5,7 +5,7 @@ import com.example.e_learning_system.Entities.AuditLogEntity;
 import com.example.e_learning_system.Entities.BaseEntity;
 import com.example.e_learning_system.Mapper.AuditMapper;
 import com.example.e_learning_system.Repository.AuditLogRepository;
-import com.example.e_learning_system.Service.Interfaces.AuditLogInterface;
+import com.example.e_learning_system.Service.Interfaces.AuditLog;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
@@ -15,7 +15,7 @@ import java.util.Map;
 
 @Service
 @RequiredArgsConstructor
-public class AuditLogService implements AuditLogInterface {
+public class AuditLogService implements AuditLog {
 
     private final AuditLogRepository auditLogRepository;
     private final AuditMapper auditMapper;

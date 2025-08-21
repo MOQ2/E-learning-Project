@@ -443,51 +443,71 @@ CREATE TABLE video_attachments (
 CREATE TABLE quizzes (
                          id SERIAL PRIMARY KEY,
                          course_id INTEGER NOT NULL,
-                         name VARCHAR(250) NOT NULL,
-                         description TEXT,
-                         status course_status DEFAULT 'draft',
-                         max_attempts INTEGER DEFAULT 3,
-                         passing_score DECIMAL(5, 2) DEFAULT 70.00,
-                         time_limit_minutes INTEGER,
-                         created_by INTEGER NOT NULL,
+                         title VARCHAR(500) NOT NULL,
+                         total_score INT NOT NULL,
                          is_active BOOLEAN DEFAULT TRUE,
                          created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
                          updated_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
 
                          CONSTRAINT fk_quizzes_course
-                             FOREIGN KEY (course_id) REFERENCES courses(id) ON DELETE CASCADE,
-                         CONSTRAINT fk_quizzes_creator
-                             FOREIGN KEY (created_by) REFERENCES users(id) ON DELETE RESTRICT
+                             FOREIGN KEY (course_id) REFERENCES courses(id) ON DELETE CASCADE
 );
 
-CREATE TABLE quiz_questions (
-                                id SERIAL PRIMARY KEY,
-                                quiz_id INTEGER NOT NULL,
-                                question_text TEXT NOT NULL,
-                                question_type VARCHAR(20) DEFAULT 'multiple_choice'
-                                    CHECK (question_type IN ('multiple_choice', 'true_false', 'short_answer')),
-                                points DECIMAL(5, 2) DEFAULT 1.00,
-                                question_order INTEGER,
-                                is_active BOOLEAN DEFAULT TRUE,
-                                created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
-                                updated_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
+CREATE TABLE quiz_question (
+                               id SERIAL PRIMARY KEY,
+                               quiz_id INTEGER NOT NULL,
+                               text VARCHAR(500) NOT NULL,
+                               question_mark FLOAT NOT NULL,
+                               created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
+                               updated_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
 
-                                CONSTRAINT fk_quiz_questions_quiz
-                                    FOREIGN KEY (quiz_id) REFERENCES quizzes(id) ON DELETE CASCADE
+                               CONSTRAINT fk_quiz_question_quiz
+                                   FOREIGN KEY (quiz_id) REFERENCES quizzes(id) ON DELETE CASCADE
 );
 
-CREATE TABLE quiz_answers (
+CREATE TABLE quiz_options (
                               id SERIAL PRIMARY KEY,
                               question_id INTEGER NOT NULL,
-                              answer_text TEXT NOT NULL,
-                              is_correct BOOLEAN DEFAULT FALSE,
-                              answer_order INTEGER,
-                              is_active BOOLEAN DEFAULT TRUE,
+                              text VARCHAR(255) NOT NULL,
+                              is_correct BOOLEAN NOT NULL,
                               created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
                               updated_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
 
-                              CONSTRAINT fk_quiz_answers_question
-                                  FOREIGN KEY (question_id) REFERENCES quiz_questions(id) ON DELETE CASCADE
+                              CONSTRAINT fk_quiz_options_question
+                                  FOREIGN KEY (question_id) REFERENCES quiz_question(id) ON DELETE CASCADE,
+                              CONSTRAINT chk_is_correct CHECK (is_correct IN (TRUE, FALSE))
+);
+
+
+CREATE TABLE quiz_submissions (
+                                  id SERIAL PRIMARY KEY,
+                                  user_id INTEGER NOT NULL,
+                                  quiz_id INTEGER NOT NULL,
+                                  score FLOAT DEFAULT 0,
+                                  created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
+                                  updated_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
+
+                                  CONSTRAINT fk_quiz_submissions_quiz
+                                      FOREIGN KEY (quiz_id) REFERENCES quizzes(id) ON DELETE CASCADE,
+                                  CONSTRAINT fk_quiz_submissions_user
+                                      FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+);
+
+CREATE TABLE student_answer (
+                                id SERIAL PRIMARY KEY,
+                                submission_id INTEGER NOT NULL,
+                                question_id INTEGER NOT NULL,
+                                selected_option_id INTEGER,
+                                is_correct BOOLEAN DEFAULT NULL,
+                                created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
+                                updated_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
+
+                                CONSTRAINT fk_student_answer_submission
+                                    FOREIGN KEY (submission_id) REFERENCES quiz_submissions(id) ON DELETE CASCADE,
+                                CONSTRAINT fk_student_answer_question
+                                    FOREIGN KEY (question_id) REFERENCES quiz_question(id) ON DELETE CASCADE,
+                                CONSTRAINT fk_student_answer_option
+                                    FOREIGN KEY (selected_option_id) REFERENCES quiz_options(id) ON DELETE SET NULL
 );
 
 -- ================================
@@ -511,44 +531,6 @@ CREATE TABLE user_progress (
                                    UNIQUE(enrolment_id, module_id)
 );
 
-CREATE TABLE user_quiz_attempts (
-                                    id SERIAL PRIMARY KEY,
-                                    enrolment_id INTEGER NOT NULL,
-                                    quiz_id INTEGER NOT NULL,
-                                    attempt_number INTEGER NOT NULL,
-                                    score DECIMAL(5, 2) DEFAULT 0.00,
-                                    max_score DECIMAL(5, 2) NOT NULL,
-                                    passed BOOLEAN DEFAULT FALSE,
-                                    started_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
-                                    completed_at TIMESTAMPTZ,
-                                    is_active BOOLEAN DEFAULT TRUE,
-                                    updated_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
-
-                                    CONSTRAINT fk_quiz_attempts_enrolment
-                                        FOREIGN KEY (enrolment_id) REFERENCES course_enrolments(id) ON DELETE CASCADE,
-                                    CONSTRAINT fk_quiz_attempts_quiz
-                                        FOREIGN KEY (quiz_id) REFERENCES quizzes(id) ON DELETE RESTRICT
-);
-
-CREATE TABLE user_quiz_answers (
-                                   id SERIAL PRIMARY KEY,
-                                   attempt_id INTEGER NOT NULL,
-                                   question_id INTEGER NOT NULL,
-                                   answer_id INTEGER,
-                                   answer_text TEXT, -- For short answer questions
-                                   is_correct BOOLEAN DEFAULT FALSE,
-                                   points_earned DECIMAL(5, 2) DEFAULT 0.00,
-                                   is_active BOOLEAN DEFAULT TRUE,
-                                   created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
-                                   updated_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
-
-                                   CONSTRAINT fk_user_quiz_answers_attempt
-                                       FOREIGN KEY (attempt_id) REFERENCES user_quiz_attempts(id) ON DELETE CASCADE,
-                                   CONSTRAINT fk_user_quiz_answers_question
-                                       FOREIGN KEY (question_id) REFERENCES quiz_questions(id) ON DELETE RESTRICT,
-                                   CONSTRAINT fk_user_quiz_answers_answer
-                                       FOREIGN KEY (answer_id) REFERENCES quiz_answers(id) ON DELETE SET NULL
-);
 
 -- ================================
 -- 14. FEEDBACK & RATINGS
@@ -670,13 +652,15 @@ CREATE INDEX idx_video_attachments_video ON video_attachments(video_id) WHERE is
 CREATE INDEX idx_video_attachments_attachment ON video_attachments(attachment_id) WHERE is_active = true;
 
 -- Quizzes Indexes
-CREATE INDEX idx_quizzes_course ON quizzes(course_id) WHERE is_active = true;
-CREATE INDEX idx_quizzes_status ON quizzes(status) WHERE is_active = true;
-CREATE INDEX idx_quizzes_creator ON quizzes(created_by) WHERE is_active = true;
-CREATE INDEX idx_quiz_questions_quiz ON quiz_questions(quiz_id) WHERE is_active = true;
-CREATE INDEX idx_quiz_questions_order ON quiz_questions(quiz_id, question_order) WHERE is_active = true;
-CREATE INDEX idx_quiz_answers_question ON quiz_answers(question_id) WHERE is_active = true;
-CREATE INDEX idx_quiz_answers_correct ON quiz_answers(question_id, is_correct) WHERE is_active = true;
+CREATE INDEX idx_quiz_submissions_quiz ON quiz_submissions(quiz_id);
+CREATE INDEX idx_quiz_submissions_user ON quiz_submissions(user_id);
+CREATE INDEX idx_quiz_submissions_score ON quiz_submissions(score);
+CREATE INDEX idx_quiz_submissions_created_at ON quiz_submissions(created_at);
+
+CREATE INDEX idx_student_answer_submission ON student_answer(submission_id);
+CREATE INDEX idx_student_answer_question ON student_answer(question_id);
+CREATE INDEX idx_student_answer_selected_option ON student_answer(selected_option_id);
+
 
 -- User Progress Indexes
 CREATE INDEX idx_user_progress_enrolment ON user_progress(enrolment_id);
@@ -685,17 +669,6 @@ CREATE INDEX idx_user_progress_percentage ON user_progress(progress_percentage);
 CREATE INDEX idx_user_progress_last_accessed ON user_progress(last_accessed);
 CREATE INDEX idx_user_progress_completed ON user_progress(completed_at) WHERE completed_at IS NOT NULL;
 
--- Quiz Attempts Indexes
-CREATE INDEX idx_quiz_attempts_enrolment ON user_quiz_attempts(enrolment_id) WHERE is_active = true;
-CREATE INDEX idx_quiz_attempts_quiz ON user_quiz_attempts(quiz_id) WHERE is_active = true;
-CREATE INDEX idx_quiz_attempts_score ON user_quiz_attempts(score) WHERE is_active = true;
-CREATE INDEX idx_quiz_attempts_passed ON user_quiz_attempts(passed) WHERE is_active = true;
-CREATE INDEX idx_quiz_attempts_completed ON user_quiz_attempts(completed_at) WHERE completed_at IS NOT NULL;
-
--- Quiz Answers Indexes
-CREATE INDEX idx_user_quiz_answers_attempt ON user_quiz_answers(attempt_id) WHERE is_active = true;
-CREATE INDEX idx_user_quiz_answers_question ON user_quiz_answers(question_id) WHERE is_active = true;
-CREATE INDEX idx_user_quiz_answers_correct ON user_quiz_answers(is_correct) WHERE is_active = true;
 
 -- Feedback Indexes
 CREATE INDEX idx_user_feedback_course ON user_feedback(course_id) WHERE is_active = true;

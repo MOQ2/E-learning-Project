@@ -41,6 +41,9 @@ public class UserEntity extends BaseEntity {
 
     @Column(name = "profile_picture_url", columnDefinition = "TEXT")
     private String profilePictureUrl;
-
-
+@Override
+    @Transient
+    public String getEntityType() {
+        return "UserEntity";
+    }
 }

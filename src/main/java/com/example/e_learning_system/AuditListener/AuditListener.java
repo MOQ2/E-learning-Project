@@ -3,7 +3,7 @@ package com.example.e_learning_system.AuditListener;
 import com.example.e_learning_system.Entities.AuditLogEntity;
 import com.example.e_learning_system.Entities.BaseEntity;
 import com.example.e_learning_system.Security.UserUtil;
-import com.example.e_learning_system.Service.Interfaces.AuditLogInterface;
+import com.example.e_learning_system.Service.Interfaces.AuditLog;
 import jakarta.persistence.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -16,64 +16,61 @@ import java.util.Map;
 @Component
 public class AuditListener {
 
-    private static AuditLogInterface auditLogInterface;
+    private static AuditLog auditLogInterface;
 
     @Autowired
-    public void init(AuditLogInterface auditLogInterface) {
+    public void init(AuditLog auditLogInterface) {
         AuditListener.auditLogInterface = auditLogInterface;
     }
 
     @PostPersist
-    public void postPersist(Object entity) {
+    public void postPersist(BaseEntity entity) {
         if (entity instanceof AuditLogEntity) return;
 
         Map<String, Object> newData = extractData(entity);
         Long userId = UserUtil.getCurrentUserId();
-
         if (userId == null) userId = 2L;
 
-        auditLogInterface.logChange(userId, (BaseEntity) entity, "CREATE",
+        auditLogInterface.logChange(userId, entity, "CREATE",
                 Collections.emptyMap(), newData);
     }
 
     @PostUpdate
-    public void postUpdate(Object entity) {
-        if (!(entity instanceof BaseEntity base)) return;
+    public void postUpdate(BaseEntity entity) {
         if (entity instanceof AuditLogEntity) return;
 
-        Map<String, Object> oldData = base.getOldState();
+        Map<String, Object> oldData = entity.getOldState();
         Map<String, Object> newData = extractData(entity);
 
         Long userId = UserUtil.getCurrentUserId();
         if (userId == null) return;
 
-        auditLogInterface.logChange(userId, base, "UPDATE", oldData, newData);
-        base.setOldState(null);
+        auditLogInterface.logChange(userId, entity, "UPDATE", oldData, newData);
+        entity.setOldState(null);
     }
 
     @PostRemove
-    public void postRemove(Object entity) {
+    public void postRemove(BaseEntity entity) {
         if (entity instanceof AuditLogEntity) return;
 
         Map<String, Object> oldData = extractData(entity);
         Long userId = UserUtil.getCurrentUserId();
         if (userId == null) return;
 
-        auditLogInterface.logChange(userId, (BaseEntity) entity, "DELETE",
+        auditLogInterface.logChange(userId, entity, "DELETE",
                 oldData, Collections.emptyMap());
     }
 
 
 
 
-    public static Map<String, Object> extractData(Object entity) {
+    public static Map<String, Object> extractData(BaseEntity entity) {
         Map<String, Object> map = new HashMap<>();
         if (entity == null) return map;
 
-        Class<?> clazz = entity.getClass();
-        map.put("entity", clazz.getSimpleName());
+        map.put("entity", entity.getEntityType());
 
-        Field[] fields = clazz.getDeclaredFields();
+        Field[] fields = entity.getClass().getDeclaredFields();
         for (Field field : fields) {
             field.setAccessible(true);
             try {
