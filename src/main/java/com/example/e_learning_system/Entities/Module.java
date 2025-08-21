@@ -20,7 +20,6 @@ import java.util.stream.Collectors;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-
 public class Module extends BaseEntity{
 
 
@@ -60,15 +59,32 @@ public class Module extends BaseEntity{
             fetch = FetchType.LAZY
     )
     @OrderBy("videoOrder ASC")
-    private List<ModuleVideos> moduleVideos = new ArrayList<>();
+    private Set<ModuleVideos> moduleVideos = new HashSet<>();
 
 
 
 
     @Transient
-    Set <Course> getModules (){
-        if(this.courseModules == null)
+    public Set <VideoEntity> getVideos (){
+        if(this.moduleVideos == null)
             return new HashSet<>();
-        return  this.courseModules.stream().map(CourseModules::getCourse).collect(Collectors.toSet());
+        return  this.moduleVideos.stream().map(ModuleVideos::getVideo).collect(Collectors.toSet());
     }
+
+    public void addVideoToModule(ModuleVideos moduleVideo) {
+        this.moduleVideos.add(moduleVideo);
+    }
+    public void removeVideoFromModule(ModuleVideos moduleVideo) {
+        if(moduleVideos.contains(moduleVideo))
+            this.moduleVideos.remove(moduleVideo);
+    }
+
+    public boolean isUniqOrder(int order){
+        for(ModuleVideos moduleVideo : this.moduleVideos){
+            if(moduleVideo.getVideoOrder() == order)
+                return false;
+        }
+        return true;
+    }
+
 }
