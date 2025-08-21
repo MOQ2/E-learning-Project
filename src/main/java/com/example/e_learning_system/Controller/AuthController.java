@@ -6,7 +6,6 @@ import com.example.e_learning_system.Dto.RegisterRequestDTO;
 import com.example.e_learning_system.Interfaces.AuthInterface;
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
