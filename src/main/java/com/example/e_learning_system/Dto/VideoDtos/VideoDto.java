@@ -1,5 +1,7 @@
-package com.example.e_learning_system.Dto;
+package com.example.e_learning_system.Dto.VideoDtos;
 
+
+import com.example.e_learning_system.Dto.AttachmentDtos.AttachmentDto;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
