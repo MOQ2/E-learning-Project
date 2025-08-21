@@ -36,4 +36,9 @@ public abstract class BaseEntity {
     public void postLoad() {
         this.oldState = AuditListener.extractData(this);
     }
+
+    @Transient
+    public String getEntityType() {
+        return "BaseEntity";
+    }
 }

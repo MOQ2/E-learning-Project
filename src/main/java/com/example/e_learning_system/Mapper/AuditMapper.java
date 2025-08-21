@@ -4,10 +4,7 @@ import com.example.e_learning_system.Dto.AuditLogDTO;
 import com.example.e_learning_system.Entities.BaseEntity;
 import org.springframework.stereotype.Component;
 
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
 
 @Component
 public class AuditMapper {
@@ -17,15 +14,15 @@ public class AuditMapper {
 
         Map<String, Object> changes = new HashMap<>();
 
-        Map<String, Object> oldDataSafe = oldData != null ? oldData : Map.of();
-        Map<String, Object> newDataSafe = newData != null ? newData : Map.of();
+        Map<String, Object> oldDataSafe = oldData != null ? oldData : new HashMap<>();
+        Map<String, Object> newDataSafe = newData != null ? newData : new HashMap<>();
 
         switch (action) {
             case "UPDATE":
                 for (String key : newDataSafe.keySet()) {
                     Object oldValue = oldDataSafe.get(key);
                     Object newValue = newDataSafe.get(key);
-                    if (!Objects.equals(oldValue, newValue)) {
+                    if (!areEqual(oldValue, newValue)) {
                         changes.put(key, Arrays.asList(serializeValue(oldValue), serializeValue(newValue)));
                     }
                 }
@@ -45,6 +42,27 @@ public class AuditMapper {
                 entity.getClass().getSimpleName(),
                 changes
         );
+    }
+
+    private boolean areEqual(Object oldValue, Object newValue) {
+        if (oldValue instanceof Collection<?> oldCol && newValue instanceof Collection<?> newCol) {
+            return compareCollection(oldCol, newCol);
+        }
+        if (oldValue != null && oldValue.getClass().isArray()
+                && newValue != null && newValue.getClass().isArray()) {
+            return compareCollection(Arrays.asList((Object[]) oldValue),
+                    Arrays.asList((Object[]) newValue));
+        }
+        return Objects.equals(oldValue, newValue);
+    }
+
+    private boolean compareCollection(Collection<?> c1, Collection<?> c2) {
+        if (c1.size() != c2.size()) return false;
+
+        var list1 = c1.stream().map(this::serializeValue).sorted().toList();
+        var list2 = c2.stream().map(this::serializeValue).sorted().toList();
+
+        return list1.equals(list2);
     }
 
 
