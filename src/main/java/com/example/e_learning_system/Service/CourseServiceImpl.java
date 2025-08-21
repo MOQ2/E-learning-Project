@@ -1,25 +1,29 @@
 package com.example.e_learning_system.Service;
 
-
-
-
-
-
 import com.example.e_learning_system.Config.CourseStatus;
 import com.example.e_learning_system.Config.DifficultyLevel;
+import com.example.e_learning_system.Dto.CourseDtos.*;
+import com.example.e_learning_system.Dto.CreateCourseRequest;
 import com.example.e_learning_system.Entities.Course;
+import com.example.e_learning_system.Entities.CourseModules;
 import com.example.e_learning_system.Entities.Module;
 import com.example.e_learning_system.Entities.UserEntity;
-import com.example.e_learning_system.Dto.CourseDto;
-import com.example.e_learning_system.Dto.ModuleDto;
-import com.example.e_learning_system.Dto.CreateCourseRequest;
-import com.example.e_learning_system.Repository.CourseRepository;
-import com.example.e_learning_system.Repository.UserRepository;
 import com.example.e_learning_system.Interfaces.CourseService;
+import com.example.e_learning_system.Mapper.CourseMapper;
+import com.example.e_learning_system.Repository.CourseModulesRepository;
+import com.example.e_learning_system.Repository.CourseRepository;
+import com.example.e_learning_system.Repository.ModuleRepository;
+import com.example.e_learning_system.Repository.UserRepository;
 import com.example.e_learning_system.excpetions.ResourceNotFound;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.criteria.CriteriaBuilder;
+import jakarta.persistence.criteria.CriteriaQuery;
+import jakarta.persistence.criteria.Predicate;
+import jakarta.persistence.criteria.Root;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -27,8 +31,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Set;
-import java.util.stream.Collectors;
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -38,13 +41,64 @@ public class CourseServiceImpl implements CourseService {
 
     private final CourseRepository courseRepository;
     private final UserRepository userRepository;
+    private final ModuleRepository moduleRepository;
+    private final EntityManager entityManager;
+    private final CourseModulesRepository courseModulesRepository;
 
     @Override
-    public CourseDto createCourse(CreateCourseRequest request, Integer createdById) {
+    @Transactional(readOnly = true)
+    public List<CourseSummaryDto> getCourses() {
+        log.debug("Fetching all courses");
+
+        List<Course> courses = courseRepository.findAll();
+        return CourseMapper.fromCourseEntitiesToCourseSummaryDtos(courses);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public Page<CourseSummaryDto> getCourses(CourseFilterDto filterDto, Pageable pageable) {
+        log.debug("Fetching courses with filter: {} and pagination", filterDto);
+
+        // Build dynamic query using Criteria API
+        CriteriaBuilder cb = entityManager.getCriteriaBuilder();
+        CriteriaQuery<Course> query = cb.createQuery(Course.class);
+        Root<Course> root = query.from(Course.class);
+
+        List<Predicate> predicates = buildPredicates(cb, root, filterDto);
+
+        if (!predicates.isEmpty()) {
+            query.where(cb.and(predicates.toArray(new Predicate[0])));
+        }
+
+        // Get total count for pagination
+        CriteriaQuery<Long> countQuery = cb.createQuery(Long.class);
+        Root<Course> countRoot = countQuery.from(Course.class);
+        countQuery.select(cb.count(countRoot));
+
+        List<Predicate> countPredicates = buildPredicates(cb, countRoot, filterDto);
+        if (!countPredicates.isEmpty()) {
+            countQuery.where(cb.and(countPredicates.toArray(new Predicate[0])));
+        }
+
+        long total = entityManager.createQuery(countQuery).getSingleResult();
+
+        // Apply pagination and get results
+        List<Course> courses = entityManager.createQuery(query)
+                .setFirstResult((int) pageable.getOffset())
+                .setMaxResults(pageable.getPageSize())
+                .getResultList();
+
+        List<CourseSummaryDto> courseDtos = CourseMapper.fromCourseEntitiesToCourseSummaryDtos(courses);
+
+        return new PageImpl<>(courseDtos, pageable, total);
+    }
+
+    @Override
+    public CourseDetailsDto createCourse(CreateCourseDto request, Integer createdById) {
         log.info("Creating new course: {} for user: {}", request.getName(), createdById);
 
         UserEntity creator = userRepository.findById(createdById)
-                .orElseThrow(() -> ResourceNotFound.userNotFound(createdById+""));
+                .orElseThrow(() -> ResourceNotFound.userNotFound(createdById.toString()));
 
         // Validate business rules
         validateCourseRequest(request);
@@ -57,9 +111,8 @@ public class CourseServiceImpl implements CourseService {
                 .thumbnail(request.getThumbnail())
                 .previewVideoUrl(request.getPreviewVideoUrl())
                 .estimatedDrationInHours(request.getEstimatedDurationInHours())
-                .isActive(request.getIsActive())
+                .isActive(request.isActive())
                 .status(request.getStatus())
-                .accessModel(request.getAccessModel())
                 .difficultyLevel(request.getDifficultyLevel())
                 .createdBy(creator)
                 .build();
@@ -67,151 +120,41 @@ public class CourseServiceImpl implements CourseService {
         Course savedCourse = courseRepository.save(course);
 
         log.info("Course created successfully with id: {}", savedCourse.getId());
-        return mapToDto(savedCourse);
+        return CourseMapper.fromCourseEntityToCourseDetailsDto(savedCourse);
     }
 
     @Override
     @Transactional(readOnly = true)
-    public CourseDto getCourseById(Integer id) {
+    public CourseDetailsDto getCourseById(Integer id) {
         log.debug("Fetching course with id: {}", id);
 
         Course course = courseRepository.findById(id)
-                .orElseThrow(() -> ResourceNotFound.courseNotFound(id+""));
+                .orElseThrow(() -> ResourceNotFound.courseNotFound(id.toString()));
 
-        return mapToDto(course);
+        return CourseMapper.fromCourseEntityToCourseDetailsDto(course);
     }
 
     @Override
-    @Transactional(readOnly = true)
-    public List<CourseDto> getCoursesByUser(Integer userId) {
-        log.debug("Fetching courses for user: {}", userId);
+    public void updateCourse(UpdateCourseDto updateCourseDto , int courseId) {
+        log.info("Updating course with id: {}", courseId);
 
-        UserEntity user = userRepository.findById(userId)
-                .orElseThrow(() -> ResourceNotFound.userNotFound(userId+""));
-
-        return courseRepository.findByCreatedBy(user)
-                .stream()
-                .map(this::mapToDto)
-                .collect(Collectors.toList());
-    }
-
-    @Override
-    @Transactional(readOnly = true)
-    public List<CourseDto> getActiveCourses(Pageable pageable) {
-        log.debug("Fetching active courses with pagination");
-
-        return courseRepository.findByIsActive(true).stream().map(this::mapToDto).collect(Collectors.toList());
-
-    }
-
-    @Override
-    @Transactional(readOnly = true)
-    public List<CourseDto> getPublishedCourses(Pageable pageable) {
-        log.debug("Fetching published courses with pagination");
-
-        return courseRepository.findByIsActiveAndStatus(true, CourseStatus.PUBLISHED).stream()
-                .map(this::mapToDto).collect(Collectors.toList());
-    }
-
-    @Override
-    @Transactional(readOnly = true)
-    public List<CourseDto> getCoursesByStatus(CourseStatus status) {
-        log.debug("Fetching courses with status: {}", status);
-
-        return courseRepository.findByStatus(status)
-                .stream()
-                .map(this::mapToDto)
-                .collect(Collectors.toList());
-    }
-
-    @Override
-    @Transactional(readOnly = true)
-    public List<CourseDto> getCoursesByDifficulty(DifficultyLevel difficulty) {
-        log.debug("Fetching courses with difficulty: {}", difficulty);
-
-        return courseRepository.findByDifficultyLevel(difficulty)
-                .stream()
-                .map(this::mapToDto)
-                .collect(Collectors.toList());
-    }
-
-    @Override
-    @Transactional(readOnly = true)
-    public List<CourseDto> getFreeCourses() {
-        log.debug("Fetching free courses");
-
-        return courseRepository.findByIsFreeAndIsActive(true, true)
-                .stream()
-                .map(this::mapToDto)
-                .collect(Collectors.toList());
-    }
-
-    @Override
-    @Transactional(readOnly = true)
-    public List<CourseDto> getCoursesByPriceRange(BigDecimal minPrice, BigDecimal maxPrice) {
-        log.debug("Fetching courses with price range: {} - {}", minPrice, maxPrice);
-
-        if (minPrice.compareTo(maxPrice) > 0) {
-            throw new IllegalArgumentException("Minimum price cannot be greater than maximum price");
-        }
-
-        return courseRepository.findByOneTimePriceBetween(minPrice, maxPrice)
-                .stream()
-                .map(this::mapToDto)
-                .collect(Collectors.toList());
-    }
-
-    @Override
-    public CourseDto updateCourse(Integer id, CreateCourseRequest request) {
-        log.info("Updating course with id: {}", id);
-
-        Course course = courseRepository.findById(id)
-                .orElseThrow(() -> ResourceNotFound.courseNotFound(id+""));
+        Course existingCourse = courseRepository.findById(courseId)
+                .orElseThrow(() -> ResourceNotFound.courseNotFound(courseId+""));
 
         // Validate business rules
-        validateCourseRequest(request);
+        validateUpdateCourseRequest(updateCourseDto);
 
-
-        if (course.getStatus() == CourseStatus.PUBLISHED && !canUpdatePublishedCourse(course)) {
+        // Check if published course can be updated
+        if (existingCourse.getStatus() == CourseStatus.PUBLISHED && !canUpdatePublishedCourse(existingCourse)) {
             throw new RuntimeException("Cannot update published course with active enrollments");
         }
 
-        // Update fields
-        course.setName(request.getName());
-        course.setDescription(request.getDescription());
-        course.setOneTimePrice(request.getOneTimePrice());
-        course.setCurrency(request.getCurrency());
-        course.setThumbnail(request.getThumbnail());
-        course.setPreviewVideoUrl(request.getPreviewVideoUrl());
-        course.setEstimatedDrationInHours(request.getEstimatedDurationInHours());
-        course.setActive(request.getIsActive());
-        course.setStatus(request.getStatus());
-        course.setAccessModel(request.getAccessModel());
-        course.setDifficultyLevel(request.getDifficultyLevel());
+        // Update the existing course entity using the mapper
+        CourseMapper.fromUpdateCourseDtoToCourseEntity( updateCourseDto , existingCourse);
 
-        Course updatedCourse = courseRepository.save(course);
+        courseRepository.save(existingCourse);
 
-        log.info("Course updated successfully: {}", id);
-        return mapToDto(updatedCourse);
-    }
-
-    @Override
-    public CourseDto publishCourse(Integer id) {
-        log.info("Publishing course with id: {}", id);
-
-        Course course = courseRepository.findById(id)
-                .orElseThrow(() -> ResourceNotFound.courseNotFound(id+""));
-
-        // Validate course is ready for publishing
-        validateCourseForPublishing(course);
-
-        course.setStatus(CourseStatus.PUBLISHED);
-        course.setActive(true);
-
-        Course publishedCourse = courseRepository.save(course);
-
-        log.info("Course published successfully: {}", id);
-        return mapToDto(publishedCourse);
+        log.info("Course updated successfully: {}", courseId);
     }
 
     @Override
@@ -219,7 +162,7 @@ public class CourseServiceImpl implements CourseService {
         log.info("Deleting course with id: {}", id);
 
         Course course = courseRepository.findById(id)
-                .orElseThrow(() -> ResourceNotFound.courseNotFound(id+""));
+                .orElseThrow(() -> ResourceNotFound.courseNotFound(id.toString()));
 
         // Check if course can be deleted (e.g., no active enrollments)
         if (!canDeleteCourse(course)) {
@@ -232,55 +175,182 @@ public class CourseServiceImpl implements CourseService {
     }
 
     @Override
-    public void deactivateCourse(Integer id) {
+    public void deactivateCourse(Integer id , boolean deactivate) {
         log.info("Deactivating course with id: {}", id);
 
         Course course = courseRepository.findById(id)
-                .orElseThrow(() -> ResourceNotFound.courseNotFound(id+""));
+                .orElseThrow(() -> ResourceNotFound.courseNotFound(id.toString()));
+        if (deactivate){
+            course.setActive(false);
+            course.setStatus(CourseStatus.DRAFT); // Move back to draft when deactivated
+        }else {
+            course.setActive(true);
+        }
 
-        course.setActive(false);
-        course.setStatus(CourseStatus.DRAFT); // Move back to draft when deactivated
 
         courseRepository.save(course);
 
         log.info("Course deactivated successfully: {}", id);
     }
 
-    @Override
-    @Transactional(readOnly = true)
-    public List<CourseDto> searchCoursesByName(String name) {
-        log.debug("Searching courses by name: {}", name);
+    public void addMoudelToCourse (int courseId , int moduleId , int order ){
+        log.info("adding module {} to course {}",moduleId,courseId);
 
-        if (name == null || name.trim().isEmpty()) {
-            throw new IllegalArgumentException("Search name cannot be empty");
+
+        Course course = courseRepository.findById(courseId).orElseThrow(() -> ResourceNotFound.courseNotFound(courseId+""));
+        Optional<Module> module = moduleRepository.findById(moduleId);
+        if (module.isEmpty()){
+            throw ResourceNotFound.moduleNotFound(moduleId+"");
         }
+        Optional<CourseModules> courseModule=  courseModulesRepository.findByCourseIdAndModuleId(courseId, moduleId) ;
+        if(courseModule.isPresent()){
+            log.warn("Course module {} already exists", moduleId);
+        }else {
+            if (course.isUniqOrder(order)){
+                CourseModules newCourseModule = new CourseModules();
+                newCourseModule.setCourse(course);
+                newCourseModule.setModule(module.get());
+                course.addCourseModules(newCourseModule);
+                courseRepository.save(course);
+            }else {
+                throw new RuntimeException("module order already exists");
+            }
 
-        return courseRepository.findByNameContainingIgnoreCase(name.trim())
-                .stream()
-                .map(this::mapToDto)
-                .collect(Collectors.toList());
+        }
     }
+
+    public void removeMoudelFromCourse (int courseId , int moduleId){
+        log.info("removing module {} from course {}",moduleId,courseId);
+        Optional<CourseModules> courseModule =  courseModulesRepository.findByCourseIdAndModuleId(courseId, moduleId);
+
+        if (courseModule.isPresent()){
+            log.info("Course module {} removed", moduleId);
+            Course course = courseModule.get().getCourse();
+            course.removeCourseModules(courseModule.get());
+            courseRepository.save(course);
+        }
+    }
+
+
+
 
     // Private helper methods
 
-    private void validateCourseRequest(CreateCourseRequest request) {
-        // Validate pricing logic
-        if (!request.getIsFree() && (request.getOneTimePrice() == null || request.getOneTimePrice().compareTo(BigDecimal.ZERO) <= 0)) {
-            throw new IllegalArgumentException("Paid courses must have a valid price greater than zero");
+    private List<Predicate> buildPredicates(CriteriaBuilder cb, Root<Course> root, CourseFilterDto filterDto) {
+        List<Predicate> predicates = new ArrayList<>();
+
+        if (filterDto == null) {
+            return predicates;
         }
 
-        if (request.getIsFree() && request.getOneTimePrice() != null && request.getOneTimePrice().compareTo(BigDecimal.ZERO) > 0) {
-            throw new IllegalArgumentException("Free courses cannot have a price");
+        // Text search filters
+        if (filterDto.getName() != null && !filterDto.getName().trim().isEmpty()) {
+            predicates.add(cb.like(cb.lower(root.get("name")),
+                    "%" + filterDto.getName().toLowerCase() + "%"));
+        }
+
+        if (filterDto.getDescription() != null && !filterDto.getDescription().trim().isEmpty()) {
+            predicates.add(cb.like(cb.lower(root.get("description")),
+                    "%" + filterDto.getDescription().toLowerCase() + "%"));
+        }
+
+        // Price range filters
+        if (filterDto.getMinPrice() != null) {
+            predicates.add(cb.greaterThanOrEqualTo(root.get("oneTimePrice"), filterDto.getMinPrice()));
+        }
+
+        if (filterDto.getMaxPrice() != null) {
+            predicates.add(cb.lessThanOrEqualTo(root.get("oneTimePrice"), filterDto.getMaxPrice()));
+        }
+
+        // Currency filter
+        if (filterDto.getCurrency() != null && !filterDto.getCurrency().trim().isEmpty()) {
+            predicates.add(cb.equal(root.get("currency"), filterDto.getCurrency()));
+        }
+
+        // Duration filters
+        if (filterDto.getMinDurationHours() != null) {
+            predicates.add(cb.greaterThanOrEqualTo(root.get("estimatedDrationInHours"),
+                    filterDto.getMinDurationHours()));
+        }
+
+        if (filterDto.getMaxDurationHours() != null) {
+            predicates.add(cb.lessThanOrEqualTo(root.get("estimatedDrationInHours"),
+                    filterDto.getMaxDurationHours()));
+        }
+
+        // Boolean flags
+        if (filterDto.getIsActive() != null) {
+            predicates.add(cb.equal(root.get("isActive"), filterDto.getIsActive()));
+        }
+
+        if (filterDto.getIsFree() != null) {
+            predicates.add(cb.equal(root.get("isFree"), filterDto.getIsFree()));
+        }
+
+        // Creator filter
+        if (filterDto.getCreatedByUserId() != null) {
+            predicates.add(cb.equal(root.get("createdBy").get("id"), filterDto.getCreatedByUserId()));
+        }
+
+        // Status filters
+        if (filterDto.getStatuses() != null && !filterDto.getStatuses().isEmpty()) {
+            predicates.add(root.get("status").in(filterDto.getStatuses()));
+        }
+
+        // Difficulty level filters
+        if (filterDto.getDifficultyLevels() != null && !filterDto.getDifficultyLevels().isEmpty()) {
+            predicates.add(root.get("difficultyLevel").in(filterDto.getDifficultyLevels()));
+        }
+
+        return predicates;
+    }
+
+    private void validateCourseRequest(CreateCourseDto request) {
+        // Validate pricing logic
+        if (request.getOneTimePrice() != null && request.getOneTimePrice().compareTo(BigDecimal.ZERO) < 0) {
+            throw new IllegalArgumentException("Course price cannot be negative");
         }
 
         // Validate currency for paid courses
-        if (!request.getIsFree() && (request.getCurrency() == null || request.getCurrency().trim().isEmpty())) {
-            throw new IllegalArgumentException("Currency is required for paid courses");
+        if (request.getOneTimePrice() != null && request.getOneTimePrice().compareTo(BigDecimal.ZERO) > 0) {
+            if (request.getCurrency() == null || request.getCurrency().trim().isEmpty()) {
+                throw new IllegalArgumentException("Currency is required for paid courses");
+            }
         }
 
         // Validate estimated duration
-        if (request.getEstimatedDurationInHours() != null && request.getEstimatedDurationInHours() <= 0) {
+        if ( request.getEstimatedDurationInHours() <= 0) {
             throw new IllegalArgumentException("Estimated duration must be positive");
+        }
+
+        // Validate required fields
+        if (request.getName() == null || request.getName().trim().isEmpty()) {
+            throw new IllegalArgumentException("Course name is required");
+        }
+    }
+
+    private void validateUpdateCourseRequest(UpdateCourseDto updateCourseDto) {
+        // Validate pricing logic
+        if (updateCourseDto.getOneTimePrice() != null && updateCourseDto.getOneTimePrice().compareTo(BigDecimal.ZERO) < 0) {
+            throw new IllegalArgumentException("Course price cannot be negative");
+        }
+
+        // Validate currency for paid courses
+        if (updateCourseDto.getOneTimePrice() != null && updateCourseDto.getOneTimePrice().compareTo(BigDecimal.ZERO) > 0) {
+            if (updateCourseDto.getCurrency() == null || updateCourseDto.getCurrency().trim().isEmpty()) {
+                throw new IllegalArgumentException("Currency is required for paid courses");
+            }
+        }
+
+        // Validate estimated duration
+        if (updateCourseDto.getEstimatedDurationInHours() <= 0) {
+            throw new IllegalArgumentException("Estimated duration must be positive");
+        }
+
+        // Validate required fields
+        if (updateCourseDto.getName() == null || updateCourseDto.getName().trim().isEmpty()) {
+            throw new IllegalArgumentException("Course name is required");
         }
     }
 
@@ -300,10 +370,6 @@ public class CourseServiceImpl implements CourseService {
             validationErrors.add("Difficulty level is required for publishing");
         }
 
-        if (course.getAccessModel() == null) {
-            validationErrors.add("Access model is required for publishing");
-        }
-
         // Check if course has modules
         if (course.getCourseModules() == null || course.getCourseModules().isEmpty()) {
             validationErrors.add("Course must have at least one module to be published");
@@ -313,68 +379,27 @@ public class CourseServiceImpl implements CourseService {
         if (course.getStatus() == CourseStatus.ARCHIVED) {
             validationErrors.add("Cannot publish an archived course");
         }
-        //! to-do  use the custome exception handelr for this
+
         if (!validationErrors.isEmpty()) {
             throw new RuntimeException("Course validation failed: " + String.join(", ", validationErrors));
         }
     }
-    //! to-do
+
+    // TODO: Implement proper business logic
     private boolean canUpdatePublishedCourse(Course course) {
 
-        return true; // Simplified for now
+        return true;
     }
-    //! to-do
+
+    // TODO: Implement proper business logic
     private boolean canDeleteCourse(Course course) {
 
         return course.getStatus() == CourseStatus.DRAFT || course.getStatus() == CourseStatus.ARCHIVED;
     }
 
-    private CourseDto mapToDto(Course course) {
-        return CourseDto.builder()
-                .id(course.getId())
-                .name(course.getName())
-                .description(course.getDescription())
-                .oneTimePrice(course.getOneTimePrice())
-                .currency(course.getCurrency())
-                .thumbnail(course.getThumbnail())
-                .previewVideoUrl(course.getPreviewVideoUrl())
-                .estimatedDurationInHours(course.getEstimatedDrationInHours())
-                .isActive(course.isActive())
-                .isFree(course.isFree())
-                .status(course.getStatus())
-                .accessModel(course.getAccessModel())
-                .difficultyLevel(course.getDifficultyLevel())
-                .createdById(course.getCreatedBy().getId())
-                .createdByName(course.getCreatedBy().getName())
-                .modules(mapModulesToDto(course.getModules()))
-                .createdAt(course.getCreatedAt())
-                .updatedAt(course.getUpdatedAt())
-                .build();
-    }
 
-    private List<ModuleDto> mapModulesToDto(Set<Module> modules) {
-        if (modules == null || modules.isEmpty()) {
-            return new ArrayList<>();
-        }
 
-        return modules.stream()
-                .map(this::mapModuleToDto)
-                .collect(Collectors.toList());
-    }
+    
 
-    private ModuleDto mapModuleToDto(Module module) {
-        return ModuleDto.builder()
-                .id(module.getId())
-                .name(module.getName())
-                .description(module.getDescription())
-                .isActive(module.isActive())
-                .estimatedDuration(module.getEstimatedDuration())
-                .courseStatus(module.getCourseStatus())
-                .createdById(module.getCreatedBy().getId())
-                .createdByName(module.getCreatedBy().getName())
-                .videos(new ArrayList<>()) // Avoid deep nesting, load separately if needed
-                .createdAt(module.getCreatedAt())
-                .updatedAt(module.getUpdatedAt())
-                .build();
-    }
+
 }
