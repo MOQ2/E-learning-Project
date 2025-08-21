@@ -292,7 +292,7 @@ public class CourseController {
         ){
 
             courseService.addMoudelToCourse(courseId, moduleId, moduleOrder);
-            return ResponseEntity.ok(ApiResponse.success("module {} have been added to course {} in order {}".formatted(moduleId,courseId,moduleOrder),null));
+            return ResponseEntity.ok(ApiResponse.success("module %d have been added to course %d in order {}".formatted(moduleId,courseId,moduleOrder),null));
         }
 
     @DeleteMapping("{courseId}/modules/{moduleId}/")
@@ -301,7 +301,7 @@ public class CourseController {
             @PathVariable int moduleId
     ){
         courseService.removeMoudelFromCourse(courseId, moduleId);
-        return ResponseEntity.ok(ApiResponse.success("module {} have been added to course {}".formatted(moduleId,courseId),null));
+        return ResponseEntity.ok(ApiResponse.success("module %d have been added to course %d".formatted(moduleId,courseId),null));
     }
 
 
