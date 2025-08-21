@@ -26,5 +26,5 @@ public class PermissionsEntity extends BaseEntity {
     public String getEntityType() {
         return "PermissionsEntity";
     }
-}
+
 }

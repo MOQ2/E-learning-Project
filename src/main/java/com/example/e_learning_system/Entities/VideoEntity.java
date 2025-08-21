@@ -46,4 +46,3 @@ public class VideoEntity extends BaseEntity {
         return "VideoEntity";
     }
 }
-}
