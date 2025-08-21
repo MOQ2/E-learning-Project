@@ -1,0 +1,240 @@
+package com.example.e_learning_system.Mapper;
+
+
+import com.example.e_learning_system.Dto.CourseDtos.CourseDetailsDto;
+import com.example.e_learning_system.Dto.CourseDtos.CourseModuleDto;
+import com.example.e_learning_system.Dto.CourseDtos.CourseSummaryDto;
+import com.example.e_learning_system.Dto.CourseDtos.CreateCourseDto;
+import com.example.e_learning_system.Dto.CourseDtos.UpdateCourseDto;
+import com.example.e_learning_system.Entities.Course;
+import com.example.e_learning_system.Entities.CourseModules;
+import com.example.e_learning_system.Entities.UserEntity;
+
+import java.util.Collections;
+import java.util.List;
+import java.util.Objects;
+import java.util.Set;
+import java.util.stream.Collectors;
+
+public class CourseMapper {
+
+    private CourseMapper() {
+        // private constructor to prevent instantiation
+    }
+
+    // ====== ENTITY -> DTO ======
+
+    /**
+     * Maps from Course entity to CourseDetailsDto
+     */
+    public static CourseDetailsDto fromCourseEntityToCourseDetailsDto(Course course) {
+        if (course == null) {
+            return null;
+        }
+
+        return CourseDetailsDto.builder()
+                .id(course.getId())
+                .name(course.getName())
+                .description(course.getDescription())
+                .oneTimePrice(course.getOneTimePrice())
+                .currency(course.getCurrency())
+                .thumbnail(course.getThumbnail())
+                .previewVideoUrl(course.getPreviewVideoUrl())
+                .estimatedDurationInHours(course.getEstimatedDrationInHours())
+                .status(course.getStatus())
+                .difficultyLevel(course.getDifficultyLevel())
+                .isActive(course.isActive())
+                .modules(fromCourseModulesToCourseModuleDtos(course.getCourseModules()))
+                .build();
+    }
+
+    /**
+     * Maps from Course entity to CourseSummaryDto
+     */
+    public static CourseSummaryDto fromCourseEntityToCourseSummaryDto(Course course) {
+        if (course == null) {
+            return null;
+        }
+
+        return CourseSummaryDto.builder()
+                .id(course.getId())
+                .name(course.getName())
+                .description(course.getDescription())
+                .status(course.getStatus())
+                .difficultyLevel(course.getDifficultyLevel())
+                .isActive(course.isActive())
+                .oneTimePrice(course.getOneTimePrice())
+                .currency(course.getCurrency())
+                .build();
+    }
+
+    /**
+     * Maps a list of Course entities to a list of CourseDetailsDto
+     */
+    public static List<CourseDetailsDto> fromCourseEntitiesToCourseDetailsDtos(List<Course> courses) {
+        if (courses == null) {
+            return Collections.emptyList();
+        }
+
+        return courses.stream()
+                .map(CourseMapper::fromCourseEntityToCourseDetailsDto)
+                .collect(Collectors.toList());
+    }
+
+    /**
+     * Maps a list of Course entities to a list of CourseSummaryDto
+     */
+    public static List<CourseSummaryDto> fromCourseEntitiesToCourseSummaryDtos(List<Course> courses) {
+        if (courses == null) {
+            return Collections.emptyList();
+        }
+
+        return courses.stream()
+                .map(CourseMapper::fromCourseEntityToCourseSummaryDto)
+                .collect(Collectors.toList());
+    }
+
+    // ====== DTO -> ENTITY ======
+
+    /**
+     * Maps from CreateCourseDto to Course entity
+     */
+    public static Course fromCreateCourseDtoToCourseEntity(CreateCourseDto createCourseDto, UserEntity createdBy) {
+        if (createCourseDto == null) {
+            return null;
+        }
+
+        return Course.builder()
+                .name(createCourseDto.getName())
+                .description(createCourseDto.getDescription())
+                .oneTimePrice(createCourseDto.getOneTimePrice())
+                .currency(createCourseDto.getCurrency())
+                .thumbnail(createCourseDto.getThumbnail())
+                .previewVideoUrl(createCourseDto.getPreviewVideoUrl())
+                .estimatedDrationInHours(createCourseDto.getEstimatedDurationInHours())
+                .status(createCourseDto.getStatus())
+                .difficultyLevel(createCourseDto.getDifficultyLevel())
+                .isActive(createCourseDto.isActive())
+                .createdBy(createdBy)
+                .build();
+    }
+
+    /**
+     * Maps from UpdateCourseDto to Course entity
+     */
+    public static Course fromUpdateCourseDtoToCourseEntity(UpdateCourseDto updateCourseDto, Course existingCourse) {
+        if (updateCourseDto == null ||  existingCourse == null ) {
+            return null;
+        }
+
+        if (updateCourseDto.getName() != null  ) {
+            existingCourse.setName(updateCourseDto.getName());
+        }
+        if (updateCourseDto.getDescription() != null ) {
+            existingCourse.setDescription(updateCourseDto.getDescription());
+        }
+        if (updateCourseDto.getOneTimePrice() != null ) {
+            existingCourse.setOneTimePrice(updateCourseDto.getOneTimePrice());
+        }
+        if (updateCourseDto.getCurrency() != null ) {
+            existingCourse.setCurrency(updateCourseDto.getCurrency());
+        }
+        if (updateCourseDto.getThumbnail() != null ) {
+            existingCourse.setThumbnail(updateCourseDto.getThumbnail());
+        }
+        if (updateCourseDto.getPreviewVideoUrl() != null ) {
+            existingCourse.setPreviewVideoUrl(updateCourseDto.getPreviewVideoUrl());
+        }
+        if (updateCourseDto.getEstimatedDurationInHours() != null ) {
+            existingCourse.setEstimatedDrationInHours(updateCourseDto.getEstimatedDurationInHours());
+        }
+        if (updateCourseDto.getStatus() != null ) {
+            existingCourse.setStatus(updateCourseDto.getStatus());
+        }
+        if (updateCourseDto.getDifficultyLevel() != null ) {
+            existingCourse.setDifficultyLevel(updateCourseDto.getDifficultyLevel());
+        }
+        if (updateCourseDto.getIsActive() != null ) {
+            existingCourse.setActive(updateCourseDto.getIsActive());
+        }
+        return existingCourse;
+    }
+
+    /**
+     * Maps from CourseDetailsDto to Course entity
+     */
+    public static Course fromCourseDetailsDtoToCourseEntity(CourseDetailsDto courseDetailsDto) {
+        if (courseDetailsDto == null) {
+            return null;
+        }
+
+        return Course.builder()
+                .id(courseDetailsDto.getId())
+                .name(courseDetailsDto.getName())
+                .description(courseDetailsDto.getDescription())
+                .oneTimePrice(courseDetailsDto.getOneTimePrice())
+                .currency(courseDetailsDto.getCurrency())
+                .thumbnail(courseDetailsDto.getThumbnail())
+                .previewVideoUrl(courseDetailsDto.getPreviewVideoUrl())
+                .estimatedDrationInHours(courseDetailsDto.getEstimatedDurationInHours())
+                .status(courseDetailsDto.getStatus())
+                .difficultyLevel(courseDetailsDto.getDifficultyLevel())
+                .isActive(courseDetailsDto.isActive())
+                .build();
+    }
+
+    // ====== UPDATE OPERATIONS ======
+
+    /**
+     * Updates an existing Course entity with data from CreateCourseDto
+     */
+    public static void updateCourseEntityFromCreateCourseDto(Course existingCourse, CreateCourseDto createCourseDto) {
+        if (existingCourse == null || createCourseDto == null) {
+            return;
+        }
+
+        existingCourse.setName(createCourseDto.getName());
+        existingCourse.setDescription(createCourseDto.getDescription());
+        existingCourse.setOneTimePrice(createCourseDto.getOneTimePrice());
+        existingCourse.setCurrency(createCourseDto.getCurrency());
+        existingCourse.setThumbnail(createCourseDto.getThumbnail());
+        existingCourse.setPreviewVideoUrl(createCourseDto.getPreviewVideoUrl());
+        existingCourse.setEstimatedDrationInHours(createCourseDto.getEstimatedDurationInHours());
+        existingCourse.setStatus(createCourseDto.getStatus());
+        existingCourse.setDifficultyLevel(createCourseDto.getDifficultyLevel());
+        existingCourse.setActive(createCourseDto.isActive());
+    }
+
+
+
+    // ====== HELPER METHODS ======
+
+    /**
+     * Helper method to map CourseModules to CourseModuleDtos
+     */
+    private static List<CourseModuleDto> fromCourseModulesToCourseModuleDtos(Set<CourseModules> courseModules) {
+        if (courseModules == null || courseModules.isEmpty()) {
+            return Collections.emptyList();
+        }
+
+        return courseModules.stream()
+                .map(CourseMapper::fromCourseModuleToCourseModuleDto)
+                .filter(Objects::nonNull)
+                .collect(Collectors.toList());
+    }
+
+    /**
+     * Helper method to map single CourseModules to CourseModuleDto
+     */
+    private static CourseModuleDto fromCourseModuleToCourseModuleDto(CourseModules courseModule) {
+        if (courseModule == null || courseModule.getModule() == null) {
+            return null;
+        }
+
+        CourseModuleDto courseModuleDto = new CourseModuleDto();
+        courseModuleDto.setModuleOrder(courseModule.getModuleOrder());
+        courseModuleDto.setModule(ModuleMapper.fromModuletoModuleSummaryDto(courseModule.getModule()));
+
+        return courseModuleDto;
+    }
+}
