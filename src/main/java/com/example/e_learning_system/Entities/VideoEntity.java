@@ -67,6 +67,22 @@ public class VideoEntity extends BaseEntity {
 
 
 
+    public void addVideoAttachments(VideoAttachments videoAttachments) {
+        this.videoAttachments.add(videoAttachments);
+    }
+    public void removeVideoAttachments(VideoAttachments videoAttachments) {
+        this.videoAttachments.remove(videoAttachments);
+    }
+    public void removeVideoAttachmentByids(int videoId , int attachmentid){
+        for (VideoAttachments videoAttachment : this.videoAttachments) {
+            if (videoAttachment.getAttachment().getId() == videoId && videoAttachment.getAttachment().getId() == attachmentid) {
+                this.videoAttachments.remove(videoAttachment);
+                return;
+            }
+        }
+    }
+
+
 
 
 }
