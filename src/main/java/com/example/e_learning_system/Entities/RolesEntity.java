@@ -34,4 +34,4 @@ public class RolesEntity extends BaseEntity {
         return "RolesEntity";
     }
 }
-}
+
