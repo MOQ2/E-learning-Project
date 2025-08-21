@@ -7,6 +7,7 @@ import com.example.e_learning_system.Config.DifficultyLevel;
 import com.vladmihalcea.hibernate.type.basic.PostgreSQLEnumType;
 import jakarta.persistence.*;
 import lombok.*;
+import lombok.experimental.SuperBuilder;
 import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.annotations.Type;
 import org.hibernate.type.SqlTypes;
@@ -22,7 +23,7 @@ import java.util.stream.Collectors;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-@Builder
+@SuperBuilder
 public class Course extends BaseEntity {
 
 
@@ -56,11 +57,7 @@ public class Course extends BaseEntity {
     @JdbcTypeCode(SqlTypes.NAMED_ENUM)
     CourseStatus status= CourseStatus.DRAFT;
 
-    @Column(name = "access_model" ,columnDefinition = "access_model")
-    @Enumerated(EnumType.STRING)
-    @JdbcTypeCode(SqlTypes.NAMED_ENUM)
 
-    AccessModel accessModel ;
 
     @Column(name = "difficulty_level")
     @Enumerated(EnumType.STRING)
@@ -78,12 +75,38 @@ public class Course extends BaseEntity {
     @OneToMany(mappedBy = "course", fetch = FetchType.LAZY, cascade = CascadeType.ALL , orphanRemoval = true)
     private Set<CourseModules> courseModules;
 
-
-
     @Transient
     public Set <Module> getModules (){
         if(this.courseModules == null)
             return new HashSet<>();
         return  this.courseModules.stream().map(CourseModules::getModule).collect(Collectors.toSet());
+    }
+
+
+    public void addCourseModules(CourseModules courseModule){
+
+        if(courseModule == null)
+            return;
+
+        if (this.courseModules == null)
+            this.courseModules = new HashSet<>();
+
+        this.courseModules.add(courseModule);
+    }
+
+    public void removeCourseModules(CourseModules courseModule){
+        if(courseModule == null)
+            return;
+        if (this.courseModules == null)
+            return;
+        this.courseModules.remove(courseModule);
+    }
+
+    public boolean isUniqOrder (int order){
+        for(CourseModules module : this.courseModules){
+            if(module.getModuleOrder() == order)
+                return false;
+        }
+        return true;
     }
 }
