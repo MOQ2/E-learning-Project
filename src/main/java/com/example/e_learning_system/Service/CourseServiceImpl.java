@@ -103,19 +103,19 @@ public class CourseServiceImpl implements CourseService {
         // Validate business rules
         validateCourseRequest(request);
 
-        Course course = Course.builder()
-                .name(request.getName())
-                .description(request.getDescription())
-                .oneTimePrice(request.getOneTimePrice())
-                .currency(request.getCurrency())
-                .thumbnail(request.getThumbnail())
-                .previewVideoUrl(request.getPreviewVideoUrl())
-                .estimatedDrationInHours(request.getEstimatedDurationInHours())
-                .isActive(request.isActive())
-                .status(request.getStatus())
-                .difficultyLevel(request.getDifficultyLevel())
-                .createdBy(creator)
-                .build();
+        Course course = new Course();
+        course.setName(request.getName());
+        course.setDescription(request.getDescription());
+        course.setOneTimePrice(request.getOneTimePrice());
+        course.setCurrency(request.getCurrency());
+        course.setThumbnail(request.getThumbnail());
+        course.setPreviewVideoUrl(request.getPreviewVideoUrl());
+        course.setEstimatedDrationInHours(request.getEstimatedDurationInHours());
+        course.setActive(request.isActive());
+        course.setStatus(request.getStatus());
+        course.setDifficultyLevel(request.getDifficultyLevel());
+        course.setCreatedBy(creator);
+        // Note: isFree is excluded as it's a calculated field (insertable = false, updatable = false)
 
         Course savedCourse = courseRepository.save(course);
 

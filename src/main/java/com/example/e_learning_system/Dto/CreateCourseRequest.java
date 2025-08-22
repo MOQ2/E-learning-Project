@@ -37,7 +37,6 @@ public class CreateCourseRequest {
     private Integer estimatedDurationInHours;
 
     private Boolean isActive = true;
-    private Boolean isFree = false;
     private CourseStatus status = CourseStatus.DRAFT;
     private AccessModel accessModel;
     private DifficultyLevel difficultyLevel;
