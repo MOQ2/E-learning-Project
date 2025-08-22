@@ -3,6 +3,7 @@ package com.example.e_learning_system.Entities;
 
 import com.example.e_learning_system.Config.AccessModel;
 import com.example.e_learning_system.Config.CourseStatus;
+import com.example.e_learning_system.Config.Currency;
 import com.example.e_learning_system.Config.DifficultyLevel;
 import com.vladmihalcea.hibernate.type.basic.PostgreSQLEnumType;
 import jakarta.persistence.*;
@@ -39,8 +40,10 @@ public class Course extends BaseEntity {
     String description;
     @Column(name = "one_time_price")
     BigDecimal oneTimePrice;
-    @Column(name = "currency")
-    String currency ;
+    @Column(name = "currency", columnDefinition = "currency_type")
+    @Enumerated(EnumType.STRING)
+    @JdbcTypeCode(SqlTypes.NAMED_ENUM)
+    Currency currency;
     @Column(name = "thumbnail_url")
     String thumbnail;
     @Column(name = "preview_video_url")

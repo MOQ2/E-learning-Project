@@ -1,13 +1,13 @@
 package com.example.e_learning_system.Dto.CourseDtos;
 
 import com.example.e_learning_system.Config.CourseStatus;
+import com.example.e_learning_system.Config.Currency;
 import com.example.e_learning_system.Config.DifficultyLevel;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
 import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
-import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.experimental.SuperBuilder;
@@ -32,9 +32,8 @@ public class CreateCourseDto {
     @Positive(message = "Price must be greater than zero")
     private BigDecimal oneTimePrice;
 
-    @NotBlank(message = "Currency is required")
-    @Size(min = 3, max = 3, message = "Currency must be a 3-letter ISO code")
-    private String currency;
+    @NotNull(message = "Currency is required")
+    private Currency currency;
 
     @NotBlank(message = "Thumbnail URL is required")
     private String thumbnail;

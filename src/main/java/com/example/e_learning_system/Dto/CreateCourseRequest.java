@@ -2,6 +2,7 @@ package com.example.e_learning_system.Dto;
 
 import com.example.e_learning_system.Config.AccessModel;
 import com.example.e_learning_system.Config.CourseStatus;
+import com.example.e_learning_system.Config.Currency;
 import com.example.e_learning_system.Config.DifficultyLevel;
 import jakarta.validation.constraints.*;
 import lombok.AllArgsConstructor;
@@ -26,8 +27,7 @@ public class CreateCourseRequest {
     @DecimalMin(value = "0.0", inclusive = true, message = "Price must be positive")
     private BigDecimal oneTimePrice;
 
-    @Size(max = 3, message = "Currency code must not exceed 3 characters")
-    private String currency;
+    private Currency currency;
 
     private String thumbnail;
     private String previewVideoUrl;

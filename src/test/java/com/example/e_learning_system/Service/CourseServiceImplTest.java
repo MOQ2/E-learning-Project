@@ -1,6 +1,7 @@
 package com.example.e_learning_system.Service;
 
 import com.example.e_learning_system.Config.CourseStatus;
+import com.example.e_learning_system.Config.Currency;
 import com.example.e_learning_system.Config.DifficultyLevel;
 import com.example.e_learning_system.Dto.CourseDtos.*;
 import com.example.e_learning_system.Entities.Course;
@@ -77,7 +78,7 @@ class CourseServiceImplTest {
         createCourseDto.setOneTimePrice(BigDecimal.valueOf(99.99));
         createCourseDto.setDifficultyLevel(DifficultyLevel.BEGINNER);
         createCourseDto.setStatus(CourseStatus.DRAFT);
-        createCourseDto.setCurrency("USD");
+        createCourseDto.setCurrency(Currency.USD);
         createCourseDto.setThumbnail("http://example.com/thumb.jpg");
         createCourseDto.setPreviewVideoUrl("http://example.com/preview.mp4");
         createCourseDto.setEstimatedDurationInHours(10);

@@ -4,6 +4,7 @@ package com.example.e_learning_system.Dto.CourseDtos;
 
 import com.example.e_learning_system.Config.AccessModel;
 import com.example.e_learning_system.Config.CourseStatus;
+import com.example.e_learning_system.Config.Currency;
 import com.example.e_learning_system.Config.DifficultyLevel;
 import lombok.*;
 
@@ -25,7 +26,7 @@ public class CourseFilterDto {
     private BigDecimal maxPrice;
 
     // Currency filter
-    private String currency;
+    private Currency currency;
 
 
 

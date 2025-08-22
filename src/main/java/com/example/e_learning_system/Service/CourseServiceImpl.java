@@ -264,7 +264,7 @@ public class CourseServiceImpl implements CourseService {
         }
 
         // Currency filter
-        if (filterDto.getCurrency() != null && !filterDto.getCurrency().trim().isEmpty()) {
+        if (filterDto.getCurrency() != null) {
             predicates.add(cb.equal(root.get("currency"), filterDto.getCurrency()));
         }
 
@@ -314,7 +314,7 @@ public class CourseServiceImpl implements CourseService {
 
         // Validate currency for paid courses
         if (request.getOneTimePrice() != null && request.getOneTimePrice().compareTo(BigDecimal.ZERO) > 0) {
-            if (request.getCurrency() == null || request.getCurrency().trim().isEmpty()) {
+            if (request.getCurrency() == null) {
                 throw new IllegalArgumentException("Currency is required for paid courses");
             }
         }
@@ -338,7 +338,7 @@ public class CourseServiceImpl implements CourseService {
 
         // Validate currency for paid courses
         if (updateCourseDto.getOneTimePrice() != null && updateCourseDto.getOneTimePrice().compareTo(BigDecimal.ZERO) > 0) {
-            if (updateCourseDto.getCurrency() == null || updateCourseDto.getCurrency().trim().isEmpty()) {
+            if (updateCourseDto.getCurrency() == null) {
                 throw new IllegalArgumentException("Currency is required for paid courses");
             }
         }

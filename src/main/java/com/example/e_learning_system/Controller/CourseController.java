@@ -1,6 +1,7 @@
 package com.example.e_learning_system.Controller;
 
 import com.example.e_learning_system.Config.CourseStatus;
+import com.example.e_learning_system.Config.Currency;
 import com.example.e_learning_system.Config.DifficultyLevel;
 import com.example.e_learning_system.Dto.ApiResponse;
 import com.example.e_learning_system.Dto.CourseDtos.CourseDetailsDto;
@@ -50,7 +51,7 @@ public class CourseController {
             @RequestParam(required = false) String description,
             @RequestParam(required = false) BigDecimal minPrice,
             @RequestParam(required = false) BigDecimal maxPrice,
-            @RequestParam(required = false) String currency,
+            @RequestParam(required = false) Currency currency,
             @RequestParam(required = false) Integer minDurationHours,
             @RequestParam(required = false) Integer maxDurationHours,
             @RequestParam(required = false) Boolean isActive,

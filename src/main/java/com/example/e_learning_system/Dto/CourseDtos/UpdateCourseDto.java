@@ -2,6 +2,7 @@ package com.example.e_learning_system.Dto.CourseDtos;
 
 
 import com.example.e_learning_system.Config.CourseStatus;
+import com.example.e_learning_system.Config.Currency;
 import com.example.e_learning_system.Config.DifficultyLevel;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
@@ -30,8 +31,7 @@ public class UpdateCourseDto{
     @Positive(message = "Price must be greater than zero")
     private BigDecimal oneTimePrice;
 
-    @Size(min = 3, max = 3, message = "Currency must be a 3-letter ISO code")
-    private String currency;
+    private Currency currency;
 
     private String thumbnail;
 
