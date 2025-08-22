@@ -27,6 +27,7 @@ public class CreateCourseRequest {
     @DecimalMin(value = "0.0", inclusive = true, message = "Price must be positive")
     private BigDecimal oneTimePrice;
 
+    @NotNull(message = "Currency is required")
     private Currency currency;
 
     private String thumbnail;
