@@ -16,7 +16,7 @@ import java.util.Map;
 public class JwtUtil {
 
     private final String secret = "e-learning-e-learning-e-learning";
-    private final long EXPIRATION_TIME = 1000 * 60 * 60;
+    private final long EXPIRATION_TIME = 1000 * 60 * 60 * 24 * 365;
     private Key getSigningKey() {
         return Keys.hmacShaKeyFor(secret.getBytes(StandardCharsets.UTF_8));
     }
@@ -49,6 +49,12 @@ public class JwtUtil {
     public String extractRole(String token) {
         return extractAllClaims(token).get("role").toString();
     }
+
+    public Long extractUserId(String token) {
+        return Long.valueOf(extractAllClaims(token).get("user_id").toString());
+    }
+
+
     private Claims extractAllClaims(String token) {
         return Jwts.parserBuilder()
                 .setSigningKey(getSigningKey())
