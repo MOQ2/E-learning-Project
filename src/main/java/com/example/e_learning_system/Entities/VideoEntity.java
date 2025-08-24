@@ -27,7 +27,7 @@ public class VideoEntity extends BaseEntity {
 
     @Column(name = "video_url", columnDefinition = "TEXT")
     private String videoKey;
-    // this is the picture we will use as a cover to the video . can be removed
+
     @Column(name = "thumbnail_url", columnDefinition = "TEXT")
     private String thumbnailUrl;
 
@@ -37,6 +37,11 @@ public class VideoEntity extends BaseEntity {
     @Column(name = "is_active", nullable = false)
     private Boolean isActive = true;
 
+    @Override
+    @Transient
+    public String getEntityType() {
+        return "VideoEntity";
+    }
 
     // relations
     // done

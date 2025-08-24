@@ -19,8 +19,18 @@ public class RolesEntity extends BaseEntity {
     @Column(name = "name", length = 100, nullable = false, unique = true)
     private RolesName name;
 
+    @Column(name = "description")
+    private String description;
+
     @OneToMany(mappedBy = "role", fetch = FetchType.EAGER, cascade = CascadeType.ALL)
     private Set<RolesPermissionsEntity> rolePermissions;
 
 
+    private Set<PermissionsEntity> permissions;
+
+    @Override
+    @Transient
+    public String getEntityType() {
+        return "RolesEntity";
+    }
 }

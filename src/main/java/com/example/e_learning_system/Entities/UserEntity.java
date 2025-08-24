@@ -5,6 +5,9 @@ import lombok.*;
 import java.util.HashSet;
 import java.util.Set;
 
+
+import java.time.LocalDateTime;
+
 @Setter
 @Getter
 @ToString
@@ -35,6 +38,21 @@ public class UserEntity extends BaseEntity {
     private Boolean isActive;
 
 
+    //new feilds in join
+    @Column(name = "email_verified", nullable = false)
+    private Boolean emailVerified = false;
+
+    @Column(name = "last_login_at")
+    private LocalDateTime lastLoginAt;
+
+    @Column(name = "bio", columnDefinition = "TEXT")
+    private String bio;
+
+    @Column(name = "profile_picture_url", columnDefinition = "TEXT")
+    private String profilePictureUrl;
+
+    // end of new feild in join
+
     // relations section
     @OneToMany(mappedBy = "uploadedBy",fetch = FetchType.LAZY , orphanRemoval = true , cascade = CascadeType.ALL)
     Set<VideoEntity> videoEntities = new HashSet<>();
@@ -47,4 +65,13 @@ public class UserEntity extends BaseEntity {
 
     @OneToMany(mappedBy = "uploadedBy",fetch = FetchType.LAZY , orphanRemoval = true , cascade = CascadeType.ALL)
     Set<Attachment> attachments = new HashSet<>();
+
+
+
+
+    @Override
+    @Transient
+    public String getEntityType() {
+        return "UserEntity";
+    }
 }

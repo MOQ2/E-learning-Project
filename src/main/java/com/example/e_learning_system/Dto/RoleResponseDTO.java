@@ -27,12 +27,13 @@ public class RoleResponseDTO {
         if(role != null) {
             this.id = role.getId();
             this.role=role.getName().name();
-            this.description = "null";
+            this.description = role.getDescription();
 
             this.rolePermissions = setPermissions(role.getRolePermissions());
         }
 
     }
+
 
 
     private Set<PermissionsResponsDTO> setPermissions(Set<RolesPermissionsEntity> rolePermissions) {
