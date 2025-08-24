@@ -1,4 +1,4 @@
-package com.example.e_learning_system.Interfaces;
+package com.example.e_learning_system.Service.Interfaces;
 
 import com.example.e_learning_system.Dto.ModuleDtos.CreateModuleDto;
 import com.example.e_learning_system.Dto.ModuleDtos.DetailedModuleDto;
