@@ -28,7 +28,6 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -100,9 +99,6 @@ public class CourseServiceImpl implements CourseService {
         UserEntity creator = userRepository.findById(createdById)
                 .orElseThrow(() -> ResourceNotFound.userNotFound(createdById.toString()));
 
-        // Validate business rules
-        validateCourseRequest(request);
-
         Course course = new Course();
         course.setName(request.getName());
         course.setDescription(request.getDescription());
@@ -140,9 +136,6 @@ public class CourseServiceImpl implements CourseService {
 
         Course existingCourse = courseRepository.findById(courseId)
                 .orElseThrow(() -> ResourceNotFound.courseNotFound(courseId+""));
-
-        // Validate business rules
-        validateUpdateCourseRequest(updateCourseDto);
 
         // Check if published course can be updated
         if (existingCourse.getStatus() == CourseStatus.PUBLISHED && !canUpdatePublishedCourse(existingCourse)) {
@@ -304,85 +297,6 @@ public class CourseServiceImpl implements CourseService {
         }
 
         return predicates;
-    }
-
-    private void validateCourseRequest(CreateCourseDto request) {
-        // Validate pricing logic
-        if (request.getOneTimePrice() != null && request.getOneTimePrice().compareTo(BigDecimal.ZERO) < 0) {
-            throw new IllegalArgumentException("Course price cannot be negative");
-        }
-
-        // Validate currency for paid courses
-        if (request.getOneTimePrice() != null && request.getOneTimePrice().compareTo(BigDecimal.ZERO) > 0) {
-            if (request.getCurrency() == null) {
-                throw new IllegalArgumentException("Currency is required for paid courses");
-            }
-        }
-
-        // Validate estimated duration
-        if ( request.getEstimatedDurationInHours() <= 0) {
-            throw new IllegalArgumentException("Estimated duration must be positive");
-        }
-
-        // Validate required fields
-        if (request.getName() == null || request.getName().trim().isEmpty()) {
-            throw new IllegalArgumentException("Course name is required");
-        }
-    }
-
-    private void validateUpdateCourseRequest(UpdateCourseDto updateCourseDto) {
-        // Validate pricing logic
-        if (updateCourseDto.getOneTimePrice() != null && updateCourseDto.getOneTimePrice().compareTo(BigDecimal.ZERO) < 0) {
-            throw new IllegalArgumentException("Course price cannot be negative");
-        }
-
-        // Validate currency for paid courses
-        if (updateCourseDto.getOneTimePrice() != null && updateCourseDto.getOneTimePrice().compareTo(BigDecimal.ZERO) > 0) {
-            if (updateCourseDto.getCurrency() == null) {
-                throw new IllegalArgumentException("Currency is required for paid courses");
-            }
-        }
-
-        // Validate estimated duration
-        if (updateCourseDto.getEstimatedDurationInHours() <= 0) {
-            throw new IllegalArgumentException("Estimated duration must be positive");
-        }
-
-        // Validate required fields
-        if (updateCourseDto.getName() == null || updateCourseDto.getName().trim().isEmpty()) {
-            throw new IllegalArgumentException("Course name is required");
-        }
-    }
-
-    private void validateCourseForPublishing(Course course) {
-        List<String> validationErrors = new ArrayList<>();
-
-        // Check required fields for publishing
-        if (course.getName() == null || course.getName().trim().isEmpty()) {
-            validationErrors.add("Course name is required for publishing");
-        }
-
-        if (course.getDescription() == null || course.getDescription().trim().isEmpty()) {
-            validationErrors.add("Course description is required for publishing");
-        }
-
-        if (course.getDifficultyLevel() == null) {
-            validationErrors.add("Difficulty level is required for publishing");
-        }
-
-        // Check if course has modules
-        if (course.getCourseModules() == null || course.getCourseModules().isEmpty()) {
-            validationErrors.add("Course must have at least one module to be published");
-        }
-
-        // Additional business rules for publishing
-        if (course.getStatus() == CourseStatus.ARCHIVED) {
-            validationErrors.add("Cannot publish an archived course");
-        }
-
-        if (!validationErrors.isEmpty()) {
-            throw new RuntimeException("Course validation failed: " + String.join(", ", validationErrors));
-        }
     }
 
     // TODO: Implement proper business logic

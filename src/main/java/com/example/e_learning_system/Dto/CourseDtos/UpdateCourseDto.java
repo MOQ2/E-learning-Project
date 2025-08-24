@@ -4,12 +4,8 @@ package com.example.e_learning_system.Dto.CourseDtos;
 import com.example.e_learning_system.Config.CourseStatus;
 import com.example.e_learning_system.Config.Currency;
 import com.example.e_learning_system.Config.DifficultyLevel;
-import jakarta.validation.constraints.NotEmpty;
-import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Positive;
-import jakarta.validation.constraints.Size;
+import jakarta.validation.constraints.*;
 import lombok.AllArgsConstructor;
-import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.experimental.SuperBuilder;
@@ -28,7 +24,7 @@ public class UpdateCourseDto{
     @Size(max = 1000, message = "Description cannot exceed 1000 characters")
     private String description;
 
-    @Positive(message = "Price must be greater than zero")
+    @DecimalMin(value = "0.0", inclusive = false, message = "Price must be greater than zero")
     private BigDecimal oneTimePrice;
 
     private Currency currency;
@@ -37,7 +33,7 @@ public class UpdateCourseDto{
 
     private String previewVideoUrl;
 
-    @Positive(message = "Estimated duration must be positive")
+    @Min(value = 1, message = "Estimated duration must be positive")
     private Integer estimatedDurationInHours; // use Integer to allow null
 
     private CourseStatus status;

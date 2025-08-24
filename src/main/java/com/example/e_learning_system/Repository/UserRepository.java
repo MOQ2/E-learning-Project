@@ -15,10 +15,10 @@ import java.util.Optional;
 
 
 @Repository
-public interface UserRepository extends JpaRepository<UserEntity, Long> {
+public interface UserRepository extends JpaRepository<UserEntity, Integer> {
 
     public Optional<UserEntity> findByEmail(String email);
-    public Optional<UserEntity> findById(long id);
+    public Optional<UserEntity> findById(Integer id);
 
 
     public Page<UserEntity> findAll(Pageable pageable);
