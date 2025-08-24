@@ -18,4 +18,6 @@ public class RegisterRequestDTO {
 
     @NotBlank(message = "Password is required")
     private String password;
+
+    private String bio;
 }
