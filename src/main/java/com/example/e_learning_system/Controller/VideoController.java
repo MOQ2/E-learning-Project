@@ -12,6 +12,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.stream.Stream;
 
 @RestController
 @RequestMapping("/api/videos")
@@ -65,7 +66,7 @@ public class VideoController {
             if (tags != null && !tags.trim().isEmpty()) {
                 // Split tags by comma and clean them
                 String[] tagArray = tags.split(",");
-                List<String> cleanTags = List.of(tagArray).stream()
+                List<String> cleanTags = Stream.of(tagArray)
                         .map(String::trim)
                         .filter(tag -> !tag.isEmpty())
                         .toList();
@@ -241,6 +242,4 @@ public class VideoController {
                     .body(Map.of("error", "Failed to delete video: " + e.getMessage()));
         }
     }
-
-
 }

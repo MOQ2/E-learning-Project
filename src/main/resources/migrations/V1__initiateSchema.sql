@@ -39,7 +39,7 @@ INSERT INTO permissions (name, description) VALUES
 CREATE TABLE role_permissions (
                                   id SERIAL PRIMARY KEY,
                                   role_id INTEGER NOT NULL,
-                                   permission_id INTEGER NOT NULL,
+                                  permission_id INTEGER NOT NULL,
                                   created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
                                   updated_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
 
@@ -112,29 +112,29 @@ INSERT INTO subscription_plans (name, description, price, billing_cycle, max_cou
 -- 4. COURSES SYSTEM
 -- ================================
 
-CREATE TYPE course_status AS ENUM ('draft', 'published', 'archived');
-CREATE TYPE access_model AS ENUM ('free', 'one_time', 'subscription');
+CREATE TYPE course_status AS ENUM ('DRAFT', 'PUBLISHED', 'ARCHIVED');
+CREATE TYPE access_model AS ENUM ('FREE', 'ONE_TIME', 'SUBSCRIPTION');
 
 CREATE TABLE courses (
                          id SERIAL PRIMARY KEY,
                          name VARCHAR(250) NOT NULL,
                          description TEXT,
-                         status course_status DEFAULT 'draft',
-                         access_model access_model DEFAULT 'subscription',
+                         status course_status DEFAULT 'DRAFT',
+                         access_model access_model DEFAULT 'SUBSCRIPTION',
                          one_time_price DECIMAL(10, 2) DEFAULT 0.00,
                          currency VARCHAR(3) DEFAULT 'USD',
                          required_plan_level INTEGER DEFAULT 1,
                          thumbnail_url TEXT,
                          preview_video_url TEXT,
                          estimated_duration_hours INTEGER,
-                         difficulty_level VARCHAR(20) CHECK (difficulty_level IN ('beginner', 'intermediate', 'advanced')),
+                         difficulty_level VARCHAR(20) CHECK (difficulty_level IN ('BIGINNER', 'INTERMEDIATE', 'ADVANCED')),
                          created_by INTEGER NOT NULL,
                          is_active BOOLEAN DEFAULT TRUE,
                          created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
                          updated_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
 
     -- Generated column for free courses
-                         is_free BOOLEAN GENERATED ALWAYS AS (access_model = 'free' OR one_time_price = 0.00) STORED,
+                         is_free BOOLEAN GENERATED ALWAYS AS (access_model = 'FREE' OR one_time_price = 0.00) STORED,
 
                          CONSTRAINT fk_courses_creator
                              FOREIGN KEY (created_by) REFERENCES users(id) ON DELETE RESTRICT
@@ -144,7 +144,7 @@ CREATE TABLE courses (
 -- 5. SUBSCRIPTIONS SYSTEM
 -- ================================
 
-CREATE TYPE subscription_status AS ENUM ('active', 'cancelled', 'expired', 'suspended', 'pending');
+CREATE TYPE subscription_status AS ENUM ('ACTIVE', 'CANCELLED', 'EXPIRED', 'SUSPENDED', 'PENDING');
 
 CREATE TABLE subscriptions (
                                id SERIAL PRIMARY KEY,
@@ -152,7 +152,7 @@ CREATE TABLE subscriptions (
                                plan_id INTEGER NOT NULL,
 
     -- Subscription Status
-                               status subscription_status DEFAULT 'pending',
+                               status subscription_status DEFAULT 'PENDING',
 
     -- Billing Cycle Info
                                current_period_start TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
@@ -184,8 +184,8 @@ CREATE TABLE subscriptions (
 -- 6. PAYMENTS SYSTEM
 -- ================================
 
-CREATE TYPE payment_status AS ENUM ('pending', 'completed', 'failed', 'cancelled', 'refunded');
-CREATE TYPE payment_type AS ENUM ('subscription', 'course_purchase', 'refund');
+CREATE TYPE payment_status AS ENUM ('PENDING', 'COMPLETED', 'failed', 'CANCELLED', 'REFUNDED');
+CREATE TYPE payment_type AS ENUM ('SUBSCRIPTION', 'COURSE_PURCHASE', 'REFUND');
 
 CREATE TABLE payments (
                           id SERIAL PRIMARY KEY,
@@ -199,7 +199,7 @@ CREATE TABLE payments (
                           payment_type payment_type NOT NULL,
 
     -- Payment Status
-                          status payment_status DEFAULT 'pending',
+                          status payment_status DEFAULT 'PENDING',
 
     -- Payment Method & Processor
                           payment_method VARCHAR(50) NOT NULL,
@@ -227,9 +227,9 @@ CREATE TABLE payments (
 
     -- Business Logic Constraints
                           CONSTRAINT chk_payment_refs CHECK (
-                              (payment_type = 'subscription' AND subscription_id IS NOT NULL) OR
-                              (payment_type = 'course_purchase' AND course_id IS NOT NULL) OR
-                              (payment_type = 'refund')
+                              (payment_type = 'SUBSCRIPTION' AND subscription_id IS NOT NULL) OR
+                              (payment_type = 'COURSE_PURCHASE' AND course_id IS NOT NULL) OR
+                              (payment_type = 'REFUND')
                               )
 );
 
@@ -237,8 +237,8 @@ CREATE TABLE payments (
 -- 7. COURSE ENROLLMENTS
 -- ================================
 
-CREATE TYPE enrollment_status AS ENUM ('enrolled', 'in_progress', 'completed', 'dropped', 'suspended');
-CREATE TYPE enrollment_access_type AS ENUM ('free', 'subscription', 'one_time_purchase', 'admin_granted');
+CREATE TYPE enrollment_status AS ENUM ('ENROLLED', 'IN_PROGRESS', 'COMPLETED', 'DROPPED', 'SUSPENDED');
+CREATE TYPE enrollment_access_type AS ENUM ('FREE', 'SUBSCRIPTION', 'ONE_TIME_PURCHASE', 'ADMIN_GRANTED');
 
 CREATE TABLE course_enrolments (
                                    id SERIAL PRIMARY KEY,
@@ -251,7 +251,7 @@ CREATE TABLE course_enrolments (
                                    access_type enrollment_access_type NOT NULL,
 
     -- Enrollment Status
-                                   status enrollment_status DEFAULT 'enrolled',
+                                   status enrollment_status DEFAULT 'ENROLLED',
 
     -- Progress Tracking
                                    enrollment_date TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
@@ -282,9 +282,9 @@ CREATE TABLE course_enrolments (
                                    CONSTRAINT unique_user_course_enrollment
                                        UNIQUE(user_id, course_id),
                                    CONSTRAINT chk_access_method CHECK (
-                                       (access_type = 'subscription' AND subscription_id IS NOT NULL) OR
-                                       (access_type = 'one_time_purchase' AND payment_id IS NOT NULL) OR
-                                       (access_type IN ('free', 'admin_granted'))
+                                       (access_type = 'SUBSCRIPTION' AND subscription_id IS NOT NULL) OR
+                                       (access_type = 'ONE_TIME_PURCHASE' AND payment_id IS NOT NULL) OR
+                                       (access_type IN ('FREE', 'ADMIN_GRANTED'))
                                        )
 );
 
@@ -341,7 +341,7 @@ CREATE TABLE modules (
                          id SERIAL PRIMARY KEY,
                          name VARCHAR(250) NOT NULL,
                          description TEXT,
-                         status course_status DEFAULT 'draft',
+                         status course_status DEFAULT 'DRAFT',
                          estimated_duration_minutes INTEGER,
                          created_by INTEGER NOT NULL,
                          is_active BOOLEAN DEFAULT TRUE,
@@ -393,9 +393,7 @@ CREATE TABLE attachments (
                              id SERIAL PRIMARY KEY,
                              title VARCHAR(250),
                              metadata JSONB NOT NULL,
-                             file_url TEXT,
-                             file_size_bytes BIGINT,
-                             file_type VARCHAR(100),
+                             data BYTEA,
                              uploaded_by INTEGER NOT NULL,
                              is_active BOOLEAN DEFAULT TRUE,
                              created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
@@ -638,8 +636,6 @@ CREATE INDEX idx_videos_duration ON videos(duration_seconds) WHERE is_active = t
 CREATE INDEX idx_videos_uploader ON videos(uploaded_by) WHERE is_active = true;
 CREATE INDEX idx_videos_metadata ON videos USING gin(metadata);
 CREATE INDEX idx_attachments_active ON attachments(is_active, created_at);
-CREATE INDEX idx_attachments_type ON attachments(file_type) WHERE is_active = true;
-CREATE INDEX idx_attachments_size ON attachments(file_size_bytes) WHERE is_active = true;
 CREATE INDEX idx_attachments_uploader ON attachments(uploaded_by) WHERE is_active = true;
 
 -- Module Videos Indexes

@@ -12,7 +12,7 @@ import lombok.NoArgsConstructor;
 public class RoleUpdateDTO {
     private int id;
     private String role;
-    //private String description;
+
 
 
 }

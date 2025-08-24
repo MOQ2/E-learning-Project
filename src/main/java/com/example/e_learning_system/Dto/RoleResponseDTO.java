@@ -29,19 +29,20 @@ public class RoleResponseDTO {
             this.role=role.getName().name();
             this.description = role.getDescription();
 
-            this.rolePermissions = setPermissions(role.getPermissions());
+            this.rolePermissions = setPermissions(role.getRolePermissions());
         }
 
     }
 
 
-    private Set<PermissionsResponsDTO> setPermissions(Set<PermissionsEntity> permissions) {
-        return permissions == null ? new HashSet<>() :
-                permissions.stream()
+
+    private Set<PermissionsResponsDTO> setPermissions(Set<RolesPermissionsEntity> rolePermissions) {
+        return rolePermissions == null ? new HashSet<>() :
+                rolePermissions.stream()
+                        .map(RolesPermissionsEntity::getPermission)
                         .map(PermissionsResponsDTO::new)
                         .collect(Collectors.toSet());
     }
-
 
 
 }
