@@ -113,14 +113,12 @@ INSERT INTO subscription_plans (name, description, price, billing_cycle, max_cou
 -- ================================
 
 CREATE TYPE course_status AS ENUM ('DRAFT', 'PUBLISHED', 'ARCHIVED');
-CREATE TYPE access_model AS ENUM ('FREE', 'ONE_TIME', 'SUBSCRIPTION');
 
 CREATE TABLE courses (
                          id SERIAL PRIMARY KEY,
                          name VARCHAR(250) NOT NULL,
                          description TEXT,
                          status course_status DEFAULT 'DRAFT',
-                         access_model access_model DEFAULT 'SUBSCRIPTION',
                          one_time_price DECIMAL(10, 2) DEFAULT 0.00,
                          currency VARCHAR(3) DEFAULT 'USD',
                          required_plan_level INTEGER DEFAULT 1,
@@ -134,7 +132,7 @@ CREATE TABLE courses (
                          updated_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
 
     -- Generated column for free courses
-                         is_free BOOLEAN GENERATED ALWAYS AS (access_model = 'FREE' OR one_time_price = 0.00) STORED,
+                         is_free BOOLEAN GENERATED ALWAYS AS ( one_time_price = 0.00) STORED,
 
                          CONSTRAINT fk_courses_creator
                              FOREIGN KEY (created_by) REFERENCES users(id) ON DELETE RESTRICT
@@ -184,7 +182,7 @@ CREATE TABLE subscriptions (
 -- 6. PAYMENTS SYSTEM
 -- ================================
 
-CREATE TYPE payment_status AS ENUM ('PENDING', 'COMPLETED', 'failed', 'CANCELLED', 'REFUNDED');
+CREATE TYPE payment_status AS ENUM ('PENDING', 'COMPLETED', 'FAILED', 'CANCELLED', 'REFUNDED');
 CREATE TYPE payment_type AS ENUM ('SUBSCRIPTION', 'COURSE_PURCHASE', 'REFUND');
 
 CREATE TABLE payments (
@@ -576,8 +574,6 @@ CREATE INDEX idx_subscription_plans_billing_cycle ON subscription_plans(billing_
 
 -- Courses Indexes
 CREATE INDEX idx_courses_status_active ON courses(status) WHERE is_active = true;
-CREATE INDEX idx_courses_access_model ON courses(access_model) WHERE is_active = true;
-CREATE INDEX idx_courses_price ON courses(one_time_price) WHERE is_active = true AND access_model = 'one_time';
 CREATE INDEX idx_courses_free ON courses(is_free) WHERE is_active = true;
 CREATE INDEX idx_courses_difficulty ON courses(difficulty_level) WHERE is_active = true;
 CREATE INDEX idx_courses_created_at ON courses(created_at);
@@ -588,8 +584,8 @@ CREATE INDEX idx_courses_description_search ON courses USING gin(to_tsvector('en
 -- Subscriptions Indexes
 CREATE INDEX idx_subscriptions_user_active ON subscriptions(user_id, status) WHERE is_active = true;
 CREATE INDEX idx_subscriptions_status_active ON subscriptions(status) WHERE is_active = true;
-CREATE INDEX idx_subscriptions_period_end ON subscriptions(current_period_end) WHERE status = 'active';
-CREATE INDEX idx_subscriptions_auto_renew ON subscriptions(auto_renew, next_billing_date) WHERE status = 'active';
+CREATE INDEX idx_subscriptions_period_end ON subscriptions(current_period_end) WHERE status = 'ACTIVE';
+CREATE INDEX idx_subscriptions_auto_renew ON subscriptions(auto_renew, next_billing_date) WHERE status = 'ACTIVE';
 CREATE INDEX idx_subscriptions_stripe ON subscriptions(stripe_subscription_id) WHERE stripe_subscription_id IS NOT NULL;
 CREATE INDEX idx_subscriptions_trial_end ON subscriptions(trial_end) WHERE trial_end IS NOT NULL;
 
