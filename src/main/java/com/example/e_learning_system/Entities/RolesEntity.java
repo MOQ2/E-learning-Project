@@ -3,14 +3,12 @@ package com.example.e_learning_system.Entities;
 import com.example.e_learning_system.Config.RolesName;
 import jakarta.persistence.*;
 import lombok.*;
-
 import java.util.Set;
 
 @Entity
 @Table(name = "roles")
 @Getter
 @Setter
-@ToString
 @NoArgsConstructor
 @AllArgsConstructor
 public class RolesEntity extends BaseEntity {
@@ -22,10 +20,12 @@ public class RolesEntity extends BaseEntity {
     @Column(name = "description")
     private String description;
 
-    @OneToMany(mappedBy = "role", fetch = FetchType.EAGER, cascade = CascadeType.ALL)
-    private Set<RolesPermissionsEntity> rolePermissions;
-
-
+    @ManyToMany(fetch = FetchType.EAGER)
+    @JoinTable(
+            name = "role_permissions",
+            joinColumns = @JoinColumn(name = "role_id"),
+            inverseJoinColumns = @JoinColumn(name = "permission_id")
+    )
     private Set<PermissionsEntity> permissions;
 
     @Override
