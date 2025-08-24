@@ -1,9 +1,14 @@
 package com.example.e_learning_system.Service;
 
+import com.example.e_learning_system.Entities.Attachment;
+import com.example.e_learning_system.Entities.VideoAttachments;
 import com.example.e_learning_system.Entities.VideoEntity;
 import com.example.e_learning_system.Entities.UserEntity;
+import com.example.e_learning_system.Repository.AttachmentRepository;
+import com.example.e_learning_system.Repository.VideoAttachmentsRepository;
 import com.example.e_learning_system.Repository.VideoRepository;
 import com.example.e_learning_system.Repository.UserRepository;
+
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -31,6 +36,9 @@ public class S3Service {
     private final S3Presigner s3Presigner;
     private final VideoRepository videoRepository;
     private final UserRepository userRepository;
+    private final AttachmentRepository attachmentRepository;
+    private final VideoAttachmentsRepository videoAttachmentsRepository;
+
 
     @Value("${aws.s3.bucket-name}")
     private String bucketName;
@@ -39,11 +47,13 @@ public class S3Service {
     private String cloudFrontDomain;
 
     public S3Service(S3Client s3Client, S3Presigner s3Presigner,
-                     VideoRepository videoRepository, UserRepository userRepository) {
+                     VideoRepository videoRepository, UserRepository userRepository, AttachmentRepository attachmentRepository, VideoAttachmentsRepository videoAttachmentsRepository) {
         this.s3Client = s3Client;
         this.s3Presigner = s3Presigner;
         this.videoRepository = videoRepository;
         this.userRepository = userRepository;
+        this.attachmentRepository = attachmentRepository;
+        this.videoAttachmentsRepository = videoAttachmentsRepository;
     }
 
     // Upload file method with complete video entity creation
@@ -106,6 +116,7 @@ public class S3Service {
     }
 
     // Method to update video metadata after processing
+    //TODO convert the parameter to update video dto ...
     @Transactional
     public VideoEntity updateVideoMetadata(String videoKey, Integer durationSeconds,
                                            String thumbnailUrl, Map<String, Object> processingResults) {
@@ -201,4 +212,42 @@ public class S3Service {
     public void close() {
         s3Presigner.close();
     }
+
+    @Transactional
+    void addAttachemntToVideo(int videoId , int attachmentId) {
+
+        Optional<Attachment> attachment = attachmentRepository.findById(attachmentId);
+        if (attachment.isEmpty()) {
+            throw new RuntimeException("Attachment not found with ID: " + attachmentId);
+        }
+        Optional<VideoEntity> videoEntity = videoRepository.findById(videoId);
+        if (videoEntity.isEmpty()) {
+            throw new RuntimeException("Video not found with ID: " + videoId);
+        }
+        if(videoAttachmentsRepository.existsByVideoAndAttachment(videoEntity.get(), attachment.get())){
+            throw new RuntimeException("Video already attached to an attachment");
+        }else {
+            VideoAttachments vidoeAttachments = new VideoAttachments();
+            vidoeAttachments.setVideo(videoEntity.get());
+            vidoeAttachments.setAttachment(attachment.get());
+            videoEntity.get().addVideoAttachments(vidoeAttachments);
+            videoRepository.save(videoEntity.get());
+        }
+
+    }
+    @Transactional
+    void removeAttachemntFromVideo(int videoId , int attachmentId) {
+        Optional<Attachment> attachment = attachmentRepository.findById(attachmentId);
+        if (attachment.isEmpty()) {
+            throw new RuntimeException("Attachment not found with ID: " + attachmentId);
+        }
+        Optional<VideoEntity> videoEntity = videoRepository.findById(videoId);
+        if (videoEntity.isEmpty()) {
+            throw new RuntimeException("Video not found with ID: " + videoId);
+        }
+        videoEntity.get().removeVideoAttachmentByids(videoId, attachmentId);
+        videoRepository.save(videoEntity.get());
+    }
+
+
 }
