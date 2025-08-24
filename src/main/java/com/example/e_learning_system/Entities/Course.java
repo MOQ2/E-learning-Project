@@ -1,16 +1,16 @@
 package com.example.e_learning_system.Entities;
 
 
-import com.example.e_learning_system.Config.AccessModel;
+
 import com.example.e_learning_system.Config.CourseStatus;
 import com.example.e_learning_system.Config.Currency;
 import com.example.e_learning_system.Config.DifficultyLevel;
-import com.vladmihalcea.hibernate.type.basic.PostgreSQLEnumType;
+
 import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.SuperBuilder;
 import org.hibernate.annotations.JdbcTypeCode;
-import org.hibernate.annotations.Type;
+
 import org.hibernate.type.SqlTypes;
 
 import java.math.BigDecimal;
@@ -40,6 +40,11 @@ public class Course extends BaseEntity {
     String description;
     @Column(name = "one_time_price")
     BigDecimal oneTimePrice;
+    @Column(name = "subscription_price_monthly")
+    BigDecimal subscriptionPriceMonthly;
+    @Column(name = "allows_subscription")
+    @Builder.Default
+    Boolean allowsSubscription = false;
     @Column(name = "currency", columnDefinition = "currency_type")
     @Enumerated(EnumType.STRING)
     @JdbcTypeCode(SqlTypes.NAMED_ENUM)
@@ -58,7 +63,8 @@ public class Course extends BaseEntity {
     @Column(name = "status" , columnDefinition = "course_status")
     @Enumerated(EnumType.STRING)
     @JdbcTypeCode(SqlTypes.NAMED_ENUM)
-    CourseStatus status= CourseStatus.DRAFT;
+    @Builder.Default
+    CourseStatus status = CourseStatus.DRAFT;
 
 
 
@@ -77,6 +83,16 @@ public class Course extends BaseEntity {
 
     @OneToMany(mappedBy = "course", fetch = FetchType.LAZY, cascade = CascadeType.ALL , orphanRemoval = true)
     private Set<CourseModules> courseModules;
+
+    // New relationships for simplified subscription system
+    @OneToMany(mappedBy = "course", fetch = FetchType.LAZY)
+    private Set<PackageCourse> packageCourses;
+
+    @OneToMany(mappedBy = "course", fetch = FetchType.LAZY)
+    private Set<SimplePayment> payments;
+
+    @OneToMany(mappedBy = "course", fetch = FetchType.LAZY)
+    private Set<UserCourseAccess> userCourseAccesses;
 
     @Transient
     public Set <Module> getModules (){
