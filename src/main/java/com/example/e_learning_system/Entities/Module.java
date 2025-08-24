@@ -2,14 +2,10 @@ package com.example.e_learning_system.Entities;
 
 
 import com.example.e_learning_system.Config.CourseStatus;
-import com.vladmihalcea.hibernate.type.basic.PostgreSQLEnumType;
 import jakarta.persistence.*;
 import lombok.*;
-import org.hibernate.annotations.Type;
-
-import java.util.ArrayList;
 import java.util.HashSet;
-import java.util.List;
+
 import java.util.Set;
 import java.util.stream.Collectors;
 
