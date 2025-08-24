@@ -8,7 +8,7 @@ import com.example.e_learning_system.Entities.Course;
 import com.example.e_learning_system.Entities.CourseModules;
 import com.example.e_learning_system.Entities.Module;
 import com.example.e_learning_system.Entities.UserEntity;
-import com.example.e_learning_system.Interfaces.CourseService;
+import com.example.e_learning_system.Service.Interfaces.CourseService;
 import com.example.e_learning_system.Mapper.CourseMapper;
 import com.example.e_learning_system.Repository.CourseModulesRepository;
 import com.example.e_learning_system.Repository.CourseRepository;

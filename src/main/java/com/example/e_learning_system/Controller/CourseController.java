@@ -9,7 +9,7 @@ import com.example.e_learning_system.Dto.CourseDtos.CourseFilterDto;
 import com.example.e_learning_system.Dto.CourseDtos.CourseSummaryDto;
 import com.example.e_learning_system.Dto.CourseDtos.CreateCourseDto;
 import com.example.e_learning_system.Dto.CourseDtos.UpdateCourseDto;
-import com.example.e_learning_system.Interfaces.CourseService;
+import com.example.e_learning_system.Service.Interfaces.CourseService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
