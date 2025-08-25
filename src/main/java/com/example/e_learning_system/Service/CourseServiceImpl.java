@@ -1,9 +1,7 @@
 package com.example.e_learning_system.Service;
 
 import com.example.e_learning_system.Config.CourseStatus;
-import com.example.e_learning_system.Config.DifficultyLevel;
 import com.example.e_learning_system.Dto.CourseDtos.*;
-import com.example.e_learning_system.Dto.CreateCourseRequest;
 import com.example.e_learning_system.Entities.Course;
 import com.example.e_learning_system.Entities.CourseModules;
 import com.example.e_learning_system.Entities.Module;

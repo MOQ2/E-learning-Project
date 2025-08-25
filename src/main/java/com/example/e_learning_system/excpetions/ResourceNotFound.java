@@ -1,7 +1,6 @@
 package com.example.e_learning_system.excpetions;
 
-import lombok.Builder;
-import lombok.Data;
+
 import org.springframework.http.HttpStatus;
 
 public class ResourceNotFound extends BaseException{

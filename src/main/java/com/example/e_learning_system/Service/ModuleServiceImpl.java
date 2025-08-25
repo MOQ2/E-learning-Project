@@ -11,7 +11,6 @@ import com.example.e_learning_system.Repository.ModuleRepository;
 import com.example.e_learning_system.Repository.ModuleVideosRepository;
 import com.example.e_learning_system.Repository.VideoRepository;
 import com.example.e_learning_system.excpetions.ResourceNotFound;
-import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import com.example.e_learning_system.Entities.Module;
