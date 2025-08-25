@@ -2,8 +2,8 @@ package com.example.e_learning_system.Service.Interfaces;
 
 import com.example.e_learning_system.Config.SimplePaymentStatus;
 import com.example.e_learning_system.Config.SimplePaymentType;
-import com.example.e_learning_system.Dto.SimplePaymentRequestDTO;
-import com.example.e_learning_system.Dto.SimplePaymentResponseDTO;
+import com.example.e_learning_system.Dto.PaymentDtos.SimplePaymentRequestDTO;
+import com.example.e_learning_system.Dto.PaymentDtos.SimplePaymentResponseDTO;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;

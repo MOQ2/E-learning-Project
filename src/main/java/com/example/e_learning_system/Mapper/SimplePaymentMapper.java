@@ -1,8 +1,8 @@
 package com.example.e_learning_system.Mapper;
 
 import com.example.e_learning_system.Config.SimplePaymentStatus;
-import com.example.e_learning_system.Dto.SimplePaymentRequestDTO;
-import com.example.e_learning_system.Dto.SimplePaymentResponseDTO;
+import com.example.e_learning_system.Dto.PaymentDtos.SimplePaymentRequestDTO;
+import com.example.e_learning_system.Dto.PaymentDtos.SimplePaymentResponseDTO;
 import com.example.e_learning_system.Entities.Course;
 import com.example.e_learning_system.Entities.Package;
 import com.example.e_learning_system.Entities.PromotionCode;

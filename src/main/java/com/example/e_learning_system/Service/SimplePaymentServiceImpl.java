@@ -1,7 +1,7 @@
 package com.example.e_learning_system.Service;
 
-import com.example.e_learning_system.Dto.SimplePaymentRequestDTO;
-import com.example.e_learning_system.Dto.SimplePaymentResponseDTO;
+import com.example.e_learning_system.Dto.PaymentDtos.SimplePaymentRequestDTO;
+import com.example.e_learning_system.Dto.PaymentDtos.SimplePaymentResponseDTO;
 import com.example.e_learning_system.Entities.SimplePayment;
 import com.example.e_learning_system.Entities.Course;
 import com.example.e_learning_system.Entities.Package;
