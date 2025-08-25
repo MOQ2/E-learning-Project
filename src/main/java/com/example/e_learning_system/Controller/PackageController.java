@@ -1,7 +1,7 @@
 package com.example.e_learning_system.Controller;
 
-import com.example.e_learning_system.Dto.PackageRequestDTO;
-import com.example.e_learning_system.Dto.PackageResponseDTO;
+import com.example.e_learning_system.Dto.PackageDtos.PackageRequestDTO;
+import com.example.e_learning_system.Dto.PackageDtos.PackageResponseDTO;
 import com.example.e_learning_system.Service.Interfaces.PackageService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;

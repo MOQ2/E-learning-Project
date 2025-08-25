@@ -1,7 +1,7 @@
 package com.example.e_learning_system.Service.Interfaces;
 
-import com.example.e_learning_system.Dto.PromotionCodeRequestDTO;
-import com.example.e_learning_system.Dto.PromotionCodeResponseDTO;
+import com.example.e_learning_system.Dto.PromotionDtos.PromotionCodeRequestDTO;
+import com.example.e_learning_system.Dto.PromotionDtos.PromotionCodeResponseDTO;
 
 import java.math.BigDecimal;
 import java.util.List;

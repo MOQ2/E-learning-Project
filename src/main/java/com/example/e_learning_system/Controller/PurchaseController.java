@@ -1,7 +1,7 @@
 package com.example.e_learning_system.Controller;
 
-import com.example.e_learning_system.Dto.PurchaseRequestDTO;
-import com.example.e_learning_system.Dto.PurchaseResponseDTO;
+import com.example.e_learning_system.Dto.PurchaseDtos.PurchaseRequestDTO;
+import com.example.e_learning_system.Dto.PurchaseDtos.PurchaseResponseDTO;
 import com.example.e_learning_system.Service.Interfaces.PurchaseService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;

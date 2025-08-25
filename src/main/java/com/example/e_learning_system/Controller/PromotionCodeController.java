@@ -1,7 +1,7 @@
 package com.example.e_learning_system.Controller;
 
-import com.example.e_learning_system.Dto.PromotionCodeRequestDTO;
-import com.example.e_learning_system.Dto.PromotionCodeResponseDTO;
+import com.example.e_learning_system.Dto.PromotionDtos.PromotionCodeRequestDTO;
+import com.example.e_learning_system.Dto.PromotionDtos.PromotionCodeResponseDTO;
 import com.example.e_learning_system.Service.Interfaces.PromotionCodeService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;

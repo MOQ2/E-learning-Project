@@ -1,7 +1,7 @@
 package com.example.e_learning_system.Service.Interfaces;
 
-import com.example.e_learning_system.Dto.PurchaseRequestDTO;
-import com.example.e_learning_system.Dto.PurchaseResponseDTO;
+import com.example.e_learning_system.Dto.PurchaseDtos.PurchaseRequestDTO;
+import com.example.e_learning_system.Dto.PurchaseDtos.PurchaseResponseDTO;
 
 public interface PurchaseService {
 
