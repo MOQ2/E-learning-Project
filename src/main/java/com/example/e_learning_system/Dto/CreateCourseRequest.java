@@ -1,6 +1,5 @@
 package com.example.e_learning_system.Dto;
 
-import com.example.e_learning_system.Config.AccessModel;
 import com.example.e_learning_system.Config.CourseStatus;
 import com.example.e_learning_system.Config.Currency;
 import com.example.e_learning_system.Config.DifficultyLevel;
@@ -38,6 +37,5 @@ public class CreateCourseRequest {
 
     private Boolean isActive = true;
     private CourseStatus status = CourseStatus.DRAFT;
-    private AccessModel accessModel;
     private DifficultyLevel difficultyLevel;
 }
