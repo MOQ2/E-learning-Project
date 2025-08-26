@@ -32,6 +32,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @AutoConfigureMockMvc
 @Transactional
@@ -90,27 +92,47 @@ class PurchaseIntegrationTest extends BaseIntegrationTest {
     }
 
 
+    /*
+     * tests we will have : 
+     * purchase course : 
+     * purchase package : 
+     * purchase course with promotion code : 
+     * purchase package with promotion code : 
+     * purchase course with invalid promotion code : 
+     * purchase package with invalid promotion code : 
+     * purchase course with expired promotion code : 
+     * purchase package with expired promotion code : 
+     * purchase non-existent course : 
+     * purchase non-existent package : 
+     * invalid purchase request : 
+     * purchase unpublish course : 
+     * purchase unpublish package : 
+     * purchase course with invalid data : 
+     * purchase package with invalid data : 
+     */
 
 
+     // purchase a course 
+     @Test
+     public void purchaseCourseTest () throws Exception {
 
+        mockMvc.perform(post("/api/purchase/course/{courseid}", testCourses.get(0).getId())
+                .contentType("application/json")
+                .content("""
+                    {
+                        "userId": %d,
+                        "promotionCode": null,
+                        "stripePaymentIntentId": "pi_test123",
+                        "stripeSessionId": "cs_test123"
+                    }
+                    """.formatted(testUser.getId())))
+                .andExpect(status().isCreated())
+                .andReturn()
+                .getResponse()
+                .getContentAsString();
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+        // You can add assertions here to validate the response content
+    }
 
 
 
@@ -128,6 +150,18 @@ class PurchaseIntegrationTest extends BaseIntegrationTest {
                     role.setDescription("Regular user role");
                     return rolesRepository.save(role);
                 });
+
+        UserEntity user1 = UserEntity.builder()
+                .name("Test User 1")
+                .email("testuser1@example.com")
+                .phone("+1234567891")
+                .password(passwordEncoder.encode("password123"))
+                .role(userRole)
+                .isActive(true)
+                .emailVerified(true)
+                .bio("Test user for integration tests")
+                .build();
+        userRepository.save(user1);
 
         UserEntity user = UserEntity.builder()
                 .name("Test User")
@@ -201,7 +235,6 @@ class PurchaseIntegrationTest extends BaseIntegrationTest {
                 .name("Full Stack Development Bundle")
                 .description("Complete package for full stack development learning")
                 .price(new BigDecimal("299.99"))
-                .discountPercentage(new BigDecimal("20.00"))
                 .isActive(true)
                 .build();
 
