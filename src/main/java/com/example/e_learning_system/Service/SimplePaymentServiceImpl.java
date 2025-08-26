@@ -72,18 +72,22 @@ public class SimplePaymentServiceImpl implements SimplePaymentService {
                 requestDTO.getPromotionCode(), LocalDateTime.now())
                 .orElseThrow(() -> new IllegalArgumentException("Invalid or expired promotion code"));
 
-            // Validate promotion code applicability
-            if (requestDTO.getPaymentType() == SimplePaymentType.COURSE_PURCHASE && !promotionCode.getApplicableToCourses()) {
-                throw new IllegalArgumentException("Promotion code is not applicable to courses");
-            }
-            if (requestDTO.getPaymentType() == SimplePaymentType.PACKAGE_PURCHASE && !promotionCode.getApplicableToPackages()) {
-                throw new IllegalArgumentException("Promotion code is not applicable to packages");
-            }
+            // Validate promotion code applicability based on payment type
+            validatePromotionCodeApplicability(promotionCode, requestDTO.getPaymentType());
 
             // Check if promotion code has remaining uses
             if (promotionCode.getCurrentUses() >= promotionCode.getMaxUses()) {
                 throw new IllegalArgumentException("Promotion code has reached maximum uses");
             }
+        }
+        
+        if (promotionCode != null) {
+            // Calculate discounted amount
+            BigDecimal discount = requestDTO.getAmount()
+                .multiply(promotionCode.getDiscountPercentage())
+                .divide(BigDecimal.valueOf(100));
+            BigDecimal discountedAmount = requestDTO.getAmount().subtract(discount);
+            requestDTO.setAmount(discountedAmount.max(BigDecimal.ZERO)); // Ensure amount is not negative
         }
 
         SimplePayment payment = simplePaymentMapper.requestDtoToEntity(requestDTO, user, course, packageEntity, promotionCode);
@@ -228,5 +232,26 @@ public class SimplePaymentServiceImpl implements SimplePaymentService {
             .orElseThrow(() -> ResourceNotFound.simplePaymentNotFound(stripePaymentIntentId));
         
         return simplePaymentMapper.entityToResponseDto(payment);
+    }
+
+    /**
+     * Validates if a promotion code is applicable for the given payment type
+     */
+    private void validatePromotionCodeApplicability(PromotionCode promotionCode, SimplePaymentType paymentType) {
+        switch (paymentType) {
+            case COURSE_PURCHASE:
+            case SUBSCRIPTION:
+                if (!promotionCode.getApplicableToCourses()) {
+                    throw new IllegalArgumentException("Promotion code is not applicable to courses or course subscriptions");
+                }
+                break;
+            case PACKAGE_PURCHASE:
+                if (!promotionCode.getApplicableToPackages()) {
+                    throw new IllegalArgumentException("Promotion code is not applicable to packages or package subscriptions");
+                }
+                break;
+            default:
+                throw new IllegalArgumentException("Invalid payment type");
+        }
     }
 }
