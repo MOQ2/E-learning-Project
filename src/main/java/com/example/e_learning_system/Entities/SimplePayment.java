@@ -1,14 +1,20 @@
 package com.example.e_learning_system.Entities;
 
+import com.example.e_learning_system.Config.PaymentType;
 import com.example.e_learning_system.Config.SimplePaymentStatus;
 import com.example.e_learning_system.Config.SimplePaymentType;
 import jakarta.persistence.*;
+import jakarta.validation.constraints.DecimalMax;
+import jakarta.validation.constraints.DecimalMin;
 import lombok.*;
 import lombok.experimental.SuperBuilder;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
+
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.type.SqlTypes;
 
 @EqualsAndHashCode(callSuper = true)
 @Entity
@@ -32,7 +38,8 @@ public class SimplePayment extends BaseEntity {
     private Package packageEntity;
 
     @Enumerated(EnumType.STRING)
-    @Column(name = "payment_type", nullable = false)
+    @Column(name = "payment_type", columnDefinition = "simple_payment_type")
+    @JdbcTypeCode(SqlTypes.NAMED_ENUM)
     private SimplePaymentType paymentType;
 
     @Column(name = "amount", nullable = false, precision = 10, scale = 2)
@@ -40,6 +47,8 @@ public class SimplePayment extends BaseEntity {
 
     @Column(name = "discount_amount", precision = 10, scale = 2)
     @Builder.Default
+    @DecimalMin(value = "0.0", inclusive = true, message = "Discount amount must be at least 0")
+    @DecimalMax(value = "100.0", inclusive = true, message = "Discount amount cannot exceed 100")
     private BigDecimal discountAmount = BigDecimal.ZERO;
 
     @Column(name = "final_amount", nullable = false, precision = 10, scale = 2)
@@ -51,8 +60,8 @@ public class SimplePayment extends BaseEntity {
 
     @Enumerated(EnumType.STRING)
     @Column(name = "status", nullable = false)
-    @Builder.Default
-    private SimplePaymentStatus status = SimplePaymentStatus.PENDING;
+    @JdbcTypeCode(SqlTypes.NAMED_ENUM)
+    private SimplePaymentStatus status;
 
     @Column(name = "payment_date")
     private LocalDateTime paymentDate;
