@@ -25,9 +25,19 @@ public class Package extends BaseEntity {
     @Column(name = "price", nullable = false, precision = 10, scale = 2)
     private BigDecimal price;
 
-    @Column(name = "discount_percentage", precision = 5, scale = 2)
+    @Column(name = "subscription_price_monthly", precision = 10, scale = 2)
+    private BigDecimal subscriptionPriceMonthly;
+
+    @Column(name = "subscription_price_3_months", precision = 10, scale = 2)
+    private BigDecimal subscriptionPrice3Months;
+
+    @Column(name = "subscription_price_6_months", precision = 10, scale = 2)
+    private BigDecimal subscriptionPrice6Months;
+
+    @Column(name = "allows_subscription")
     @Builder.Default
-    private BigDecimal discountPercentage = BigDecimal.ZERO;
+    private Boolean allowsSubscription = false;
+
 
     @Column(name = "is_active")
     @Builder.Default
