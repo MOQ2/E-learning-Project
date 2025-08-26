@@ -7,6 +7,9 @@ import lombok.experimental.SuperBuilder;
 
 import java.time.LocalDateTime;
 
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.type.SqlTypes;
+
 @EqualsAndHashCode(callSuper = true)
 @Entity
 @Table(name = "user_course_access")
@@ -27,9 +30,9 @@ public class UserCourseAccess extends BaseEntity {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "package_id")
     private Package packageEntity;
-
     @Enumerated(EnumType.STRING)
     @Column(name = "access_type", nullable = false)
+        @JdbcTypeCode(SqlTypes.NAMED_ENUM)
     private AccessType accessType;
 
     @Column(name = "access_until")
