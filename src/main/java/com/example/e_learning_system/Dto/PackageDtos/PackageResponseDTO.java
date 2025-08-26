@@ -17,7 +17,6 @@ public class PackageResponseDTO {
     private String name;
     private String description;
     private BigDecimal price;
-    private BigDecimal discountPercentage;
     private Boolean isActive;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
