@@ -42,6 +42,10 @@ public class Course extends BaseEntity {
     BigDecimal oneTimePrice;
     @Column(name = "subscription_price_monthly")
     BigDecimal subscriptionPriceMonthly;
+    @Column(name = "subscription_price_3_months")
+    BigDecimal subscriptionPrice3Months;
+    @Column(name = "subscription_price_6_months")
+    BigDecimal subscriptionPrice6Months;
     @Column(name = "allows_subscription")
     @Builder.Default
     Boolean allowsSubscription = false;
