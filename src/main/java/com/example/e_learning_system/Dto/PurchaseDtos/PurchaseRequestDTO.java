@@ -20,10 +20,6 @@ public class PurchaseRequestDTO {
     @NotNull(message = "Payment type is required")
     private SimplePaymentType paymentType;
 
-    @NotNull(message = "Amount is required")
-    @Min(value = 0, message = "Amount must be positive")
-    private BigDecimal amount;
-
     private String promotionCode;
 
     @Min(value = 1, message = "Subscription duration must be at least 1 month")
