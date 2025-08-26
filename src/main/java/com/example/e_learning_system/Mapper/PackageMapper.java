@@ -19,7 +19,6 @@ public class PackageMapper {
                 .name(dto.getName())
                 .description(dto.getDescription())
                 .price(dto.getPrice())
-                .discountPercentage(dto.getDiscountPercentage())
                 .isActive(dto.getIsActive())
                 .build();
     }
@@ -34,7 +33,6 @@ public class PackageMapper {
                 .name(entity.getName())
                 .description(entity.getDescription())
                 .price(entity.getPrice())
-                .discountPercentage(entity.getDiscountPercentage())
                 .isActive(entity.getIsActive())
                 .createdAt(entity.getCreatedAt())
                 .updatedAt(entity.getUpdatedAt())
@@ -59,7 +57,6 @@ public class PackageMapper {
         entity.setName(dto.getName());
         entity.setDescription(dto.getDescription());
         entity.setPrice(dto.getPrice());
-        entity.setDiscountPercentage(dto.getDiscountPercentage());
         entity.setIsActive(dto.getIsActive());
         entity.setUpdatedAt(LocalDateTime.now());
     }
