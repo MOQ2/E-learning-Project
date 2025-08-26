@@ -29,9 +29,6 @@ public class PackageRequestDTO {
     @DecimalMin(value = "0.0", inclusive = false, message = "Price must be greater than 0")
     private BigDecimal price;
     
-    @DecimalMin(value = "0.0", message = "Discount percentage must be 0 or greater")
-    private BigDecimal discountPercentage;
-    
     @Builder.Default
     private Boolean isActive = true;
     
