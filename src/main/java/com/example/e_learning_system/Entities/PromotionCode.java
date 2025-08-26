@@ -23,8 +23,9 @@ public class PromotionCode extends BaseEntity {
     @Column(name = "description", columnDefinition = "TEXT")
     private String description;
 
-    @Column(name = "discount_percentage", nullable = false, precision = 5, scale = 2)
-    private BigDecimal discountPercentage;
+    @Column(name = "discount_percentage", nullable = false, precision = 3, scale = 2)
+    @Builder.Default
+    private BigDecimal discountPercentage = BigDecimal.ZERO;
 
     @Column(name = "discount_amount", precision = 10, scale = 2)
     @Builder.Default
