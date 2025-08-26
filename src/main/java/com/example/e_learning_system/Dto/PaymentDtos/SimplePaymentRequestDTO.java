@@ -26,7 +26,7 @@ public class SimplePaymentRequestDTO {
     
     @NotNull(message = "Payment type is required")
     private SimplePaymentType paymentType;
-    
+
     @NotNull(message = "Amount is required")
     @DecimalMin(value = "0.0", inclusive = false, message = "Amount must be greater than 0")
     private BigDecimal amount;
