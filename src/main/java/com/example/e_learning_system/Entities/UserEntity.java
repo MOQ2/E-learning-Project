@@ -2,7 +2,9 @@ package com.example.e_learning_system.Entities;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 
@@ -66,7 +68,13 @@ public class UserEntity extends BaseEntity {
     @OneToMany(mappedBy = "uploadedBy",fetch = FetchType.LAZY , orphanRemoval = true , cascade = CascadeType.ALL)
     Set<Attachment> attachments = new HashSet<>();
 
-
+    @ManyToMany
+    @JoinTable(
+            name = "user_watched_videos",
+            joinColumns = @JoinColumn(name = "user_id"),
+            inverseJoinColumns = @JoinColumn(name = "video_id")
+    )
+    private Set<VideoEntity> watchedVideos = new HashSet<>();
 
 
     @Override

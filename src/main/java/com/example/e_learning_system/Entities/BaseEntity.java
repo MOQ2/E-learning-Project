@@ -16,7 +16,6 @@ import lombok.*;
 @Setter
 @MappedSuperclass
 @EntityListeners({AuditingEntityListener.class, AuditListener.class})
-@Data
 @SuperBuilder
 @NoArgsConstructor
 @AllArgsConstructor
@@ -46,4 +45,21 @@ public abstract class BaseEntity {
     public String getEntityType() {
         return "BaseEntity";
     }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        BaseEntity that = (BaseEntity) o;
+
+        if (this.id == 0 || that.id == 0) return false;
+
+        return this.id == that.id;
+    }
+
+    @Override
+    public int hashCode() {
+        return Integer.hashCode(id);
+    }
+
 }

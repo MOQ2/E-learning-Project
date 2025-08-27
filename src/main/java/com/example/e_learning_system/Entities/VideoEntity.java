@@ -67,6 +67,10 @@ public class VideoEntity extends BaseEntity {
     )
     private Set <VideoAttachments> videoAttachments = new HashSet<>();
 
+    @ManyToMany(mappedBy = "watchedVideos")
+    private Set<UserEntity> usersWatched = new HashSet<>();
+
+
 
 
     public void addVideoAttachments(VideoAttachments videoAttachments) {
