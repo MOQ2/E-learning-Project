@@ -66,6 +66,7 @@ class PurchaseIntegrationTest extends BaseIntegrationTest {
     @Autowired
     private PasswordEncoder passwordEncoder;
 
+
     // Test data
     private UserEntity testUser;
     private List<Course> testCourses;
@@ -102,6 +103,10 @@ class PurchaseIntegrationTest extends BaseIntegrationTest {
      * purchase package with invalid promotion code : 
      * purchase course with expired promotion code : 
      * purchase package with expired promotion code : 
+     * purchase course with maxed out promotion code :
+     * purchase package with maxed out promotion code :
+     * purchase a package with non applicable promotion code to package :
+     * purchase a course with non applicable promotion code to course :
      * purchase non-existent course : 
      * purchase non-existent package : 
      * invalid purchase request : 
@@ -112,10 +117,9 @@ class PurchaseIntegrationTest extends BaseIntegrationTest {
      */
 
 
-     // purchase a course 
-     @Test
-     public void purchaseCourseTest () throws Exception {
-
+    // 1. Purchase course test
+    @Test
+    public void testPurchaseCourse() throws Exception {
         mockMvc.perform(post("/api/purchase/course/{courseid}", testCourses.get(0).getId())
                 .contentType("application/json")
                 .content("""
@@ -126,12 +130,416 @@ class PurchaseIntegrationTest extends BaseIntegrationTest {
                         "stripeSessionId": "cs_test123"
                     }
                     """.formatted(testUser.getId())))
-                .andExpect(status().isCreated())
-                .andReturn()
-                .getResponse()
-                .getContentAsString();
+                .andExpect(status().isCreated());
+    }
 
-        // You can add assertions here to validate the response content
+    // 2. Purchase package test
+    @Test
+    public void testPurchasePackage() throws Exception {
+        mockMvc.perform(post("/api/purchase/package/{packageid}", testPackage.getId())
+                .contentType("application/json")
+                .content("""
+                    {
+                        "userId": %d,
+                        "promotionCode": null,
+                        "stripePaymentIntentId": "pi_test123",
+                        "stripeSessionId": "cs_test123"
+                    }
+                    """.formatted(testUser.getId())))
+                .andExpect(status().isCreated());
+    }
+
+    // 3. Purchase course with promotion code test
+    @Test
+    public void testPurchaseCourseWithPromotionCode() throws Exception {
+        mockMvc.perform(post("/api/purchase/course/{courseid}", testCourses.get(0).getId())
+                .contentType("application/json")
+                .content("""
+                    {
+                        "userId": %d,
+                        "promotionCode": "%s",
+                        "stripePaymentIntentId": "pi_test123",
+                        "stripeSessionId": "cs_test123"
+                    }
+                    """.formatted(testUser.getId(), testPromotionCode.getCode())))
+                .andExpect(status().isCreated());
+    }
+
+    // 4. Purchase package with promotion code test
+    @Test
+    public void testPurchasePackageWithPromotionCode() throws Exception {
+        mockMvc.perform(post("/api/purchase/package/{packageid}", testPackage.getId())
+                .contentType("application/json")
+                .content("""
+                    {
+                        "userId": %d,
+                        "promotionCode": "%s",
+                        "stripePaymentIntentId": "pi_test123",
+                        "stripeSessionId": "cs_test123"
+                    }
+                    """.formatted(testUser.getId(), testPromotionCode.getCode())))
+                .andExpect(status().isCreated());
+    }
+
+    // 5. Purchase course with invalid promotion code test
+    @Test
+    public void testPurchaseCourseWithInvalidPromotionCode() throws Exception {
+        mockMvc.perform(post("/api/purchase/course/{courseid}", testCourses.get(0).getId())
+                .contentType("application/json")
+                .content("""
+                    {
+                        "userId": %d,
+                        "promotionCode": "INVALID_CODE",
+                        "stripePaymentIntentId": "pi_test123",
+                        "stripeSessionId": "cs_test123"
+                    }
+                    """.formatted(testUser.getId())))
+                .andExpect(status().isBadRequest());
+    }
+
+    // 6. Purchase package with invalid promotion code test
+    @Test
+    public void testPurchasePackageWithInvalidPromotionCode() throws Exception {
+        mockMvc.perform(post("/api/purchase/package/{packageid}", testPackage.getId())
+                .contentType("application/json")
+                .content("""
+                    {
+                        "userId": %d,
+                        "promotionCode": "INVALID_CODE",
+                        "stripePaymentIntentId": "pi_test123",
+                        "stripeSessionId": "cs_test123"
+                    }
+                    """.formatted(testUser.getId())))
+                .andExpect(status().isBadRequest());
+    }
+
+    // 7. Purchase course with expired promotion code test
+    @Test
+    public void testPurchaseCourseWithExpiredPromotionCode() throws Exception {
+        // Create expired promotion code
+        PromotionCode expiredCode = PromotionCode.builder()
+                .code("EXPIRED25")
+                .description("Expired promotion code")
+                .discountPercentage(new BigDecimal("25.00"))
+                .discountAmount(BigDecimal.ZERO)
+                .maxUses(100)
+                .currentUses(0)
+                .validFrom(LocalDateTime.now().minusDays(30))
+                .validUntil(LocalDateTime.now().minusDays(1))
+                .applicableToCourses(true)
+                .applicableToPackages(true)
+                .isActive(true)
+                .build();
+        promotionCodeRepository.save(expiredCode);
+
+        mockMvc.perform(post("/api/purchase/course/{courseid}", testCourses.get(0).getId())
+                .contentType("application/json")
+                .content("""
+                    {
+                        "userId": %d,
+                        "promotionCode": "%s",
+                        "stripePaymentIntentId": "pi_test123",
+                        "stripeSessionId": "cs_test123"
+                    }
+                    """.formatted(testUser.getId(), expiredCode.getCode())))
+                .andExpect(status().isBadRequest());
+    }
+
+    // 8. Purchase package with expired promotion code test
+    @Test
+    public void testPurchasePackageWithExpiredPromotionCode() throws Exception {
+        // Create expired promotion code
+        PromotionCode expiredCode = PromotionCode.builder()
+                .code("EXPIRED_PKG")
+                .description("Expired promotion code for packages")
+                .discountPercentage(new BigDecimal("30.00"))
+                .discountAmount(BigDecimal.ZERO)
+                .maxUses(50)
+                .currentUses(0)
+                .validFrom(LocalDateTime.now().minusDays(30))
+                .validUntil(LocalDateTime.now().minusDays(1))
+                .applicableToCourses(true)
+                .applicableToPackages(true)
+                .isActive(true)
+                .build();
+        promotionCodeRepository.save(expiredCode);
+
+        mockMvc.perform(post("/api/purchase/package/{packageid}", testPackage.getId())
+                .contentType("application/json")
+                .content("""
+                    {
+                        "userId": %d,
+                        "promotionCode": "%s",
+                        "stripePaymentIntentId": "pi_test123",
+                        "stripeSessionId": "cs_test123"
+                    }
+                    """.formatted(testUser.getId(), expiredCode.getCode())))
+                .andExpect(status().isBadRequest());
+    }
+
+    // 9. Purchase course with maxed out promotion code test
+    @Test
+    public void testPurchaseCourseWithMaxedOutPromotionCode() throws Exception {
+        // Create maxed out promotion code
+        PromotionCode maxedCode = PromotionCode.builder()
+                .code("MAXED_OUT")
+                .description("Maxed out promotion code")
+                .discountPercentage(new BigDecimal("20.00"))
+                .discountAmount(BigDecimal.ZERO)
+                .maxUses(1)
+                .currentUses(1)
+                .validFrom(LocalDateTime.now().minusDays(1))
+                .validUntil(LocalDateTime.now().plusDays(30))
+                .applicableToCourses(true)
+                .applicableToPackages(true)
+                .isActive(true)
+                .build();
+        promotionCodeRepository.save(maxedCode);
+
+        mockMvc.perform(post("/api/purchase/course/{courseid}", testCourses.get(0).getId())
+                .contentType("application/json")
+                .content("""
+                    {
+                        "userId": %d,
+                        "promotionCode": "%s",
+                        "stripePaymentIntentId": "pi_test123",
+                        "stripeSessionId": "cs_test123"
+                    }
+                    """.formatted(testUser.getId(), maxedCode.getCode())))
+                .andExpect(status().isBadRequest());
+    }
+
+    // 10. Purchase package with maxed out promotion code test
+    @Test
+    public void testPurchasePackageWithMaxedOutPromotionCode() throws Exception {
+        // Create maxed out promotion code
+        PromotionCode maxedCode = PromotionCode.builder()
+                .code("PKG_MAXED")
+                .description("Maxed out promotion code for packages")
+                .discountPercentage(new BigDecimal("15.00"))
+                .discountAmount(BigDecimal.ZERO)
+                .maxUses(2)
+                .currentUses(2)
+                .validFrom(LocalDateTime.now().minusDays(1))
+                .validUntil(LocalDateTime.now().plusDays(30))
+                .applicableToCourses(true)
+                .applicableToPackages(true)
+                .isActive(true)
+                .build();
+        promotionCodeRepository.save(maxedCode);
+
+        mockMvc.perform(post("/api/purchase/package/{packageid}", testPackage.getId())
+                .contentType("application/json")
+                .content("""
+                    {
+                        "userId": %d,
+                        "promotionCode": "%s",
+                        "stripePaymentIntentId": "pi_test123",
+                        "stripeSessionId": "cs_test123"
+                    }
+                    """.formatted(testUser.getId(), maxedCode.getCode())))
+                .andExpect(status().isBadRequest());
+    }
+
+    // 11. Purchase package with non-applicable promotion code to package test
+    @Test
+    public void testPurchasePackageWithNonApplicablePromotionCode() throws Exception {
+        // Create course-only promotion code
+        PromotionCode courseOnlyCode = PromotionCode.builder()
+                .code("COURSE_ONLY")
+                .description("Course only promotion code")
+                .discountPercentage(new BigDecimal("10.00"))
+                .discountAmount(BigDecimal.ZERO)
+                .maxUses(100)
+                .currentUses(0)
+                .validFrom(LocalDateTime.now().minusDays(1))
+                .validUntil(LocalDateTime.now().plusDays(30))
+                .applicableToCourses(true)
+                .applicableToPackages(false)
+                .isActive(true)
+                .build();
+        promotionCodeRepository.save(courseOnlyCode);
+
+        mockMvc.perform(post("/api/purchase/package/{packageid}", testPackage.getId())
+                .contentType("application/json")
+                .content("""
+                    {
+                        "userId": %d,
+                        "promotionCode": "%s",
+                        "stripePaymentIntentId": "pi_test123",
+                        "stripeSessionId": "cs_test123"
+                    }
+                    """.formatted(testUser.getId(), courseOnlyCode.getCode())))
+                .andExpect(status().isBadRequest());
+    }
+
+    // 12. Purchase course with non-applicable promotion code to course test
+    @Test
+    public void testPurchaseCourseWithNonApplicablePromotionCode() throws Exception {
+        // Create package-only promotion code
+        PromotionCode packageOnlyCode = PromotionCode.builder()
+                .code("PACKAGE_ONLY")
+                .description("Package only promotion code")
+                .discountPercentage(new BigDecimal("35.00"))
+                .discountAmount(BigDecimal.ZERO)
+                .maxUses(50)
+                .currentUses(0)
+                .validFrom(LocalDateTime.now().minusDays(1))
+                .validUntil(LocalDateTime.now().plusDays(30))
+                .applicableToCourses(false)
+                .applicableToPackages(true)
+                .isActive(true)
+                .build();
+        promotionCodeRepository.save(packageOnlyCode);
+
+        mockMvc.perform(post("/api/purchase/course/{courseid}", testCourses.get(0).getId())
+                .contentType("application/json")
+                .content("""
+                    {
+                        "userId": %d,
+                        "promotionCode": "%s",
+                        "stripePaymentIntentId": "pi_test123",
+                        "stripeSessionId": "cs_test123"
+                    }
+                    """.formatted(testUser.getId(), packageOnlyCode.getCode())))
+                .andExpect(status().isBadRequest());
+    }
+
+    // 13. Purchase non-existent course test
+    @Test
+    public void testPurchaseNonExistentCourse() throws Exception {
+        Long nonExistentCourseId = 99999L;
+        
+        mockMvc.perform(post("/api/purchase/course/{courseid}", nonExistentCourseId)
+                .contentType("application/json")
+                .content("""
+                    {
+                        "userId": %d,
+                        "promotionCode": null,
+                        "stripePaymentIntentId": "pi_test123",
+                        "stripeSessionId": "cs_test123"
+                    }
+                    """.formatted(testUser.getId())))
+                .andExpect(status().isNotFound());
+    }
+
+    // 14. Purchase non-existent package test
+    @Test
+    public void testPurchaseNonExistentPackage() throws Exception {
+        Long nonExistentPackageId = 99999L;
+        
+        mockMvc.perform(post("/api/purchase/package/{packageid}", nonExistentPackageId)
+                .contentType("application/json")
+                .content("""
+                    {
+                        "userId": %d,
+                        "promotionCode": null,
+                        "stripePaymentIntentId": "pi_test123",
+                        "stripeSessionId": "cs_test123"
+                    }
+                    """.formatted(testUser.getId())))
+                .andExpect(status().isNotFound());
+    }
+
+    // 15. Invalid purchase request test (missing required fields)
+    @Test
+    public void testInvalidPurchaseRequest() throws Exception {
+        mockMvc.perform(post("/api/purchase/course/{courseid}", testCourses.get(0).getId())
+                .contentType("application/json")
+                .content("""
+                    {
+                        "promotionCode": null
+                    }
+                    """))
+                .andExpect(status().isBadRequest());
+    }
+
+    // 16. Purchase unpublished course test
+    @Test
+    public void testPurchaseUnpublishedCourse() throws Exception {
+        // Create an unpublished course
+        Course unpublishedCourse = Course.builder()
+                .name("Unpublished Course")
+                .description("This course is not published")
+                .oneTimePrice(new BigDecimal("99.99"))
+                .subscriptionPriceMonthly(new BigDecimal("19.99"))
+                .allowsSubscription(true)
+                .currency(Currency.USD)
+                .status(CourseStatus.DRAFT)
+                .difficultyLevel(DifficultyLevel.BIGINNER)
+                .createdBy(testUser)
+                .isActive(true)
+                .build();
+        Course savedUnpublishedCourse = courseRepository.save(unpublishedCourse);
+
+        mockMvc.perform(post("/api/purchase/course/{courseid}", savedUnpublishedCourse.getId())
+                .contentType("application/json")
+                .content("""
+                    {
+                        "userId": %d,
+                        "promotionCode": null,
+                        "stripePaymentIntentId": "pi_test123",
+                        "stripeSessionId": "cs_test123"
+                    }
+                    """.formatted(testUser.getId())))
+                .andExpect(status().isBadRequest());
+    }
+
+    // 17. Purchase unpublished package test
+    @Test
+    public void testPurchaseUnpublishedPackage() throws Exception {
+        // Create an inactive package
+        Package inactivePackage = Package.builder()
+                .name("Inactive Package")
+                .description("This package is inactive")
+                .price(new BigDecimal("199.99"))
+                .isActive(false)
+                .build();
+        Package savedInactivePackage = packageRepository.save(inactivePackage);
+
+        mockMvc.perform(post("/api/purchase/package/{packageid}", savedInactivePackage.getId())
+                .contentType("application/json")
+                .content("""
+                    {
+                        "userId": %d,
+                        "promotionCode": null,
+                        "stripePaymentIntentId": "pi_test123",
+                        "stripeSessionId": "cs_test123"
+                    }
+                    """.formatted(testUser.getId())))
+                .andExpect(status().isBadRequest());
+    }
+
+    // 18. Purchase course with invalid data test
+    @Test
+    public void testPurchaseCourseWithInvalidData() throws Exception {
+        mockMvc.perform(post("/api/purchase/course/{courseid}", testCourses.get(0).getId())
+                .contentType("application/json")
+                .content("""
+                    {
+                        "userId": -1,
+                        "promotionCode": null,
+                        "stripePaymentIntentId": "",
+                        "stripeSessionId": ""
+                    }
+                    """))
+                .andExpect(status().isBadRequest());
+    }
+
+    // 19. Purchase package with invalid data test
+    @Test
+    public void testPurchasePackageWithInvalidData() throws Exception {
+        mockMvc.perform(post("/api/purchase/package/{packageid}", testPackage.getId())
+                .contentType("application/json")
+                .content("""
+                    {
+                        "userId": null,
+                        "promotionCode": null,
+                        "stripePaymentIntentId": null,
+                        "stripeSessionId": null
+                    }
+                    """))
+                .andExpect(status().isBadRequest());
     }
 
 
