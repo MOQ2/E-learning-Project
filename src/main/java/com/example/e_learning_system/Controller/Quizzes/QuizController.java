@@ -21,7 +21,7 @@ public class QuizController {
         this.quizInterface = quizInterface;
     }
 
-    @PreAuthorize("hasAnyRole('TEACHER', 'ADMIN')")
+    @PreAuthorize("hasAuthority('course:write')")
     @PostMapping("/{courseId}")
     public ResponseEntity<QuizResponseDTO> createQuiz(
             @PathVariable Integer courseId,
