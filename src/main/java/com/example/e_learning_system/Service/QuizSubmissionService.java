@@ -28,7 +28,7 @@ public class QuizSubmissionService implements QuizSubmissions {
 
     @Override
     @Transactional
-    public void submitQuiz(QuizSubmitDTO quizSubmitDTO) {
+    public QuizSubmissionResponseDTO submitQuiz(QuizSubmitDTO quizSubmitDTO) {
         UserEntity user = userRepository.findById(UserUtil.getCurrentUserId().intValue())
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
@@ -56,21 +56,22 @@ public class QuizSubmissionService implements QuizSubmissions {
                 selectedOption = quizOptionRepository.findById(dto.getSelectedOptionId())
                         .orElseThrow(() -> new RuntimeException("Option not found"));
 
-                isCorrect = selectedOption.getIsCorrect() != null && selectedOption.getIsCorrect();
+                isCorrect = Boolean.TRUE.equals(selectedOption.getIsCorrect());
                 if (isCorrect) {
                     totalScore += question.getQuestionMark();
                 }
             }
 
             StudentAnswerEntity answerEntity = mapper.dtoToAnswer(question, selectedOption, submission, isCorrect);
-
             answers.add(answerEntity);
         }
 
         submission.setAnswers(answers);
         submission.setScore(totalScore);
 
-        quizSubmissionRepository.save(submission);
+        QuizSubmissionEntity savedSubmission = quizSubmissionRepository.save(submission);
+
+        return mapper.toResponseDTO(savedSubmission);
     }
 
     @Override

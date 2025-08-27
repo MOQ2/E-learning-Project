@@ -4,6 +4,7 @@ import com.example.e_learning_system.Dto.quizzes.QuizResponseDTO;
 import com.example.e_learning_system.Dto.quizzes.UpdateQuizDTO;
 import com.example.e_learning_system.Service.Interfaces.QuizzesInterfaces.QuizInterface;
 import jakarta.validation.Valid;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
@@ -19,21 +20,29 @@ public class QuizController {
     public QuizController(QuizInterface quizInterface) {
         this.quizInterface = quizInterface;
     }
+
     @PreAuthorize("hasAnyRole('TEACHER', 'ADMIN')")
     @PostMapping("/{courseId}")
-    public ResponseEntity<?> createQuiz(@PathVariable Integer courseId,
-                                        @Valid @RequestBody CreateQuizDTO createQuizDTO) {
-        quizInterface.createQuiz(courseId, createQuizDTO);
-        return ResponseEntity.ok().body("Quiz created successfully");
+    public ResponseEntity<QuizResponseDTO> createQuiz(
+            @PathVariable Integer courseId,
+            @Valid @RequestBody CreateQuizDTO createQuizDTO) {
+
+        QuizResponseDTO createdQuiz = quizInterface.createQuiz(courseId, createQuizDTO);
+        return ResponseEntity.status(HttpStatus.CREATED).body(createdQuiz);
     }
+
+
     @PatchMapping("/{quizId}")
-    public ResponseEntity<?> updateQuiz(
+    public ResponseEntity<QuizResponseDTO> updateQuiz(
             @PathVariable Integer quizId,
             @Valid @RequestBody UpdateQuizDTO updateQuizDTO
     ) {
-        quizInterface.updateQuiz(quizId, updateQuizDTO);
-        return ResponseEntity.ok().body("Quiz updated successfully");
+        QuizResponseDTO updatedQuiz = quizInterface.updateQuiz(quizId, updateQuizDTO);
+        return ResponseEntity.ok(updatedQuiz);
     }
+
+
+
     @GetMapping("/getQuizzes")
     public ResponseEntity<List<QuizResponseDTO>> getQuizzes(
             @RequestParam(required = false) Integer courseId,
