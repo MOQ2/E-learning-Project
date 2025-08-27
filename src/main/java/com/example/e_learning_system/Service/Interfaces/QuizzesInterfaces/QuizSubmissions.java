@@ -9,7 +9,7 @@ import java.util.List;
 
 @Component
 public interface QuizSubmissions {
-    void submitQuiz(QuizSubmitDTO quizSubmitDTO);
+    QuizSubmissionResponseDTO submitQuiz(QuizSubmitDTO quizSubmitDTO);
     List<QuizSubmissionResponseDTO> getQuizAttempts(Integer quizId ,  Integer userId);
      List<StudentAnswerResponseDTO> getSubmissionAnswers(Integer submissionId);
 }

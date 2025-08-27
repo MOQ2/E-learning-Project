@@ -17,12 +17,14 @@ import java.util.List;
 public class QuizSubmissionsController {
 
     private final QuizSubmissions quizSubmissions;
-@PreAuthorize("hasRole('USER')")
+
+    @PreAuthorize("hasRole('USER')")
     @PostMapping("submitQuiz")
-    public ResponseEntity<?> submitQuiz(@Valid @RequestBody QuizSubmitDTO quizSubmitDTO) {
-        quizSubmissions.submitQuiz(quizSubmitDTO);
-        return ResponseEntity.ok("Quiz submitted");
+    public ResponseEntity<QuizSubmissionResponseDTO> submitQuiz(@Valid @RequestBody QuizSubmitDTO quizSubmitDTO) {
+        QuizSubmissionResponseDTO response = quizSubmissions.submitQuiz(quizSubmitDTO);
+        return ResponseEntity.ok(response);
     }
+
 
     @GetMapping("/{quizId}/attempts")
     public ResponseEntity<List<QuizSubmissionResponseDTO>> getQuizAttempts(
@@ -38,8 +40,6 @@ public class QuizSubmissionsController {
         List<StudentAnswerResponseDTO> answers = quizSubmissions.getSubmissionAnswers(submissionId);
         return ResponseEntity.ok(answers);
     }
-
-
 
 
 }

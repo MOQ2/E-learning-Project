@@ -6,8 +6,6 @@ import com.example.e_learning_system.Entities.QuizEntity;
 import com.example.e_learning_system.Entities.QuizQuestionEntity;
 import com.example.e_learning_system.Mapper.Quizzes.QuizMapper;
 import com.example.e_learning_system.Repository.CourseRepository;
-import com.example.e_learning_system.Repository.QuizOptionRepository;
-import com.example.e_learning_system.Repository.QuizQuestionRepository;
 import com.example.e_learning_system.Repository.QuizRepository;
 import com.example.e_learning_system.Service.Interfaces.QuizzesInterfaces.QuizInterface;
 import com.example.e_learning_system.excpetions.ClientException;
@@ -29,7 +27,7 @@ public class QuizService implements QuizInterface {
 
     @Override
     @Transactional
-    public void createQuiz(Integer courseId, CreateQuizDTO createQuizDTO) {
+    public QuizResponseDTO createQuiz(Integer courseId, CreateQuizDTO createQuizDTO) {
         float totalQuestionsMark = createQuizDTO.getQuestions()
                 .stream()
                 .map(QuizQuestionCreateDTO::getQuestionMark)
@@ -49,12 +47,15 @@ public class QuizService implements QuizInterface {
                 ));
 
         QuizEntity quiz = quizMapper.dtoToEntity(createQuizDTO, course);
-        quizRepository.save(quiz);
+        QuizEntity savedQuiz = quizRepository.save(quiz);
+
+        return quizMapper.entityToDto(savedQuiz);
     }
+
 
     @Override
     @Transactional
-    public void updateQuiz(Integer quizId, UpdateQuizDTO updateDTO) {
+    public QuizResponseDTO updateQuiz(Integer quizId, UpdateQuizDTO updateDTO) {
         QuizEntity quiz = quizRepository.findById(quizId)
                 .orElseThrow(() -> new ClientException(
                         "Quiz not found",
@@ -83,8 +84,13 @@ public class QuizService implements QuizInterface {
         }
 
         quizMapper.updateEntityFromDto(updateDTO, quiz);
-        quizRepository.save(quiz);
+        QuizEntity updatedQuiz = quizRepository.save(quiz);
+
+        return quizMapper.entityToDto(updatedQuiz);
     }
+
+
+
 
 
     @Override
@@ -101,7 +107,7 @@ public class QuizService implements QuizInterface {
         } else {
             quizzes = quizRepository.findAll().stream()
                     .filter(q -> courseId == null || Objects.equals(q.getCourse().getId(), courseId))
-                    .filter(q -> title == null || q.getTitle().toLowerCase().contains(title.toLowerCase()))
+                    .filter(q -> title == null || (q.getTitle() != null && q.getTitle().toLowerCase().contains(title.toLowerCase())))
                     .filter(q -> isActive == null || q.getIsActive().equals(isActive))
                     .toList();
         }
