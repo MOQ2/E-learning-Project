@@ -1,13 +1,9 @@
-package com.example.e_learning_system.Interfaces;
+package com.example.e_learning_system.Service.Interfaces;
 
-import com.example.e_learning_system.Config.CourseStatus;
-import com.example.e_learning_system.Config.DifficultyLevel;
 import com.example.e_learning_system.Dto.CourseDtos.*;
-import com.example.e_learning_system.Dto.CreateCourseRequest;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
-import java.math.BigDecimal;
 import java.util.List;
 
 public interface CourseService {

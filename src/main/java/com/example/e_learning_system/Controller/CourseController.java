@@ -9,7 +9,7 @@ import com.example.e_learning_system.Dto.CourseDtos.CourseFilterDto;
 import com.example.e_learning_system.Dto.CourseDtos.CourseSummaryDto;
 import com.example.e_learning_system.Dto.CourseDtos.CreateCourseDto;
 import com.example.e_learning_system.Dto.CourseDtos.UpdateCourseDto;
-import com.example.e_learning_system.Interfaces.CourseService;
+import com.example.e_learning_system.Service.Interfaces.CourseService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -97,8 +97,7 @@ public class CourseController {
             @Valid @RequestBody CreateCourseDto createCourseDto
             ) {
 
-        // TODO: Replace with actual CreateCourseRequest once it's available
-        // For now, we'll need to adapt CreateCourseDto to CreateCourseRequest
+        
         CourseDetailsDto course = courseService.createCourse(createCourseDto, 1);
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(ApiResponse.success("Course created successfully", course));
@@ -111,9 +110,7 @@ public class CourseController {
     public ResponseEntity<ApiResponse<Void>> updateCourse(
             @PathVariable Integer id,
             @Valid @RequestBody UpdateCourseDto updateCourseDto) {
-
-
-
+                
         courseService.updateCourse(updateCourseDto , id);
         return ResponseEntity.ok(ApiResponse.success("Course updated successfully", null));
     }

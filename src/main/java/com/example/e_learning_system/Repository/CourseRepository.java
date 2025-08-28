@@ -3,19 +3,16 @@ package com.example.e_learning_system.Repository;
 
 
 
-import com.example.e_learning_system.Config.AccessModel;
 import com.example.e_learning_system.Config.CourseStatus;
 import com.example.e_learning_system.Config.DifficultyLevel;
 import com.example.e_learning_system.Entities.Course;
 import com.example.e_learning_system.Entities.UserEntity;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
-import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.math.BigDecimal;
 import java.util.List;
-import java.util.Optional;
 
 @Repository
 public interface CourseRepository extends JpaRepository<Course, Integer> {

@@ -480,6 +480,30 @@ public class GlobalExceptionHandler {
         return new ResponseEntity<>(errorResponse, HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
+
+
+    // ========== ILLEGAL ARGUMENT EXCEPTION ==========
+
+    @ExceptionHandler(IllegalArgumentException.class)
+    public ResponseEntity<BaseErrorResponse> handleIllegalArgumentException(IllegalArgumentException ex, HttpServletRequest request) {
+        log.warn("Illegal argument exception: {}", ex.getMessage());
+
+        BaseErrorResponse errorResponse = BaseErrorResponse.from(
+                ex.getMessage() != null ? ex.getMessage() : "Invalid argument provided",
+                "ILLEGAL_ARGUMENT",
+                HttpStatus.BAD_REQUEST,
+                request.getRequestURI(),
+                request.getMethod()
+        );
+
+        errorResponse.setRequestId(generateRequestId());
+
+        return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
+    }
+
+
+
+
     // ========== GENERAL EXCEPTION ==========
 
     @ExceptionHandler(Exception.class)
@@ -498,6 +522,7 @@ public class GlobalExceptionHandler {
 
         return new ResponseEntity<>(errorResponse, HttpStatus.INTERNAL_SERVER_ERROR);
     }
+
 
     // ========== UTILITY METHODS ==========
 

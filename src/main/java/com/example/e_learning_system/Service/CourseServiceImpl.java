@@ -1,14 +1,12 @@
 package com.example.e_learning_system.Service;
 
 import com.example.e_learning_system.Config.CourseStatus;
-import com.example.e_learning_system.Config.DifficultyLevel;
 import com.example.e_learning_system.Dto.CourseDtos.*;
-import com.example.e_learning_system.Dto.CreateCourseRequest;
 import com.example.e_learning_system.Entities.Course;
 import com.example.e_learning_system.Entities.CourseModules;
 import com.example.e_learning_system.Entities.Module;
 import com.example.e_learning_system.Entities.UserEntity;
-import com.example.e_learning_system.Interfaces.CourseService;
+import com.example.e_learning_system.Service.Interfaces.CourseService;
 import com.example.e_learning_system.Mapper.CourseMapper;
 import com.example.e_learning_system.Repository.CourseModulesRepository;
 import com.example.e_learning_system.Repository.CourseRepository;

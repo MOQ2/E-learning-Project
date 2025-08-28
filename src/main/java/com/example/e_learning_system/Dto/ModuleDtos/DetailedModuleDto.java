@@ -3,7 +3,6 @@ package com.example.e_learning_system.Dto.ModuleDtos;
 import com.example.e_learning_system.Dto.VideoDtos.VideoDto;
 import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
-import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.experimental.SuperBuilder;

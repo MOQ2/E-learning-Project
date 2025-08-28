@@ -1,6 +1,5 @@
 package com.example.e_learning_system.Repository;
 
-import com.example.e_learning_system.Entities.PermissionsEntity;
 import com.example.e_learning_system.Entities.RolesEntity;
 import com.example.e_learning_system.Config.RolesName;
 import org.springframework.data.jpa.repository.JpaRepository;
