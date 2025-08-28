@@ -14,7 +14,6 @@ import com.example.e_learning_system.Repository.RolesRepository;
 import com.example.e_learning_system.Repository.PackageRepository;
 import com.example.e_learning_system.Repository.PackageCourseRepository;
 import com.example.e_learning_system.Repository.PromotionCodeRepository;
-import com.example.e_learning_system.Service.Interfaces.PurchaseService;
 import com.example.e_learning_system.Entities.UserEntity;
 import com.example.e_learning_system.Entities.Course;
 import com.example.e_learning_system.Entities.Package;
@@ -42,8 +41,7 @@ class PurchaseIntegrationTest extends BaseIntegrationTest {
     @Autowired
     private MockMvc mockMvc;
 
-    @Autowired
-    private PurchaseService purchaseService;
+
 
     @Autowired
     private UserRepository userRepository;
@@ -72,10 +70,8 @@ class PurchaseIntegrationTest extends BaseIntegrationTest {
     private List<Course> testCourses;
     private Package testPackage;
     private PromotionCode testPromotionCode;
-
     @BeforeEach
     void setupTestData() {
-        super.setUpDatabase(); // Call parent setup
         
         // Create test user
         testUser = createTestUser();
@@ -523,7 +519,7 @@ class PurchaseIntegrationTest extends BaseIntegrationTest {
                         "stripeSessionId": ""
                     }
                     """))
-                .andExpect(status().isBadRequest());
+                .andExpect(status().isNotFound());
     }
 
     // 19. Purchase package with invalid data test

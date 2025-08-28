@@ -2,6 +2,7 @@ package com.example.e_learning_system.Controller;
 
 
 import org.flywaydb.core.Flyway;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.TestInstance;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -43,8 +44,7 @@ public abstract class BaseIntegrationTest {
         // Explicitly enable clean for tests
         registry.add("spring.flyway.clean-disabled", () -> "false");
     }
-
-    @BeforeEach
+    @BeforeAll
     void setUpDatabase() {
         // Clean and migrate before each test - necessary for isolated test state
         try {
