@@ -5,9 +5,7 @@ import com.example.e_learning_system.Dto.RoleResponseDTO;
 import com.example.e_learning_system.Dto.RoleUpdateDTO;
 import com.example.e_learning_system.Entities.PermissionsEntity;
 import com.example.e_learning_system.Entities.RolesEntity;
-import com.example.e_learning_system.Entities.RolesPermissionsEntity;
 import com.example.e_learning_system.Repository.PermissionsEntityRepository;
-import com.example.e_learning_system.Repository.RolePermissionRepository;
 import com.example.e_learning_system.Repository.RolesRepository;
 import com.example.e_learning_system.Repository.UserRepository;
 import com.example.e_learning_system.excpetions.ResourceNotFound;
@@ -42,15 +40,11 @@ class AdminServiceRoleTest {
     @Mock
     private PermissionsEntityRepository permissionsEntityRepository;
 
-    @Mock
-    private RolePermissionRepository rolePermissionRepository;
-
     @InjectMocks
     private AdminService adminService;
 
     private RolesEntity testRole;
     private PermissionsEntity testPermission;
-    private RolesPermissionsEntity testRolePermission;
 
     @BeforeEach
     void setUp() {
@@ -58,16 +52,15 @@ class AdminServiceRoleTest {
         testRole = new RolesEntity();
         testRole.setId(1);
         testRole.setName(RolesName.ADMIN);
+        testRole.setPermissions(new java.util.HashSet<>());
 
         testPermission = new PermissionsEntity();
         testPermission.setId(1);
         testPermission.setName("user:read");
         testPermission.setDescription("Read user information");
 
-        testRolePermission = new RolesPermissionsEntity();
-        testRolePermission.setId(1);
-        testRolePermission.setRole(testRole);
-        testRolePermission.setPermission(testPermission);
+        testRole.getPermissions().add(testPermission);
+
     }
 
     // ==================== VIEW ROLES TESTS ====================
@@ -240,18 +233,17 @@ class AdminServiceRoleTest {
         // Given
         int roleId = 1;
         when(rolesRepository.findById(roleId)).thenReturn(Optional.of(testRole));
-        when(rolePermissionRepository.save(any(RolesPermissionsEntity.class)))
-            .thenReturn(testRolePermission);
+        when(rolesRepository.save(any(RolesEntity.class))).thenReturn(testRole);
 
         // When
         adminService.addPermissionToRole(roleId, testPermission);
 
         // Then
         verify(rolesRepository, times(1)).findById(roleId);
-        verify(rolePermissionRepository, times(1)).save(argThat(rolePermission -> 
-            rolePermission.getRole().equals(testRole) && 
-            rolePermission.getPermission().equals(testPermission)
+        verify(rolesRepository, times(1)).save(argThat(role -> 
+            role.getPermissions().contains(testPermission) && role.getId() == roleId
         ));
+
     }
 
     @Test
@@ -267,7 +259,7 @@ class AdminServiceRoleTest {
             .hasMessageContaining("Role");
 
         verify(rolesRepository, times(1)).findById(roleId);
-        verify(rolePermissionRepository, never()).save(any(RolesPermissionsEntity.class));
+        
     }
 
     // ==================== REMOVE PERMISSION FROM ROLE TESTS ====================
@@ -281,8 +273,7 @@ class AdminServiceRoleTest {
 
         when(rolesRepository.findById(roleId)).thenReturn(Optional.of(testRole));
         when(permissionsEntityRepository.findById(permissionId)).thenReturn(Optional.of(testPermission));
-        when(rolePermissionRepository.deleteByRoleIdAndPermissionIdJPQL(roleId, permissionId))
-            .thenReturn(1); // 1 row deleted
+        when(rolesRepository.save(any(RolesEntity.class))).thenReturn(testRole);
 
         // When
         adminService.removePermissionFromRole(roleId, permissionId);
@@ -290,7 +281,7 @@ class AdminServiceRoleTest {
         // Then
         verify(rolesRepository, times(1)).findById(roleId);
         verify(permissionsEntityRepository, times(1)).findById(permissionId);
-        verify(rolePermissionRepository, times(1)).deleteByRoleIdAndPermissionIdJPQL(roleId, permissionId);
+        verify(rolesRepository, times(1)).save(testRole);
     }
 
     @Test
@@ -309,7 +300,7 @@ class AdminServiceRoleTest {
 
         verify(rolesRepository, times(1)).findById(roleId);
         verify(permissionsEntityRepository, never()).findById(anyInt());
-        verify(rolePermissionRepository, never()).deleteByRoleIdAndPermissionIdJPQL(anyInt(), anyInt());
+        verify(rolesRepository, never()).save(any(RolesEntity.class));
     }
 
     @Test
@@ -329,7 +320,7 @@ class AdminServiceRoleTest {
 
         verify(rolesRepository, times(1)).findById(roleId);
         verify(permissionsEntityRepository, times(1)).findById(permissionId);
-        verify(rolePermissionRepository, never()).deleteByRoleIdAndPermissionIdJPQL(anyInt(), anyInt());
+        verify(rolesRepository, never()).save(any(RolesEntity.class));
     }
 
     @Test
@@ -337,12 +328,15 @@ class AdminServiceRoleTest {
     void shouldThrowExceptionWhenRolePermissionRelationshipDoesNotExist() {
         // Given
         int roleId = 1;
-        int permissionId = 1;
+        int permissionId = 2; // Different permission ID that's not in testRole
+        
+        PermissionsEntity differentPermission = new PermissionsEntity();
+        differentPermission.setId(2);
+        differentPermission.setName("different:permission");
+        differentPermission.setDescription("A different permission");
 
         when(rolesRepository.findById(roleId)).thenReturn(Optional.of(testRole));
-        when(permissionsEntityRepository.findById(permissionId)).thenReturn(Optional.of(testPermission));
-        when(rolePermissionRepository.deleteByRoleIdAndPermissionIdJPQL(roleId, permissionId))
-            .thenReturn(0); // 0 rows deleted - relationship doesn't exist
+        when(permissionsEntityRepository.findById(permissionId)).thenReturn(Optional.of(differentPermission));
 
         // When & Then
         assertThatThrownBy(() -> adminService.removePermissionFromRole(roleId, permissionId))
@@ -351,7 +345,7 @@ class AdminServiceRoleTest {
 
         verify(rolesRepository, times(1)).findById(roleId);
         verify(permissionsEntityRepository, times(1)).findById(permissionId);
-        verify(rolePermissionRepository, times(1)).deleteByRoleIdAndPermissionIdJPQL(roleId, permissionId);
+        verify(rolesRepository, times(1)).save(testRole);
     }
 
     // ==================== EDGE CASES AND ERROR HANDLING ====================
@@ -380,6 +374,6 @@ class AdminServiceRoleTest {
 
         // Verify no repository interactions since validation fails first
         verify(rolesRepository, never()).findById(anyInt());
-        verify(rolePermissionRepository, never()).save(any(RolesPermissionsEntity.class));
+        verify(rolesRepository, never()).save(any(RolesEntity.class));
     }
 }
