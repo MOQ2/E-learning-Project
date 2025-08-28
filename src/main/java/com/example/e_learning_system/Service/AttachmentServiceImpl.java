@@ -5,7 +5,7 @@ import com.example.e_learning_system.Dto.AttachmentDtos.CreateAttachmentDto;
 import com.example.e_learning_system.Dto.AttachmentDtos.UpdateAttachmentDto;
 import com.example.e_learning_system.Entities.Attachment;
 import com.example.e_learning_system.Entities.UserEntity;
-import com.example.e_learning_system.Interfaces.AttachmentService;
+import com.example.e_learning_system.Service.Interfaces.AttachmentService;
 import com.example.e_learning_system.Mapper.AttachmentMapper;
 import com.example.e_learning_system.Repository.AttachmentRepository;
 import com.example.e_learning_system.Repository.UserRepository;
