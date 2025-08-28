@@ -16,7 +16,6 @@ public class PermissionsEntity extends BaseEntity {
     @NotBlank
     @Column(name = "name")
     private String name;
-
     private String description;
 
     @ManyToMany(mappedBy = "permissions", fetch = FetchType.LAZY)

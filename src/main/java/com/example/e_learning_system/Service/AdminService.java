@@ -4,10 +4,8 @@ import com.example.e_learning_system.Config.RolesName;
 import com.example.e_learning_system.Dto.*;
 import com.example.e_learning_system.Entities.PermissionsEntity;
 import com.example.e_learning_system.Entities.RolesEntity;
-import com.example.e_learning_system.Entities.RolesPermissionsEntity;
 import com.example.e_learning_system.Entities.UserEntity;
 import com.example.e_learning_system.Repository.PermissionsEntityRepository;
-import com.example.e_learning_system.Repository.RolePermissionRepository;
 import com.example.e_learning_system.Repository.RolesRepository;
 import com.example.e_learning_system.Repository.UserRepository;
 import com.example.e_learning_system.excpetions.ResourceNotFound;
@@ -31,8 +29,7 @@ public class AdminService {
     private UserRepository userRepository;
     @Autowired
     private PermissionsEntityRepository permissionsEntityRepository;
-    @Autowired
-    private RolePermissionRepository rolePermissionRepository;
+
 
 
 
@@ -103,10 +100,9 @@ public class AdminService {
             throw new NullPointerException("Permission cannot be null");
         }
         RolesEntity role =rolesRepository.findById(role_id).orElseThrow(()->ResourceNotFound.roleNotFound(role_id+""));
-        RolesPermissionsEntity  rolesPermissionsEntity = new RolesPermissionsEntity();
-        rolesPermissionsEntity.setRole(role);
-        rolesPermissionsEntity.setPermission(permissionsEntity);
-        rolePermissionRepository.save(rolesPermissionsEntity);
+        role.getPermissions().add(permissionsEntity);
+        rolesRepository.save(role);
+
 
     }
     @Transactional
@@ -114,7 +110,7 @@ public class AdminService {
         logger.info("Attempting to remove permission {} from role {}", permissionId, roleId);
         
         // Validate that role exists
-        rolesRepository.findById(roleId)
+        RolesEntity role = rolesRepository.findById(roleId)
                 .orElseThrow(() -> ResourceNotFound.roleNotFound(roleId + ""));
         logger.debug("Role {} exists", roleId);
         
@@ -124,15 +120,15 @@ public class AdminService {
         logger.debug("Permission {} exists", permissionId);
         
         // Try to delete using JPQL query first (more reliable)
-        int deletedRows = rolePermissionRepository.deleteByRoleIdAndPermissionIdJPQL(roleId, permissionId);
-        logger.info("Deleted {} rows for roleId: {} and permissionId: {} using JPQL", deletedRows, roleId, permissionId);
-        
-        if (deletedRows == 0) {
+        boolean removed = role.getPermissions().removeIf(permission -> permission.getId() == permissionId);
+        rolesRepository.save(role);
+        if (!removed) {
             logger.warn("No role-permission relationship found for roleId: {} and permissionId: {}", roleId, permissionId);
             throw ResourceNotFound.rolePermissionNotFound(roleId + "", permissionId + "");
         }
         
         logger.info("Successfully removed permission {} from role {}", permissionId, roleId);
+
     }
 
 
