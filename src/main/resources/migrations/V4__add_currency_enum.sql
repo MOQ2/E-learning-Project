@@ -7,6 +7,7 @@ CREATE TYPE currency_type AS ENUM (
 );
 
 -- Update subscription_plans table
+
 ALTER TABLE subscription_plans 
 ALTER COLUMN currency DROP DEFAULT;
 
