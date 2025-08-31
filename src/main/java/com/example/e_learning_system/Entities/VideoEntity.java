@@ -1,10 +1,7 @@
 package com.example.e_learning_system.Entities;
 
-import com.example.e_learning_system.Entities.BaseEntity;
-import com.example.e_learning_system.Entities.UserEntity;
 import jakarta.persistence.*;
 import lombok.*;
-import org.hibernate.annotations.Fetch;
 import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.type.SqlTypes;
 

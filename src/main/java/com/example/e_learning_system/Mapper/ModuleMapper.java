@@ -6,10 +6,8 @@ import com.example.e_learning_system.Dto.ModuleDtos.ModuleSummaryDto;
 import com.example.e_learning_system.Dto.ModuleDtos.UpdateModuleDto;
 import com.example.e_learning_system.Dto.VideoDtos.VideoDto;
 import com.example.e_learning_system.Entities.Module;
-import jakarta.validation.Valid;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
 public class ModuleMapper {
 

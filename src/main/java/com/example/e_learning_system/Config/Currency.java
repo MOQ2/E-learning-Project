@@ -3,24 +3,7 @@ package com.example.e_learning_system.Config;
 public enum Currency {
     USD("USD"),
     EUR("EUR"),
-    GBP("GBP"),
-    JPY("JPY"),
-    AUD("AUD"),
-    CAD("CAD"),
-    CHF("CHF"),
-    CNY("CNY"),
-    SEK("SEK"),
-    NZD("NZD"),
-    MXN("MXN"),
-    SGD("SGD"),
-    HKD("HKD"),
-    NOK("NOK"),
-    KRW("KRW"),
-    TRY("TRY"),
-    RUB("RUB"),
-    INR("INR"),
-    BRL("BRL"),
-    ZAR("ZAR"),
+    GOD("GOD"),
     ILS("ILS");
 
     private final String value;

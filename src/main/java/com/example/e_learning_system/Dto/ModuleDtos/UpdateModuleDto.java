@@ -2,9 +2,7 @@ package com.example.e_learning_system.Dto.ModuleDtos;
 
 
 import com.example.e_learning_system.Config.CourseStatus;
-import jakarta.validation.constraints.*;
 import lombok.AllArgsConstructor;
-import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.experimental.SuperBuilder;

@@ -2,15 +2,12 @@ package com.example.e_learning_system.Dto;
 
 import com.example.e_learning_system.Entities.PermissionsEntity;
 import com.example.e_learning_system.Entities.RolesEntity;
-import com.example.e_learning_system.Entities.RolesPermissionsEntity;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.util.ArrayList;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -33,6 +30,7 @@ public class RoleResponseDTO {
         }
 
     }
+
 
 
     private Set<PermissionsResponsDTO> setPermissions(Set<PermissionsEntity> permissions) {
