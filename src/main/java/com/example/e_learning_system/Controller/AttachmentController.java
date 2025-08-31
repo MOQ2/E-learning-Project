@@ -4,7 +4,7 @@ import com.example.e_learning_system.Dto.ApiResponse;
 import com.example.e_learning_system.Dto.AttachmentDtos.AttachmentDto;
 import com.example.e_learning_system.Dto.AttachmentDtos.CreateAttachmentDto;
 import com.example.e_learning_system.Dto.AttachmentDtos.UpdateAttachmentDto;
-import com.example.e_learning_system.Interfaces.AttachmentService;
+import com.example.e_learning_system.Service.Interfaces.AttachmentService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.core.io.Resource;
 import org.springframework.http.HttpStatus;

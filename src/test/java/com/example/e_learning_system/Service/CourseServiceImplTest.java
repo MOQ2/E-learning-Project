@@ -76,7 +76,7 @@ class CourseServiceImplTest {
         createCourseDto.setName("Test Course");
         createCourseDto.setDescription("Test Description");
         createCourseDto.setOneTimePrice(BigDecimal.valueOf(99.99));
-        createCourseDto.setDifficultyLevel(DifficultyLevel.BEGINNER);
+        createCourseDto.setDifficultyLevel(DifficultyLevel.BIGINNER);
         createCourseDto.setStatus(CourseStatus.DRAFT);
         createCourseDto.setCurrency(Currency.USD);
         createCourseDto.setThumbnail("http://example.com/thumb.jpg");

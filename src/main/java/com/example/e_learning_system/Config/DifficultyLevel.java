@@ -1,7 +1,7 @@
 package com.example.e_learning_system.Config;
 
 public enum DifficultyLevel {
-    BEGINNER("beginner"),
+    BIGINNER("biginner"),
     INTERMEDIATE("intermediate"),
     ADVANCED("advanced");
 

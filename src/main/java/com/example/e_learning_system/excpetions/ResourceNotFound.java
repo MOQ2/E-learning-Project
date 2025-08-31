@@ -1,7 +1,6 @@
 package com.example.e_learning_system.excpetions;
 
-import lombok.Builder;
-import lombok.Data;
+
 import org.springframework.http.HttpStatus;
 
 public class ResourceNotFound extends BaseException{
@@ -49,6 +48,22 @@ public class ResourceNotFound extends BaseException{
     
     public static ResourceNotFound rolePermissionNotFound(String roleId, String permissionId){
         return new ResourceNotFound("Role-Permission relationship", "roleId: " + roleId + ", permissionId: " + permissionId);
+    }
+    
+    public static ResourceNotFound packageNotFound(Long packageId){
+        return new ResourceNotFound("Package", packageId.toString());
+    }
+    
+    public static ResourceNotFound promotionCodeNotFound(String promotionCode){
+        return new ResourceNotFound("Promotion Code", promotionCode);
+    }
+    
+    public static ResourceNotFound simplePaymentNotFound(Integer paymentId){
+        return new ResourceNotFound("Simple Payment", paymentId.toString());
+    }
+    
+    public static ResourceNotFound simplePaymentNotFound(String stripePaymentIntentId){
+        return new ResourceNotFound("Simple Payment", stripePaymentIntentId);
     }
 
 

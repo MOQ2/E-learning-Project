@@ -7,7 +7,7 @@ import com.example.e_learning_system.Dto.ApiResponse;
 import com.example.e_learning_system.Dto.ModuleDtos.CreateModuleDto;
 import com.example.e_learning_system.Dto.ModuleDtos.DetailedModuleDto;
 import com.example.e_learning_system.Dto.ModuleDtos.UpdateModuleDto;
-import com.example.e_learning_system.Interfaces.ModuleService;
+import com.example.e_learning_system.Service.Interfaces.ModuleService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
