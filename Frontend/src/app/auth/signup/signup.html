@@ -1,0 +1,67 @@
+<div class="d-flex justify-content-center align-items-center vh-100">
+  <div class="container col-md-6 col-lg-4 border rounded-5 p-4">
+    <h2 class="text-center mb-4">Sign Up</h2>
+
+    <form [formGroup]="signUpForm" (ngSubmit)="onSubmit()">
+      <div class="mb-2">
+        <label for="name" class="form-label">Name</label>
+        <input type="text" id="name" formControlName="name" class="form-control" placeholder="Enter your full name"/>
+        @if (signUpForm.invalid && signUpForm.get('name')?.touched){
+          @if (signUpForm.get('name')?.errors?.['required']){
+            <p class="text-danger">Name is required</p>
+          }
+        }
+      </div>
+
+      <div class="mb-2">
+        <label for="email" class="form-label">Email</label>
+        <input type="email" id="email" formControlName="email" class="form-control" placeholder="Enter your email"/>
+        @if (signUpForm.invalid && signUpForm.get('email')?.touched){
+          @if (signUpForm.get('email')?.errors?.['required']){
+            <p class="text-danger">Email is required</p>
+          } @else if (signUpForm.get('email')?.errors?.['email']){
+            <p class="text-danger">Invalid email format</p>
+          }
+        }
+      </div>
+
+      <div class="mb-2">
+        <label for="password" class="form-label">Password</label>
+        <input [type]="showPassword ? 'text' : 'password'" id="password" formControlName="password" class="form-control" placeholder="Enter your password"/>
+        @if (signUpForm.invalid && signUpForm.get('password')?.touched){
+          @if (signUpForm.get('password')?.errors?.['required']){
+            <p class="text-danger">Password is required</p>
+          } @else if (signUpForm.get('password')?.errors?.['minlength']){
+            <p class="text-danger">Password must be at least 8 characters</p>
+          }
+        }
+      </div>
+
+      <div class="mb-2">
+        <label for="confirmPassword" class="form-label">Confirm Password</label>
+        <input type="password" id="confirmPassword" formControlName="confirmPassword" class="form-control" placeholder="Confirm your password"/>
+        @if (signUpForm.invalid && signUpForm.get('confirmPassword')?.touched){
+          @if (signUpForm.get('confirmPassword')?.errors?.['required']){
+            <p class="text-danger">Confirm Password is required</p>
+          } @else if (signUpForm.errors?.['passwordMismatch']){
+            <p class="text-danger">Passwords do not match</p>
+          }
+        }
+      </div>
+
+      <div class="mb-2">
+        <label for="phone" class="form-label">Phone</label>
+        <input type="text" id="phone" formControlName="phone" class="form-control" placeholder="Enter your phone number"/>
+      </div>
+
+      <div class="mb-2">
+        <label for="bio" class="form-label">Bio </label>
+        <textarea id="bio" formControlName="bio" class="form-control" placeholder="Tell us about yourself"></textarea>
+      </div>
+
+      <div class="d-flex justify-content-center">
+        <button type="submit" class="btn w-50 mb-3" style="background-color: #deb80e">Sign Up</button>
+      </div>
+    </form>
+  </div>
+</div>
