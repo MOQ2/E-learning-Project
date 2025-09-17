@@ -1,6 +1,6 @@
 import {Component} from '@angular/core';
 import {FormBuilder, FormGroup, ReactiveFormsModule, Validators} from '@angular/forms';
-import {Auth} from '../auth';
+import {Auth} from '../../Services/Auth/auth';
 import {ToastService} from '../../Services/ToastService/toast-service';
 @Component({
   selector: 'app-signup',

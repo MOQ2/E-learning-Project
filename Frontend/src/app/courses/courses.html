@@ -1,0 +1,19 @@
+<div class="row">
+  @for (c of course ; track c.id) {
+    <div class="col-md-4 mb-4">
+      <div class="course-card">
+        <img class="course-img"
+             [src]="'https://campustechnology.com/-/media/edu/campustechnology/2019-images/20191209online.jpg'"
+             alt="{{ c.name }}">
+        <div class="course-body">
+          <h5 class="course-title">{{ c.name }}</h5>
+          <p class="course-desc">{{ c.description }}</p>
+          <div class="course-footer">
+            <span class="rating">⭐ 4.7 </span>
+            <span class="price">{{c.oneTimePrice}}</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  }
+</div>

@@ -1,8 +1,8 @@
 import { Component } from '@angular/core';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
-import { Auth } from '../auth';
+import { Auth } from '../../Services/Auth/auth';
 import {ToastService} from '../../Services/ToastService/toast-service';
-import {UserService} from '../../Services/user/user-service';
+import {UserService} from '../../Services/User/user-service';
 import { Router } from '@angular/router';
 
 @Component({
