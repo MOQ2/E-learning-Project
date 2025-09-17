@@ -26,6 +26,7 @@ public class JwtUtil {
         claims.put("user_id", user.getId());
         claims.put("name", user.getName());
         claims.put("role", user.getRole().getName().toString());
+        claims.put("profilePictureUrl",user.getProfilePictureUrl());
         return Jwts.builder()
                 .setClaims(claims)
                 .setSubject(user.getEmail())

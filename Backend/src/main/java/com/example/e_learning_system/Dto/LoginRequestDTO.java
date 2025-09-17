@@ -11,6 +11,6 @@ public class LoginRequestDTO {
     @Email(message = "invalid email format")
     private String email;
     @NotBlank(message = "password should be exist")
-    @Size(min = 6 , message = "password should be at least 6 characters")
+    @Size(min = 8 , message = "password should be at least 8 characters")
     private String password;
 }
