@@ -20,8 +20,10 @@ public class AuthMapper {
         userEntity.setEmailVerified(false);
         userEntity.setLastLoginAt(LocalDateTime.now());
         userEntity.setBio(registerRequestDTO.getBio());
-        //todo later
-        userEntity.setProfilePictureUrl("profilePictureUrl");
+        String avatarUrl = "https://ui-avatars.com/api/?name="
+                + registerRequestDTO.getName().replace(" ", "+")
+                + "&background=random&color=fff";
+        userEntity.setProfilePictureUrl(avatarUrl);
         return userEntity;
     }
 }
