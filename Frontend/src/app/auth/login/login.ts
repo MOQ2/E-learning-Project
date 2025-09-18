@@ -32,7 +32,7 @@ export class Login {
           localStorage.setItem('token', res.token);
           this.userService.setUser(res.token);
           this.toast.success('Login successful!');
-          this.router.navigate(['/']);
+          this.router.navigate(['/courses']);
         },
         error: () => {
           this.toast.error('Login failed!');
