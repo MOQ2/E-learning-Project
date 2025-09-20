@@ -7,3 +7,23 @@
   background-color: #f44336 !important;
   color: #fff !important;
 }
+
+/* Global CSS custom properties (make available to all components) */
+:root {
+  --purple: #8257e6;
+  --orange: #ff914d;
+  --yellow: #ffe167;
+  --background: #FFF7FA;
+  --card-bg: #fff;
+  --border: rgb(175,152,172);
+  --text: #222;
+  --muted: #696969;
+  --accent: #00cba9;
+}
+
+/* Apply global page background using the custom property */
+html, body {
+  height: 100%;
+  background: var(--background, #FFF7FA);
+  margin: 0;
+}
