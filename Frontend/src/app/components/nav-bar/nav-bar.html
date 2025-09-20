@@ -1,0 +1,27 @@
+    <div class="container">
+      <header class="header">
+        <div class="header-content">
+          <div class="logo">
+            <img class="logo-img" src="/mortarboard_1940690.png" alt="EduPro Logo">
+            <span class="logo-text">EduPro</span>
+          </div>
+          <nav class="nav-links">
+            <a href="#" (click)="setActiveLink('Home')" [class.active]="isActive('Home')">Home</a>
+            <a href="#" (click)="setActiveLink('Courses')" [class.active]="isActive('Courses')">Courses</a>
+            <a href="#" (click)="setActiveLink('My Learning')" [class.active]="isActive('My Learning')">My Learning</a>
+            <a href="#" (click)="setActiveLink('Profile')" [class.active]="isActive('Profile')">Profile</a>
+          </nav>
+
+          <div class="header-actions">
+            <button class="btn btn-explore">
+              <span class="search-icon">⚲</span>
+              Explore Courses
+            </button>
+            <button class="btn btn-primary create-course-btn">
+              <span class="plus-icon">+</span>
+              Create Course
+            </button>
+          </div>
+        </div>
+      </header>
+    </div>
