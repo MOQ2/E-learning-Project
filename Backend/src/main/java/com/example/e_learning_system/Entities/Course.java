@@ -98,6 +98,21 @@ public class Course extends BaseEntity {
     @OneToMany(mappedBy = "course", fetch = FetchType.LAZY)
     private Set<UserCourseAccess> userCourseAccesses;
 
+    @ManyToMany(
+            fetch = FetchType.LAZY,
+            cascade = {
+                    CascadeType.PERSIST,
+                    CascadeType.MERGE
+            }
+    )
+    @JoinTable(
+            name = "course_tags",
+            joinColumns = @JoinColumn(name = "course_id"),
+            inverseJoinColumns = @JoinColumn(name = "tag_id")
+    )
+    private Set<TagsEntity> tags = new HashSet<>();
+
+
     @Transient
     public Set <Module> getModules (){
         if(this.courseModules == null)
@@ -131,5 +146,20 @@ public class Course extends BaseEntity {
                 return false;
         }
         return true;
+    }
+
+    public void addTag (TagsEntity tag){
+        if(tag == null)
+            return;
+
+        this.tags.add(tag);
+        tag.getCourses().add(this);
+    }
+    public void removeTag (TagsEntity tag){
+        if(tag == null)
+            return;
+
+        this.tags.remove(tag);
+        tag.getCourses().remove(this);
     }
 }
