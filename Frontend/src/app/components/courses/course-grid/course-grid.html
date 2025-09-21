@@ -24,7 +24,7 @@
         class="top-filter"
         [class.active]="filter.active"
         (click)="toggleTopFilter(filter)">
-        <span class="filter-icon">{{ filter.icon }}</span>
+        <img class="filter-icon" src="{{ filter.icon }}" alt="Filter Icon" style="height: 1em; width: 1em; vertical-align: middle; margin-right: 0.3em;" />
         {{ filter.name }}
       </button>
     </div>
@@ -35,13 +35,7 @@
         <button class="more-filters-btn" (click)="onMoreFilters()">
           ≡ More filters
         </button>
-        <div class="sort-dropdown">
-          <select class="sort-select" (change)="onSortChange($event)">
-            <option *ngFor="let option of sortOptions" [selected]="option.selected">
-              Sort: {{ option.name }}
-            </option>
-          </select>
-        </div>
+
       </div>
     </div>
   </div>
