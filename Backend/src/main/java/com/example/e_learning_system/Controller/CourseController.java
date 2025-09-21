@@ -3,6 +3,7 @@ package com.example.e_learning_system.Controller;
 import com.example.e_learning_system.Config.CourseStatus;
 import com.example.e_learning_system.Config.Currency;
 import com.example.e_learning_system.Config.DifficultyLevel;
+import com.example.e_learning_system.Config.Tags;
 import com.example.e_learning_system.Dto.ApiResponse;
 import com.example.e_learning_system.Dto.CourseDtos.CourseDetailsDto;
 import com.example.e_learning_system.Dto.CourseDtos.CourseFilterDto;
@@ -58,7 +59,9 @@ public class CourseController {
             @RequestParam(required = false) Boolean isFree,
             @RequestParam(required = false) Integer createdByUserId,
             @RequestParam(required = false) List<CourseStatus> statuses,
-            @RequestParam(required = false) List<DifficultyLevel> difficultyLevels) {
+            @RequestParam(required = false) List<DifficultyLevel> difficultyLevels,
+            @RequestParam(required = false) List<Tags> tags
+            ) {
 
         CourseFilterDto filterDto = CourseFilterDto.builder()
                 .name(name)
@@ -97,7 +100,7 @@ public class CourseController {
             @Valid @RequestBody CreateCourseDto createCourseDto
             ) {
 
-        
+        // TODO - replace with actual user ID from JWT
         CourseDetailsDto course = courseService.createCourse(createCourseDto, 1);
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(ApiResponse.success("Course created successfully", course));
