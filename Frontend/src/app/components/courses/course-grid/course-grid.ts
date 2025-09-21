@@ -12,6 +12,7 @@ export interface Course {
   students: string;
   category: string;
   image: string;
+  price?: number;
   categoryColor: string;
   isEnrolled?: boolean;
 }
@@ -30,10 +31,10 @@ export class CourseGridComponent {
 
 
   topFilters = [
-    { name: 'Trending', active: true, icon: '📈' },
-    { name: 'Top Rated', active: false, icon: '⭐' },
-    { name: 'New', active: false, icon: '🆕' },
-    { name: 'Under 2h', active: false, icon: '⏰' }
+    { name: 'Trending', active: true, icon: '' },
+    { name: 'Top Rated', active: false, icon: 'icons/badge-svgrepo-com.svg' },
+    { name: 'New', active: false, icon: 'icons/flame-svgrepo-com.svg' },
+    { name: 'Under 2h', active: false, icon: 'icons/clock-three-svgrepo-com.svg' }
   ];
 
   sortOptions = [
@@ -54,7 +55,8 @@ export class CourseGridComponent {
       students: '23k',
       category: 'Development',
       categoryColor: '#22c55e',
-      image: 'https://images.unsplash.com/photo-1461749280684-dccba630e2f6?w=400&h=200&fit=crop'
+      image: 'https://images.unsplash.com/photo-1461749280684-dccba630e2f6?w=400&h=200&fit=crop',
+      price: 49.99
     },
     {
       id: 2,
@@ -66,7 +68,8 @@ export class CourseGridComponent {
       students: '12k',
       category: 'Design',
       categoryColor: '#3b82f6',
-      image: 'https://images.unsplash.com/photo-1581291518857-4e27b48ff24e?w=400&h=200&fit=crop'
+      image: 'https://images.unsplash.com/photo-1581291518857-4e27b48ff24e?w=400&h=200&fit=crop',
+      price: 39.99
     },
     {
       id: 3,
@@ -78,7 +81,8 @@ export class CourseGridComponent {
       students: '18k',
       category: 'Data',
       categoryColor: '#f59e0b',
-      image: 'https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=400&h=200&fit=crop'
+      image: 'https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=400&h=200&fit=crop',
+      price: 29.99
     },
     {
       id: 4,
@@ -90,7 +94,8 @@ export class CourseGridComponent {
       students: '9k',
       category: 'Business',
       categoryColor: '#8b5cf6',
-      image: 'https://images.unsplash.com/photo-1556761175-b413da4baf72?w=400&h=200&fit=crop'
+      image: 'https://images.unsplash.com/photo-1556761175-b413da4baf72?w=400&h=200&fit=crop',
+      price: 49.99
     },
     {
       id: 5,
@@ -102,7 +107,8 @@ export class CourseGridComponent {
       students: '7k',
       category: 'Language',
       categoryColor: '#ef4444',
-      image: 'https://images.unsplash.com/photo-1434030216411-0b793f4b4173?w=400&h=200&fit=crop'
+      image: 'https://images.unsplash.com/photo-1434030216411-0b793f4b4173?w=400&h=200&fit=crop',
+      price: 19.99
     },
     {
       id: 6,
@@ -114,7 +120,8 @@ export class CourseGridComponent {
       students: '15k',
       category: 'AI',
       categoryColor: '#06b6d4',
-      image: 'https://images.unsplash.com/photo-1555949963-aa79dcee981c?w=400&h=200&fit=crop'
+      image: 'https://images.unsplash.com/photo-1555949963-aa79dcee981c?w=400&h=200&fit=crop',
+      price: 59.99
     }
   ];
 

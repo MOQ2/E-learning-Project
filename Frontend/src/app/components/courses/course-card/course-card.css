@@ -76,6 +76,13 @@
   line-height: 1.4;
 }
 
+.course-price {
+  font-size: 20px;
+  font-weight: 700;
+  color: #8b5cf6;
+  margin-bottom: 8px;
+}
+
 .course-instructor {
   font-size: 14px;
   color: #6b7280;
