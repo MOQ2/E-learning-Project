@@ -1,0 +1,79 @@
+<div class="course-grid-container">
+  <div class="hero-section">
+    <div class="hero-content">
+      <h1 class="hero-title">Explore top courses</h1>
+      <p class="hero-subtitle">Browse curated classes across design, development, data, business and more.</p>
+      <div class="hero-actions">
+        <button class="surprise-btn" (click)="onSurpriseMe()">
+          ✨ Surprise me
+        </button>
+        <button class="refine-btn" (click)="onRefineFilters()">
+          ⚙️ Refine filters
+        </button>
+      </div>
+    </div>
+    <div class="hero-image">
+      <div class="gradient-bg"></div>
+    </div>
+  </div>
+
+  <div class="filters-bar">
+    <div class="top-filters">
+      <button
+        *ngFor="let filter of topFilters"
+        class="top-filter"
+        [class.active]="filter.active"
+        (click)="toggleTopFilter(filter)">
+        <span class="filter-icon">{{ filter.icon }}</span>
+        {{ filter.name }}
+      </button>
+    </div>
+
+    <div class="results-info">
+      <span class="results-count">{{ totalResults }} results</span>
+      <div class="filter-actions">
+        <button class="more-filters-btn" (click)="onMoreFilters()">
+          ≡ More filters
+        </button>
+        <div class="sort-dropdown">
+          <select class="sort-select" (change)="onSortChange($event)">
+            <option *ngFor="let option of sortOptions" [selected]="option.selected">
+              Sort: {{ option.name }}
+            </option>
+          </select>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="courses-grid">
+    <app-course-card
+      *ngFor="let course of courses"
+      [course]="course">
+    </app-course-card>
+  </div>
+
+  <div class="pagination">
+    <button
+      class="pagination-btn"
+      [disabled]="currentPage === 1"
+      (click)="goToPage(currentPage - 1)">
+      ← Prev
+    </button>
+
+    <button
+      *ngFor="let page of getPages()"
+      class="page-btn"
+      [class.active]="page === currentPage"
+      (click)="goToPage(page)">
+      {{ page }}
+    </button>
+
+    <button
+      class="pagination-btn"
+      [disabled]="currentPage === totalPages"
+      (click)="goToPage(currentPage + 1)">
+      Next →
+    </button>
+  </div>
+</div>
