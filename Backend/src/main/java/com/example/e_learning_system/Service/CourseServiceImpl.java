@@ -1,16 +1,19 @@
 package com.example.e_learning_system.Service;
 
 import com.example.e_learning_system.Config.CourseStatus;
+import com.example.e_learning_system.Config.Tags;
 import com.example.e_learning_system.Dto.CourseDtos.*;
 import com.example.e_learning_system.Entities.Course;
 import com.example.e_learning_system.Entities.CourseModules;
 import com.example.e_learning_system.Entities.Module;
+import com.example.e_learning_system.Entities.TagsEntity;
 import com.example.e_learning_system.Entities.UserEntity;
 import com.example.e_learning_system.Service.Interfaces.CourseService;
 import com.example.e_learning_system.Mapper.CourseMapper;
 import com.example.e_learning_system.Repository.CourseModulesRepository;
 import com.example.e_learning_system.Repository.CourseRepository;
 import com.example.e_learning_system.Repository.ModuleRepository;
+import com.example.e_learning_system.Repository.TagsRepository;
 import com.example.e_learning_system.Repository.UserRepository;
 import com.example.e_learning_system.excpetions.ResourceNotFound;
 import jakarta.persistence.EntityManager;
@@ -29,6 +32,8 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -41,7 +46,7 @@ public class CourseServiceImpl implements CourseService {
     private final ModuleRepository moduleRepository;
     private final EntityManager entityManager;
     private final CourseModulesRepository courseModulesRepository;
-
+    private final TagsRepository tagsRepository;
     @Override
     @Transactional(readOnly = true)
     public List<CourseSummaryDto> getCourses() {
@@ -284,6 +289,14 @@ public class CourseServiceImpl implements CourseService {
             predicates.add(root.get("difficultyLevel").in(filterDto.getDifficultyLevels()));
         }
 
+        // Tags filter
+        if (filterDto.getTags() != null && !filterDto.getTags().isEmpty()) {
+            for (TagDto tagDto : filterDto.getTags()) {
+                predicates.add(cb.isTrue(cb.literal(tagDto.getName()).in(root.join("tags").get("name"))));
+            }
+        }
+
+        log.info("Filter DTO: {}", filterDto);
         return predicates;
     }
 
@@ -297,6 +310,15 @@ public class CourseServiceImpl implements CourseService {
     private boolean canDeleteCourse(Course course) {
 
         return course.getStatus() == CourseStatus.DRAFT || course.getStatus() == CourseStatus.ARCHIVED;
+    }
+
+    public List<TagDto> getAllTags() {
+        List<TagsEntity> tags = tagsRepository.findAll();
+        List<TagDto> tagDtos = new ArrayList<>();
+        for (TagsEntity tag : tags) {
+            tagDtos.add(new TagDto( tag.getName().name(), tag.getDescription(), tag.getColor()));
+        }
+        return tagDtos;
     }
 
 

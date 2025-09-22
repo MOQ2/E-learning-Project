@@ -5,6 +5,7 @@ import com.example.e_learning_system.Dto.CourseDtos.CourseDetailsDto;
 import com.example.e_learning_system.Dto.CourseDtos.CourseModuleDto;
 import com.example.e_learning_system.Dto.CourseDtos.CourseSummaryDto;
 import com.example.e_learning_system.Dto.CourseDtos.CreateCourseDto;
+import com.example.e_learning_system.Dto.CourseDtos.TagDto;
 import com.example.e_learning_system.Dto.CourseDtos.UpdateCourseDto;
 import com.example.e_learning_system.Entities.Course;
 import com.example.e_learning_system.Entities.CourseModules;
@@ -50,7 +51,8 @@ public class CourseMapper {
                 .difficultyLevel(course.getDifficultyLevel())
                 .isActive(course.isActive())
                 .modules(fromCourseModulesToCourseModuleDtos(course.getCourseModules()))
-                .tags(course.getTags())
+                .tags(convertTagsEntityToTagDtos(course.getTags()))
+                .instructor(course.getCreatedBy() != null ? course.getCreatedBy().getName() : null)
                 .build();
     }
 
@@ -71,7 +73,10 @@ public class CourseMapper {
                 .isActive(course.isActive())
                 .oneTimePrice(course.getOneTimePrice())
                 .currency(course.getCurrency())
-                .tags(course.getTags())
+                .tags(convertTagsEntityToTagDtos(course.getTags()))
+                .thumbnail(course.getThumbnail())
+                .instructor(course.getCreatedBy() != null ? course.getCreatedBy().getName() : null)
+                .estimatedDurationInHours(course.getEstimatedDrationInHours())
                 .build();
     }
 
@@ -187,12 +192,9 @@ public class CourseMapper {
         }
 
         Set<TagsEntity> tags = courseDetailsDto.getTags().stream()
-                .map(tag -> tagsRepository.findByName(tag.getName()))
+                .map(tagDto -> tagsRepository.findByName(tagDto.getName()))
                 .filter(Objects::nonNull)
                 .collect(Collectors.toSet());
-        if (tags.size() != courseDetailsDto.getTags().size()) {
-            throw new IllegalArgumentException("One or more tags not found in the database");
-        }
 
         return Course.builder()
                 .id(courseDetailsDto.getId())
@@ -269,5 +271,17 @@ public class CourseMapper {
         courseModuleDto.setModule(ModuleMapper.fromModuletoModuleSummaryDto(courseModule.getModule()));
 
         return courseModuleDto;
+    }
+
+
+
+    private static Set<TagDto> convertTagsEntityToTagDtos(Set<TagsEntity> tagsEntities) {
+        if (tagsEntities == null || tagsEntities.isEmpty()) {
+            return Collections.emptySet();
+        }
+
+        return tagsEntities.stream()
+                .map(tagEntity -> new TagDto(tagEntity.getName().name(), tagEntity.getDescription(), tagEntity.getColor().toString()))
+                .collect(Collectors.toSet());
     }
 }

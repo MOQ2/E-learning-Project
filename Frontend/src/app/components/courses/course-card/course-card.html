@@ -1,25 +1,26 @@
 <div class="course-card">
   <div class="course-image">
-    <img [src]="course.image" [alt]="course.title" />
-    <div class="course-badge" [style.background-color]="course.categoryColor">
-      {{ course.category }}
+    <img [src]="course.thumbnail" [alt]="course.name" />
+    <div class="course-badge" [style.background-color]="course.tags[0].color">
+      {{ course.tags[0].name }}
     </div>
     <div class="course-rating">
-      <span class="rating-stars">
-        <span *ngFor="let star of generateStars()">{{ star }}</span>
+
+      <span class="rating-value">
+        <span class="star-icon" aria-hidden="true">★</span>
+        {{ course.rating }} · {{ course.ratingsCount }}
       </span>
-      <span class="rating-value">{{ course.rating }}</span>
     </div>
   </div>
 
   <div class="course-content">
-    <h3 class="course-title">{{ course.title }}</h3>
-    <div class="course-price">{{ course.price }}</div>
-    <p class="course-instructor">{{ course.lessons }} lessons • by {{ course.instructor }}</p>
+    <h3 class="course-title">{{ course.name }}</h3>
+    <div class="course-price">${{ course.oneTimePrice }}</div>
+    <p class="course-instructor">{{ course.instructor }} </p>
 
     <div class="course-meta">
-      <span class="course-duration">⏱️ {{ course.duration }}</span>
-      <span class="course-students">👥 {{ course.students }}</span>
+      <span class="course-duration">⏱️ {{ course.estimatedDurationInHours ? course.estimatedDurationInHours : 0 }} hours</span>
+      <span class="course-students">👥 {{ course.students ? course.students : 0 }}</span>
     </div>
 
     <div class="course-actions">

@@ -1,10 +1,10 @@
 .sidebar {
   width: 280px;
-  background: white;
+  background: #fde9ef;
   border-radius: 12px;
   padding: 20px;
   height: fit-content;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  box-shadow: none;
 }
 
 .discover-section {
@@ -29,75 +29,95 @@
 
 .filter-section {
   margin-bottom: 24px;
+  background: white;
+  border-radius: 16px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.04);
+  padding: 18px 16px;
+  border: 1px solid #f3f4f6;
 }
 
 .filter-title {
-  font-size: 16px;
+  font-size: 18px;
   font-weight: 600;
-  color: #1f2937;
-  margin-bottom: 12px;
+  color: #4b2e09;
+  margin-bottom: 16px;
 }
 
 .filter-options {
   display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
+  flex-direction: column;
+  gap: 16px;
 }
 
 .filter-option {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  background: #f3f4f6;
-  border: 1px solid #e5e7eb;
-  border-radius: 20px;
-  padding: 8px 12px;
-  font-size: 14px;
-  color: #6b7280;
+  background: transparent;
+  border: none;
+  border-radius: 12px;
+  padding: 10px 14px;
+  font-size: 16px;
+  color: #1f2937;
+  text-align: left;
   cursor: pointer;
-  transition: all 0.2s;
+  transition: background 0.2s, color 0.2s;
+  font-weight: 400;
 }
 
 .filter-option:hover {
-  background: #e5e7eb;
+  background: #f3f4f6;
 }
 
 .filter-option.selected {
-  background: #fef3c7;
-  border-color: #f59e0b;
+  background: #fde9c6;
   color: #92400e;
+  font-weight: 500;
 }
 
 .duration-options {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
 }
 
 .duration-option {
-  background: #f3f4f6;
-  border: 1px solid #e5e7eb;
-  border-radius: 8px;
-  padding: 8px 12px;
-  font-size: 14px;
-  color: #6b7280;
+  background: transparent;
+  border: none;
+  border-radius: 12px;
+  padding: 10px 14px;
+  font-size: 16px;
+  color: #1f2937;
+  text-align: left;
   cursor: pointer;
-  text-align: center;
-  transition: all 0.2s;
+  transition: background 0.2s, color 0.2s;
+  font-weight: 400;
 }
 
 .duration-option:hover {
-  background: #e5e7eb;
+  background: #f3f4f6;
 }
 
 .duration-option.selected {
-  background: #fef3c7;
-  border-color: #f59e0b;
+  background: #fde9c6;
   color: #92400e;
+  font-weight: 500;
 }
 
 .price-option {
-  flex: 1;
+  background: transparent;
+  border: none;
+  border-radius: 12px;
+  padding: 10px 14px;
+  font-size: 16px;
+  color: #1f2937;
+  text-align: left;
+  cursor: pointer;
+  transition: background 0.2s, color 0.2s;
+  font-weight: 400;
+}
+
+.price-option.selected {
+  background: #fde9c6;
+  color: #92400e;
+  font-weight: 500;
 }
 
 .toggle-label {
@@ -146,5 +166,5 @@
 .level-icon,
 .price-icon,
 .feature-icon {
-  font-size: 16px;
+  display: none;
 }

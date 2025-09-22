@@ -29,5 +29,8 @@ public class CourseSummaryDto {
     private boolean isActive ;
     private BigDecimal oneTimePrice ;
     private Currency currency;
-    private Set<TagsEntity> tags;
+    private Set<TagDto> tags;
+    private String thumbnail;
+    private String instructor;
+    private int estimatedDurationInHours;
 }

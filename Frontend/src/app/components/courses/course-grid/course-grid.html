@@ -43,7 +43,10 @@
   <div class="courses-grid">
     <app-course-card
       *ngFor="let course of courses"
-      [course]="course">
+      [course]="course"
+      (enrollClick)="onCourseEnrollClick($event)"
+      (saveClick)="onCourseSaveClick($event)"
+      >
     </app-course-card>
   </div>
 
@@ -51,7 +54,7 @@
     <button
       class="pagination-btn"
       [disabled]="currentPage === 1"
-      (click)="goToPage(currentPage - 1)">
+  (click)="goToPageAndScroll(currentPage - 1)">
       ← Prev
     </button>
 
@@ -59,14 +62,14 @@
       *ngFor="let page of getPages()"
       class="page-btn"
       [class.active]="page === currentPage"
-      (click)="goToPage(page)">
+  (click)="goToPageAndScroll(page)">
       {{ page }}
     </button>
 
     <button
       class="pagination-btn"
       [disabled]="currentPage === totalPages"
-      (click)="goToPage(currentPage + 1)">
+  (click)="goToPageAndScroll(currentPage + 1)">
       Next →
     </button>
   </div>

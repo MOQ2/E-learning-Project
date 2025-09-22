@@ -1,5 +1,8 @@
 
 <aside class="sidebar">
+  <div style="margin-bottom: 10px;">
+    <span style="color: #6b7280; font-size: 14px; font-weight: 500;">Filters</span>
+  </div>
   <div class="discover-section">
     <button type="button" class="discover-btn" (click)="onDiscoverTopics()">
       ✨ Discover new topics tailored for you
@@ -7,8 +10,11 @@
   </div>
 
   <div class="filter-section">
-    <h3 class="filter-title">Categories</h3>
-    <div class="filter-options">
+    <h3 class="filter-title" style="cursor:pointer;" (click)="showCategories = !showCategories">
+      Categories
+      <span style="font-size:16px; margin-left:8px;">{{ showCategories ? '▲' : '▼' }}</span>
+    </h3>
+    <div class="filter-options" *ngIf="showCategories">
       <button type="button"
         *ngFor="let category of categories"
         class="filter-option"

@@ -1,6 +1,7 @@
 package com.example.e_learning_system.Entities;
 
 import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
 import jakarta.persistence.ManyToMany;
@@ -10,11 +11,13 @@ import lombok.Setter;
 import java.util.HashSet;
 import java.util.Set;
 
-import com.example.e_learning_system.Config.TageColor;
 import com.example.e_learning_system.Config.Tags;
+
 
 @Getter
 @Setter
+
+@Entity(name = "tags")
 public class TagsEntity extends BaseEntity {
 
     @Column(name = "name", nullable = false, unique = true)
@@ -25,9 +28,17 @@ public class TagsEntity extends BaseEntity {
     private String description;
 
     @Column(name = "color", nullable = false)
-    @Enumerated(EnumType.STRING)
-    private TageColor color;
+    private String color;
 
+
+    public TagsEntity() {
+    }
+
+    public TagsEntity(Tags name, String description, String color) {
+        this.name = name;
+        this.description = description;
+        this.color = color;
+    }
 
     @Override
     public String getEntityType() {

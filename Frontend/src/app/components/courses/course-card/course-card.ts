@@ -1,6 +1,8 @@
 import { Component, EventEmitter, Input, Output } from '@angular/core';
-import { Course } from '../course-grid/course-grid';
 import { CommonModule } from '@angular/common';
+import { CourseDto as Course } from '../../../Dtos/CourseDto';
+
+
 @Component({
   selector: 'app-course-card',
   templateUrl: './course-card.html',
@@ -10,7 +12,6 @@ import { CommonModule } from '@angular/common';
 })
 export class CourseCardComponent {
   @Input() course!: Course;
-
   @Input() isEnrolled = false;
   @Input() isSaved = false;
 
@@ -20,7 +21,7 @@ export class CourseCardComponent {
 
   onEnroll() {
     this.isEnrolled = !this.isEnrolled;
-    console.log(`${this.isEnrolled ? 'Enrolled in' : 'Unenrolled from'} ${this.course.title}`);
+    console.log(`${this.isEnrolled ? 'Enrolled in' : 'Unenrolled from'} ${this.course.name}`);
     this.enrollClick.emit({ course: this.course, enrolled: this.isEnrolled });
   }
 
@@ -29,18 +30,7 @@ export class CourseCardComponent {
     this.saveClick.emit({ course: this.course, saved: this.isSaved });
   }
 
-  generateStars(): string[] {
-    const fullStars = Math.floor(this.course.rating);
-    const hasHalfStar = this.course.rating % 1 !== 0;
-    const stars = [];
-
-    for (let i = 0; i < fullStars; i++) {
-      stars.push('⭐');
-    }
-    if (hasHalfStar) {
-      stars.push('<i class="bi bi-star-half"></i>');
-    }
-
-    return stars;
+  generateStars(): string {
+    return this.course.rating ? '⭐ ' + this.course.rating.toFixed(1) : 'No ratings yet';
   }
 }
