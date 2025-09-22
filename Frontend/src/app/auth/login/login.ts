@@ -1,18 +1,21 @@
-import { Component } from '@angular/core';
+import {Component, OnDestroy} from '@angular/core';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Auth } from '../../Services/Auth/auth';
 import {ToastService} from '../../Services/ToastService/toast-service';
 import {UserService} from '../../Services/User/user-service';
-import { Router } from '@angular/router';
+import {Router, RouterLink} from '@angular/router';
+import {LoginRequestDTO} from '../../models/authDto';
+import {Subject, takeUntil} from 'rxjs';
 
 @Component({
   selector: 'app-login',
-  imports: [ReactiveFormsModule],
+  imports: [ReactiveFormsModule, RouterLink],
   templateUrl: './login.html',
   styleUrls: ['./login.css']
 })
-export class Login {
+export class Login implements OnDestroy{
   loginForm: FormGroup;
+  private destroy$ = new Subject<void>();
 
   constructor(private fb: FormBuilder, private authService: Auth,private toast :ToastService,
               private userService: UserService , private router: Router
@@ -23,21 +26,43 @@ export class Login {
     });
   }
 
+  getErrors(controlName: string): string[] {
+    const control = this.loginForm.get(controlName);
+    if (!control || !control.touched || !control.errors) return [];
+
+    const messages: Record<string, string> = {
+      required: `${controlName} is required.`,
+      email: 'Invalid email format.',
+      minlength: controlName === 'password'
+        ? 'Password must be at least 8 characters.'
+        : ''
+    };
+
+    return Object.keys(control.errors).map(key => messages[key]).filter(msg => msg !== '');
+  }
+
+
   onSubmit() {
     this.loginForm.markAllAsTouched();
     if (this.loginForm.valid) {
-      const { email, password } = this.loginForm.value;
-      this.authService.login(email, password).subscribe({
+      const loginDTO: LoginRequestDTO = this.loginForm.value;
+      this.authService.login(loginDTO).pipe(takeUntil(this.destroy$))
+        .subscribe({
         next: (res) => {
           localStorage.setItem('token', res.token);
           this.userService.setUser(res.token);
           this.toast.success('Login successful!');
           this.router.navigate(['/']);
         },
-        error: () => {
-          this.toast.error('Login failed!');
+        error: (err) => {
+          this.toast.error(err.error.message);
         }
       });
     }
+  }
+
+  ngOnDestroy() {
+    this.destroy$.next();
+    this.destroy$.complete();
   }
 }
