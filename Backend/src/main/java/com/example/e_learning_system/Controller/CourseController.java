@@ -9,8 +9,14 @@ import com.example.e_learning_system.Dto.CourseDtos.CourseDetailsDto;
 import com.example.e_learning_system.Dto.CourseDtos.CourseFilterDto;
 import com.example.e_learning_system.Dto.CourseDtos.CourseSummaryDto;
 import com.example.e_learning_system.Dto.CourseDtos.CreateCourseDto;
+import com.example.e_learning_system.Dto.CourseDtos.TagDto;
 import com.example.e_learning_system.Dto.CourseDtos.UpdateCourseDto;
+import com.example.e_learning_system.Entities.TagsEntity;
 import com.example.e_learning_system.Service.Interfaces.CourseService;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
+
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -21,8 +27,12 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+
 import java.math.BigDecimal;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+
 
 @Slf4j
 @RestController
@@ -60,8 +70,20 @@ public class CourseController {
             @RequestParam(required = false) Integer createdByUserId,
             @RequestParam(required = false) List<CourseStatus> statuses,
             @RequestParam(required = false) List<DifficultyLevel> difficultyLevels,
-            @RequestParam(required = false) List<Tags> tags
+            @RequestParam(required = false) String tags
             ) {
+
+                
+            List<TagDto> tagList = new ArrayList<>();
+
+            if (tags != null && !tags.isEmpty()) {
+            try {
+                    ObjectMapper objectMapper = new ObjectMapper();
+                    tagList = objectMapper.readValue(tags, new TypeReference<List<TagDto>>() {});
+                } catch (JsonProcessingException e) {
+                    throw new RuntimeException("Invalid tags format", e);
+                }
+            }
 
         CourseFilterDto filterDto = CourseFilterDto.builder()
                 .name(name)
@@ -76,6 +98,7 @@ public class CourseController {
                 .createdByUserId(createdByUserId)
                 .statuses(statuses)
                 .difficultyLevels(difficultyLevels)
+                .tags(tagList)
                 .build();
 
         Page<CourseSummaryDto> courses = courseService.getCourses(filterDto, pageable);
@@ -304,6 +327,14 @@ public class CourseController {
         courseService.removeMoudelFromCourse(courseId, moduleId);
         return ResponseEntity.ok(ApiResponse.success("module %d have been added to course %d".formatted(moduleId,courseId),null));
     }
+
+
+    @GetMapping("/categories")
+    public ResponseEntity<ApiResponse<List<TagDto>>> getCategories() {
+
+        return ResponseEntity.ok(ApiResponse.success("Tags retrieved successfully", courseService.getAllTags()));
+    }
+    
 
 
 }

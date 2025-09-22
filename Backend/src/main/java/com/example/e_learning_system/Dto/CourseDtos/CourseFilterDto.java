@@ -6,7 +6,6 @@ import com.example.e_learning_system.Config.CourseStatus;
 import com.example.e_learning_system.Config.Currency;
 import com.example.e_learning_system.Config.DifficultyLevel;
 import com.example.e_learning_system.Config.Tags;
-import com.example.e_learning_system.Entities.TagsEntity;
 
 import lombok.*;
 
@@ -46,7 +45,7 @@ public class CourseFilterDto {
 
     private List<CourseStatus> statuses;
     private List<DifficultyLevel> difficultyLevels;
-    private List<Tags> tags; // filter by tags
+    private List<TagDto> tags; 
 
 
 }

@@ -33,5 +33,7 @@ public class CourseDetailsDto {
     private DifficultyLevel difficultyLevel;
     private boolean isActive;
     private List<CourseModuleDto> modules;
-    private Set<TagsEntity> tags;
+    private Set<TagDto> tags;
+    private String instructor;
+    
 }

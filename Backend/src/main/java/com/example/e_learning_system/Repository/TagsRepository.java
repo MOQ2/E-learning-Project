@@ -9,4 +9,6 @@ import com.example.e_learning_system.Entities.TagsEntity;
 @Repository
 public interface TagsRepository extends JpaRepository<TagsEntity, Integer> {
     TagsEntity findByName(Tags name);
+    TagsEntity findByName(String name);
+    
 }
