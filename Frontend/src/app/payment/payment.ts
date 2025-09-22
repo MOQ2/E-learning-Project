@@ -6,7 +6,6 @@ import {UserService} from '../Services/User/user-service';
 import {CourseService} from '../Services/Courses/course-service';
 import {ToastService} from '../Services/ToastService/toast-service';
 import {CurrencyPipe} from '@angular/common';
-import {UserCourseAccessFromDto} from '../models/userCourseAccessModel';
 
 
 @Component({
@@ -57,9 +56,25 @@ export class Payment {
     });
   }
 
+  getErrors(controlName: string) : string[] {
+    const control = this.paymentForm.get(controlName);
+    if(!control || !control.touched || !control.errors) return [];
+
+    const messages: Record<string, string> = {
+      required: `${controlName} is required.`,
+      pattern: controlName === 'cvv'
+        ? 'CVV must be 3 digits.'
+        : controlName === 'cardNumber'
+          ? 'Card number must be 16 digits.'
+          : controlName === 'expirationDate'
+            ? 'Expiration date must be in MM/YY format.'
+            : ''
+    };
+    return Object.keys(control.errors).map(key => messages[key]);
+  }
+
   pay() {
     this.paymentForm.markAllAsTouched();
-    console.log(this.userService.getUser());
     if (this.paymentForm.valid) {
       const paymentDto: PaymentToDto = {
         ...this.paymentForm.value,
@@ -70,7 +85,7 @@ export class Payment {
       };
 
       this.courseService.payAndGrantAccess(paymentDto, 'PURCHASED').subscribe({
-        next: (res: UserCourseAccessFromDto) => {
+        next: () => {
           this.toast.success('Payment successful and course access granted!');
         },
         error: (err) => {
