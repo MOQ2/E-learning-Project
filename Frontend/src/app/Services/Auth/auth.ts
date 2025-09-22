@@ -4,9 +4,6 @@ import {Observable} from 'rxjs';
 import {environment} from '../../../environments/environment';
 import {AuthResponseDTO, LoginRequestDTO, RegisterRequestDTO} from '../../models/authDto';
 
-interface AuthResponse{
-  token : string;
-}
 
 @Injectable({
   providedIn: 'root'
