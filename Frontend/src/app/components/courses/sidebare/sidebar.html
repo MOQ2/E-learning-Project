@@ -1,0 +1,96 @@
+
+<aside class="sidebar">
+  <div style="margin-bottom: 10px;">
+    <span style="color: #6b7280; font-size: 14px; font-weight: 500;">Filters</span>
+  </div>
+  <div class="discover-section">
+    <button type="button" class="discover-btn" (click)="onDiscoverTopics()">
+      ✨ Discover new topics tailored for you
+    </button>
+  </div>
+
+  <div class="filter-section">
+    <h3 class="filter-title" style="cursor:pointer;" (click)="showCategories = !showCategories">
+      Categories
+      <span style="font-size:16px; margin-left:8px;">{{ showCategories ? '▲' : '▼' }}</span>
+    </h3>
+    <div class="filter-options" *ngIf="showCategories">
+      <button type="button"
+        *ngFor="let category of categories"
+        class="filter-option"
+        [class.selected]="category.selected"
+        (click)="toggleCategory(category)">
+        <span class="option-icon">{{ category.icon }}</span>
+        {{ category.name }}
+      </button>
+    </div>
+  </div>
+
+  <div class="filter-section">
+    <h3 class="filter-title">Level</h3>
+    <div class="filter-options">
+      <button type="button"
+        *ngFor="let level of levels"
+        class="filter-option"
+        [class.selected]="level.selected"
+        (click)="toggleLevel(level)">
+        <span class="level-icon">🎯</span>
+        {{ level.name }}
+      </button>
+    </div>
+  </div>
+
+  <div class="filter-section">
+    <h3 class="filter-title">Duration</h3>
+    <div class="duration-options">
+      <button type="button"
+        *ngFor="let duration of durations"
+        class="duration-option"
+        [class.selected]="duration.selected"
+        (click)="toggleDuration(duration)">
+        {{ duration.name }}
+      </button>
+    </div>
+  </div>
+
+  <div class="filter-section">
+    <h3 class="filter-title">Price</h3>
+    <div class="filter-options">
+      <button type="button"
+        *ngFor="let price of prices"
+        class="filter-option price-option"
+        [class.selected]="price.selected"
+        (click)="togglePrice(price)">
+        <span class="price-icon">💰</span>
+        {{ price.name }}
+      </button>
+    </div>
+  </div>
+
+  <div class="filter-section">
+    <h3 class="filter-title">Features</h3>
+    <div class="filter-options">
+      <button type="button"
+        *ngFor="let feature of features"
+        class="filter-option"
+        [class.selected]="feature.selected"
+        (click)="toggleFeature(feature)">
+        <span class="feature-icon">⚡</span>
+        {{ feature.name }}
+      </button>
+    </div>
+  </div>
+
+  <div class="filter-section">
+    <label class="toggle-label">
+      <input
+        type="checkbox"
+        [checked]="onlyDiscounted"
+        (change)="toggleOnlyDiscounted()"
+        class="toggle-checkbox"
+        aria-label="Only discounted">
+      <span class="toggle-slider"></span>
+      Only discounted
+    </label>
+  </div>
+</aside>
