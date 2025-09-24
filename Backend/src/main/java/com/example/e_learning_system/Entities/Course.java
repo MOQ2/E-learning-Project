@@ -53,10 +53,15 @@ public class Course extends BaseEntity {
     @Enumerated(EnumType.STRING)
     @JdbcTypeCode(SqlTypes.NAMED_ENUM)
     Currency currency;
-    @Column(name = "thumbnail_url")
-    String thumbnail;
-    @Column(name = "preview_video_url")
-    String previewVideoUrl;
+    @Column(name = "required_plan_level")
+    @Builder.Default
+    Integer requiredPlanLevel = 1;
+    @Column(name = "category")
+    String category;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "thumbnail")
+    private Attachment thumbnail;
+
     @Column(name = "estimated_duration_hours")
     int estimatedDrationInHours;
     @Column(name = "is_active")
@@ -110,6 +115,7 @@ public class Course extends BaseEntity {
             joinColumns = @JoinColumn(name = "course_id"),
             inverseJoinColumns = @JoinColumn(name = "tag_id")
     )
+    @Builder.Default
     private Set<TagsEntity> tags = new HashSet<>();
 
 
@@ -128,7 +134,9 @@ public class Course extends BaseEntity {
 
         if (this.courseModules == null)
             this.courseModules = new HashSet<>();
-
+        if (!isUniqOrder(courseModule.getModuleOrder())) {
+            throw new IllegalArgumentException("Module order must be unique");
+        }
         this.courseModules.add(courseModule);
     }
 

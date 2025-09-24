@@ -7,10 +7,12 @@ import com.example.e_learning_system.Dto.CourseDtos.CourseSummaryDto;
 import com.example.e_learning_system.Dto.CourseDtos.CreateCourseDto;
 import com.example.e_learning_system.Dto.CourseDtos.TagDto;
 import com.example.e_learning_system.Dto.CourseDtos.UpdateCourseDto;
+import com.example.e_learning_system.Entities.Attachment;
 import com.example.e_learning_system.Entities.Course;
 import com.example.e_learning_system.Entities.CourseModules;
 import com.example.e_learning_system.Entities.TagsEntity;
 import com.example.e_learning_system.Entities.UserEntity;
+import com.example.e_learning_system.Repository.AttachmentRepository;
 import com.example.e_learning_system.Repository.TagsRepository;
 
 import java.util.Collections;
@@ -19,11 +21,7 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import org.springframework.beans.factory.annotation.Autowired;
-
 public class CourseMapper {
-    @Autowired
-    private static TagsRepository tagsRepository;
     private CourseMapper() {
         // private constructor to prevent instantiation
     }
@@ -43,9 +41,13 @@ public class CourseMapper {
                 .name(course.getName())
                 .description(course.getDescription())
                 .oneTimePrice(course.getOneTimePrice())
+                .subscriptionPriceMonthly(course.getSubscriptionPriceMonthly())
+                .subscriptionPrice3Months(course.getSubscriptionPrice3Months())
+                .subscriptionPrice6Months(course.getSubscriptionPrice6Months())
+                .allowsSubscription(course.getAllowsSubscription())
                 .currency(course.getCurrency())
-                .thumbnail(course.getThumbnail())
-                .previewVideoUrl(course.getPreviewVideoUrl())
+                .category(course.getCategory())
+                .thumbnail(course.getThumbnail() != null ? course.getThumbnail().getId() : null)
                 .estimatedDurationInHours(course.getEstimatedDrationInHours())
                 .status(course.getStatus())
                 .difficultyLevel(course.getDifficultyLevel())
@@ -74,7 +76,7 @@ public class CourseMapper {
                 .oneTimePrice(course.getOneTimePrice())
                 .currency(course.getCurrency())
                 .tags(convertTagsEntityToTagDtos(course.getTags()))
-                .thumbnail(course.getThumbnail())
+                .thumbnail(course.getThumbnail() != null ? course.getThumbnail().getId() : null)
                 .instructor(course.getCreatedBy() != null ? course.getCreatedBy().getName() : null)
                 .estimatedDurationInHours(course.getEstimatedDrationInHours())
                 .build();
@@ -111,7 +113,7 @@ public class CourseMapper {
     /**
      * Maps from CreateCourseDto to Course entity
      */
-    public static Course fromCreateCourseDtoToCourseEntity(CreateCourseDto createCourseDto, UserEntity createdBy) {
+    public static Course fromCreateCourseDtoToCourseEntity(CreateCourseDto createCourseDto, UserEntity createdBy, TagsRepository tagsRepository, AttachmentRepository attachmentRepository) {
         if (createCourseDto == null) {
             return null;
         }
@@ -119,13 +121,21 @@ public class CourseMapper {
                 .map(tag -> tagsRepository.findByName(tag))
                 .filter(Objects::nonNull)
                 .collect(Collectors.toSet());
+        Attachment thumbnail = null;
+        if (createCourseDto.getThumbnail() != null) {
+            thumbnail = attachmentRepository.findById(createCourseDto.getThumbnail()).orElse(null);
+        }
         return Course.builder()
                 .name(createCourseDto.getName())
                 .description(createCourseDto.getDescription())
                 .oneTimePrice(createCourseDto.getOneTimePrice())
+                .subscriptionPriceMonthly(createCourseDto.getSubscriptionPriceMonthly())
+                .subscriptionPrice3Months(createCourseDto.getSubscriptionPrice3Months())
+                .subscriptionPrice6Months(createCourseDto.getSubscriptionPrice6Months())
+                .allowsSubscription(createCourseDto.getAllowsSubscription())
                 .currency(createCourseDto.getCurrency())
-                .thumbnail(createCourseDto.getThumbnail())
-                .previewVideoUrl(createCourseDto.getPreviewVideoUrl())
+                .category(createCourseDto.getCategory())
+                .thumbnail(thumbnail)
                 .estimatedDrationInHours(createCourseDto.getEstimatedDurationInHours())
                 .status(createCourseDto.getStatus())
                 .difficultyLevel(createCourseDto.getDifficultyLevel())
@@ -138,7 +148,7 @@ public class CourseMapper {
     /**
      * Maps from UpdateCourseDto to Course entity
      */
-    public static Course fromUpdateCourseDtoToCourseEntity(UpdateCourseDto updateCourseDto, Course existingCourse) {
+    public static Course fromUpdateCourseDtoToCourseEntity(UpdateCourseDto updateCourseDto, Course existingCourse, TagsRepository tagsRepository, AttachmentRepository attachmentRepository) {
         if (updateCourseDto == null ||  existingCourse == null ) {
             return null;
         }
@@ -156,10 +166,8 @@ public class CourseMapper {
             existingCourse.setCurrency(updateCourseDto.getCurrency());
         }
         if (updateCourseDto.getThumbnail() != null ) {
-            existingCourse.setThumbnail(updateCourseDto.getThumbnail());
-        }
-        if (updateCourseDto.getPreviewVideoUrl() != null ) {
-            existingCourse.setPreviewVideoUrl(updateCourseDto.getPreviewVideoUrl());
+            Attachment thumbnail = attachmentRepository.findById(updateCourseDto.getThumbnail()).orElse(null);
+            existingCourse.setThumbnail(thumbnail);
         }
         if (updateCourseDto.getEstimatedDurationInHours() != null ) {
             existingCourse.setEstimatedDrationInHours(updateCourseDto.getEstimatedDurationInHours());
@@ -186,7 +194,7 @@ public class CourseMapper {
     /**
      * Maps from CourseDetailsDto to Course entity
      */
-    public static Course fromCourseDetailsDtoToCourseEntity(CourseDetailsDto courseDetailsDto) {
+    public static Course fromCourseDetailsDtoToCourseEntity(CourseDetailsDto courseDetailsDto, TagsRepository tagsRepository, AttachmentRepository attachmentRepository) {
         if (courseDetailsDto == null) {
             return null;
         }
@@ -202,8 +210,7 @@ public class CourseMapper {
                 .description(courseDetailsDto.getDescription())
                 .oneTimePrice(courseDetailsDto.getOneTimePrice())
                 .currency(courseDetailsDto.getCurrency())
-                .thumbnail(courseDetailsDto.getThumbnail())
-                .previewVideoUrl(courseDetailsDto.getPreviewVideoUrl())
+                .thumbnail(courseDetailsDto.getThumbnail() != null ? attachmentRepository.findById(courseDetailsDto.getThumbnail()).orElse(null) : null)
                 .estimatedDrationInHours(courseDetailsDto.getEstimatedDurationInHours())
                 .status(courseDetailsDto.getStatus())
                 .difficultyLevel(courseDetailsDto.getDifficultyLevel())
@@ -217,7 +224,7 @@ public class CourseMapper {
     /**
      * Updates an existing Course entity with data from CreateCourseDto
      */
-    public static void updateCourseEntityFromCreateCourseDto(Course existingCourse, CreateCourseDto createCourseDto) {
+    public static void updateCourseEntityFromCreateCourseDto(Course existingCourse, CreateCourseDto createCourseDto, TagsRepository tagsRepository, AttachmentRepository attachmentRepository) {
         if (existingCourse == null || createCourseDto == null) {
             return;
         }
@@ -231,8 +238,7 @@ public class CourseMapper {
         existingCourse.setDescription(createCourseDto.getDescription());
         existingCourse.setOneTimePrice(createCourseDto.getOneTimePrice());
         existingCourse.setCurrency(createCourseDto.getCurrency());
-        existingCourse.setThumbnail(createCourseDto.getThumbnail());
-        existingCourse.setPreviewVideoUrl(createCourseDto.getPreviewVideoUrl());
+        existingCourse.setThumbnail(createCourseDto.getThumbnail() != null ? attachmentRepository.findById(createCourseDto.getThumbnail()).orElse(null) : null);
         existingCourse.setEstimatedDrationInHours(createCourseDto.getEstimatedDurationInHours());
         existingCourse.setStatus(createCourseDto.getStatus());
         existingCourse.setDifficultyLevel(createCourseDto.getDifficultyLevel());

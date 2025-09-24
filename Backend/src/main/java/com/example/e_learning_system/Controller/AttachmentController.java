@@ -22,18 +22,24 @@ public class AttachmentController {
 
     //TODO use securty context to add uploaded by
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public ResponseEntity<ApiResponse<Void>> createAttachment(
+    public ResponseEntity<ApiResponse<Integer>> createAttachment(
             @RequestParam("title") String title,
             @RequestParam("file") MultipartFile file
             ) {
-
+        System.out.println("Received file:");
+        System.out.println("Name: " + file.getOriginalFilename());
+        System.out.println("Size: " + file.getSize() + " bytes");
+        System.out.println("Content Type: " + file.getContentType());
+        System.out.println("Metadata:");
+        System.out.println(" - Parameter name: " + file.getName());
+        System.out.println(" - Is empty: " + file.isEmpty());
         CreateAttachmentDto createAttachmentDto = new CreateAttachmentDto();
         createAttachmentDto.setTitle(title);
         createAttachmentDto.setFile(file);
 
-        attachmentService.createAttachment(createAttachmentDto, 1);
+        int attachmentId = attachmentService.createAttachment(createAttachmentDto, 1);
         return ResponseEntity.status(HttpStatus.CREATED)
-                .body(ApiResponse.success("Attachment created successfully", null));
+                .body(ApiResponse.success("Attachment created successfully", attachmentId));
     }
 
     @GetMapping("/{id}")
