@@ -1,0 +1,131 @@
+<div class="content-body" [formGroup]="courseForm">
+  <div class="form-container">
+    <section class="card">
+      <h2 class="card__title">Required & Details</h2>
+      <div class="form-grid">
+        <div class="form-field">
+          <label for="course-title">Course Title</label>
+          <input type="text" id="course-title" formControlName="name" placeholder="name • Course title">
+        </div>
+        <div class="form-field form-field--span-2">
+          <label for="course-description">Brief Description</label>
+          <textarea id="course-description" formControlName="description" rows="4" placeholder="description • Brief description"></textarea>
+        </div>
+        <div class="form-field">
+          <label for="course-duration">Estimated Duration (Hours)</label>
+          <input type="number" id="course-duration" formControlName="estimatedDurationInHours" placeholder="e.g., 12">
+        </div>
+        <div class="form-field">
+          <label for="course-difficulty">Difficulty Level</label>
+          <select id="course-difficulty" formControlName="difficultyLevel">
+            <option value="">Select</option>
+            <option value="beginner">Beginner</option>
+            <option value="intermediate">Intermediate</option>
+            <option value="expert">Expert</option>
+          </select>
+        </div>
+        <div class="form-field">
+          <label for="course-status">Status</label>
+          <input type="text" id="course-status" formControlName="status">
+        </div>
+        <div class="form-field">
+          <label for="course-currency">Currency</label>
+          <select id="course-currency" formControlName="currency">
+            <option value="">Select</option>
+            <option value="USD">USD</option>
+            <option value="EUR">EUR</option>
+          </select>
+        </div>
+        <div class="form-field">
+          <label for="course-category">Category</label>
+          <select id="course-category" formControlName="category">
+            <option value="">Select</option>
+            <option value="design">Design</option>
+            <option value="development">Development</option>
+          </select>
+        </div>
+        <div class="form-field">
+          <label for="course-thumbnail">Thumbnail</label>
+          <input type="file" id="course-thumbnail" accept="image/*" (change)="onThumbnailSelected($event)">
+          <input type="text" formControlName="thumbnailName" placeholder="File Name">
+        </div>
+        <div class="form-field">
+          <label for="course-preview-video">Preview Video URL</label>
+          <input type="url" id="course-preview-video" formControlName="previewVideoUrl" placeholder="Video URL">
+        </div>
+        <div class="form-field">
+          <label for="course-created-by">Created By</label>
+          <select id="course-created-by" formControlName="createdBy">
+            <option value="">Select user</option>
+            </select>
+        </div>
+        <div class="form-field form-field--span-2">
+          <label>Tags</label>
+          <div class="tag-input">
+             <span class="tag" *ngFor="let tag of courseForm.get('tags')?.value" (click)="removeTag(tag)">{{tag}} ×</span>
+            <input type="text" id="course-tags" placeholder="Add tags" (keydown)="addTag($event)">
+          </div>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <div class="side-container">
+    <section class="card" [formGroup]="pricingForm">
+      <h2 class="card__title">Pricing</h2>
+      <div class="form-grid form-grid--single-col">
+        <div class="form-field">
+          <label for="price-onetime">One-time Price ({{courseForm.get('currency')?.value || '...'}})</label>
+          <input type="number" id="price-onetime" formControlName="oneTimePrice" placeholder="e.g., 99.99">
+        </div>
+        <div class="form-field form-field--toggle">
+          <label for="allows-subscription">Allows Subscription</label>
+          <label class="toggle-switch" for="allows-subscription">
+            <input type="checkbox" id="allows-subscription" formControlName="allowsSubscription">
+            <span class="toggle-slider"></span>
+          </label>
+        </div>
+        <div class="form-field">
+          <label for="price-monthly">Monthly Subscription Price</label>
+          <input type="number" id="price-monthly" formControlName="subscriptionPriceMonthly" placeholder="e.g., 9.99">
+        </div>
+        <div class="form-field">
+          <label for="price-3months">3-Month Subscription Price</label>
+          <input type="number" id="price-3months" formControlName="subscriptionPrice3Months" placeholder="e.g., 24.99">
+        </div>
+        <div class="form-field">
+          <label for="price-6months">6-Month Subscription Price</label>
+          <input type="number" id="price-6months" formControlName="subscriptionPrice6Months" placeholder="e.g., 49.99">
+        </div>
+        <div class="form-field form-field--toggle">
+          <label for="is-active">Is Active</label>
+          <label class="toggle-switch" for="is-active">
+            <input type="checkbox" id="is-active" formControlName="isActive">
+            <span class="toggle-slider"></span>
+          </label>
+        </div>
+      </div>
+    </section>
+
+    <section class="card">
+      <h2 class="card__title">Preview</h2>
+      <div class="preview-card">
+        <h3><img src="assets/images/vector-168.svg" alt="">Course card preview</h3>
+        <div class="preview-content">
+          <div class="form-field">
+            <label for="preview-thumb">Thumbnail</label>
+            <input type="text" id="preview-thumb" readonly [value]="courseForm.get('thumbnail')?.value">
+          </div>
+          <div class="form-field">
+            <label for="preview-video-url">Video</label>
+            <input type="text" id="preview-video-url" readonly [value]="courseForm.get('previewVideoUrl')?.value">
+          </div>
+          <div class="form-field">
+            <label for="preview-currency">Currency</label>
+            <input type="text" id="preview-currency" readonly [value]="courseForm.get('currency')?.value">
+          </div>
+        </div>
+      </div>
+    </section>
+  </div>
+</div>
