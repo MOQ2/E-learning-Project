@@ -1,0 +1,200 @@
+/* --- Layout --- */
+.content-body {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: 24px;
+  align-items: start;
+}
+
+.form-container,
+.side-container {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+/* --- Cards --- */
+.card {
+  background-color: var(--color-white);
+  border: 1px solid var(--color-border);
+  border-radius: var(--border-radius-md);
+  padding: 20px;
+}
+
+.card__title {
+  font-size: 14px;
+  margin-bottom: 16px;
+}
+
+/* --- Forms --- */
+.form-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 16px;
+}
+
+.form-grid--single-col {
+  grid-template-columns: 1fr;
+}
+
+.form-field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.form-field--span-2 {
+  grid-column: span 2;
+}
+
+.form-field label {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--color-text-dark);
+}
+
+.form-field input[type="text"],
+.form-field input[type="number"],
+.form-field input[type="url"],
+.form-field textarea,
+.form-field select {
+  width: 100%;
+  padding: 11px 13px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--border-radius-sm);
+  background-color: var(--color-white);
+  font-family: inherit;
+  font-size: 14px;
+  transition: border-color 0.3s ease;
+}
+
+.form-field input::placeholder,
+.form-field textarea::placeholder {
+  color: var(--color-text-light);
+}
+
+.tag-input {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+  padding: 9px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--border-radius-sm);
+}
+
+.tag-input input {
+  border: none;
+  outline: none;
+  padding: 0;
+  flex-grow: 1;
+}
+
+.tag {
+  background-color: var(--color-secondary-bg);
+  color: var(--color-secondary);
+  padding: 4px 8px;
+  border-radius: 48px;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+/* --- Toggle Switch --- */
+.form-field--toggle {
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: center;
+  padding: 6px 0;
+}
+
+.toggle-switch {
+  position: relative;
+  display: inline-block;
+  width: 44px;
+  height: 24px;
+}
+
+.toggle-switch input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.toggle-slider {
+  position: absolute;
+  cursor: pointer;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: #ccc;
+  transition: .4s;
+  border-radius: 24px;
+}
+
+.toggle-slider:before {
+  position: absolute;
+  content: "";
+  height: 18px;
+  width: 18px;
+  left: 3px;
+  bottom: 3px;
+  background-color: white;
+  transition: .4s;
+  border-radius: 50%;
+}
+
+input:checked + .toggle-slider {
+  background-color: var(--color-primary);
+}
+
+input:checked + .toggle-slider:before {
+  transform: translateX(20px);
+}
+
+
+/* --- Preview Card --- */
+.preview-card {
+  background-color: var(--color-secondary-bg);
+  border-radius: var(--border-radius-md);
+  padding: 12px;
+}
+
+.preview-card h3 {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 16px;
+  color: var(--color-secondary);
+  margin-bottom: 12px;
+}
+
+.preview-content {
+  background-color: var(--color-white);
+  border: 1px solid var(--color-border);
+  border-radius: var(--border-radius-md);
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.preview-content .form-field input {
+  background-color: #f9fafb;
+}
+
+/* --- Media Queries --- */
+@media (max-width: 1200px) {
+  .content-body {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 768px) {
+  .form-grid {
+    grid-template-columns: 1fr;
+  }
+  .form-field--span-2 {
+    grid-column: span 1;
+  }
+}
