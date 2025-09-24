@@ -9,6 +9,8 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import org.springframework.web.multipart.MultipartFile;
+
 @EqualsAndHashCode(callSuper = true)
 @Entity
 @Table(name = "modules")
@@ -38,7 +40,6 @@ public class Module extends BaseEntity{
     CourseStatus  courseStatus = CourseStatus.DRAFT;
 
 
-    // relations
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false, cascade = CascadeType.ALL)
     @JoinColumn(name = "created_by", nullable = false)

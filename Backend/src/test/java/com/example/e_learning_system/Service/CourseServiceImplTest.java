@@ -79,8 +79,7 @@ class CourseServiceImplTest {
         createCourseDto.setDifficultyLevel(DifficultyLevel.BIGINNER);
         createCourseDto.setStatus(CourseStatus.DRAFT);
         createCourseDto.setCurrency(Currency.USD);
-        createCourseDto.setThumbnail("http://example.com/thumb.jpg");
-        createCourseDto.setPreviewVideoUrl("http://example.com/preview.mp4");
+        createCourseDto.setThumbnail(1);
         createCourseDto.setEstimatedDurationInHours(10);
 
         updateCourseDto = new UpdateCourseDto();

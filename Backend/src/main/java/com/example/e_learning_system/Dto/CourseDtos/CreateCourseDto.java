@@ -3,10 +3,7 @@ package com.example.e_learning_system.Dto.CourseDtos;
 import com.example.e_learning_system.Config.CourseStatus;
 import com.example.e_learning_system.Config.Currency;
 import com.example.e_learning_system.Config.DifficultyLevel;
-import com.example.e_learning_system.Config.Tags;
-import com.example.e_learning_system.Entities.TagsEntity;
 
-import io.swagger.v3.oas.models.tags.Tag;
 import jakarta.validation.constraints.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -34,13 +31,17 @@ public class CreateCourseDto {
     @DecimalMin(value = "0.0", inclusive = true, message = "Course price cannot be negative")
     private BigDecimal oneTimePrice;
 
+    private BigDecimal subscriptionPriceMonthly;
+    private BigDecimal subscriptionPrice3Months;
+    private BigDecimal subscriptionPrice6Months;
+    private Boolean allowsSubscription;
+
     private Currency currency;
 
-    @NotBlank(message = "Thumbnail URL is required")
-    private String thumbnail;
+    private String category;
 
-    @NotBlank(message = "Preview video URL is required")
-    private String previewVideoUrl;
+    @NotNull(message = "Thumbnail is required")
+    private Integer thumbnail;
 
     @NotNull(message = "Estimated duration is required")
     @Min(value = 1, message = "Estimated duration must be at least 1 hour")
@@ -52,7 +53,8 @@ public class CreateCourseDto {
     @NotNull(message = "Difficulty level is required")
     private DifficultyLevel difficultyLevel;
     @NotNull(message = "Tags are required")
-    private List<Tags> tags;
+    private List<String> tags;
+
 
     private boolean isActive;
 }

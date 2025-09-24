@@ -72,6 +72,9 @@ public class AuditListener {
 
         Field[] fields = entity.getClass().getDeclaredFields();
         for (Field field : fields) {
+
+            if (field.getType().isArray()) continue;
+
             field.setAccessible(true);
             try {
                 Object value = field.get(entity);

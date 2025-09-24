@@ -25,9 +25,13 @@ public class CourseDetailsDto {
     private String name;
     private String description;
     private BigDecimal oneTimePrice;
+    private BigDecimal subscriptionPriceMonthly;
+    private BigDecimal subscriptionPrice3Months;
+    private BigDecimal subscriptionPrice6Months;
+    private Boolean allowsSubscription;
     private Currency currency;
-    private String thumbnail;
-    private String previewVideoUrl;
+    private String category;
+    private Integer thumbnail;
     private int estimatedDurationInHours;
     private CourseStatus status;
     private DifficultyLevel difficultyLevel;

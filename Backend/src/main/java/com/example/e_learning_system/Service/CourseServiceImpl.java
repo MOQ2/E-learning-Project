@@ -15,6 +15,7 @@ import com.example.e_learning_system.Repository.CourseRepository;
 import com.example.e_learning_system.Repository.ModuleRepository;
 import com.example.e_learning_system.Repository.TagsRepository;
 import com.example.e_learning_system.Repository.UserRepository;
+import com.example.e_learning_system.Repository.AttachmentRepository;
 import com.example.e_learning_system.excpetions.ResourceNotFound;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.criteria.CriteriaBuilder;
@@ -47,6 +48,7 @@ public class CourseServiceImpl implements CourseService {
     private final EntityManager entityManager;
     private final CourseModulesRepository courseModulesRepository;
     private final TagsRepository tagsRepository;
+    private final AttachmentRepository attachmentRepository;
     @Override
     @Transactional(readOnly = true)
     public List<CourseSummaryDto> getCourses() {
@@ -102,7 +104,7 @@ public class CourseServiceImpl implements CourseService {
         UserEntity creator = userRepository.findById(createdById)
                 .orElseThrow(() -> ResourceNotFound.userNotFound(createdById.toString()));
 
-        Course course = CourseMapper.fromCreateCourseDtoToCourseEntity(request, creator);
+        Course course = CourseMapper.fromCreateCourseDtoToCourseEntity(request, creator, tagsRepository, attachmentRepository);
         
 
 
@@ -136,7 +138,7 @@ public class CourseServiceImpl implements CourseService {
         }
 
         // Update the existing course entity using the mapper
-        CourseMapper.fromUpdateCourseDtoToCourseEntity( updateCourseDto , existingCourse);
+        CourseMapper.fromUpdateCourseDtoToCourseEntity( updateCourseDto , existingCourse, tagsRepository, attachmentRepository);
 
         courseRepository.save(existingCourse);
 

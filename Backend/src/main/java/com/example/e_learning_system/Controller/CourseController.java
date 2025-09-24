@@ -12,6 +12,7 @@ import com.example.e_learning_system.Dto.CourseDtos.CreateCourseDto;
 import com.example.e_learning_system.Dto.CourseDtos.TagDto;
 import com.example.e_learning_system.Dto.CourseDtos.UpdateCourseDto;
 import com.example.e_learning_system.Entities.TagsEntity;
+import com.example.e_learning_system.Security.UserUtil;
 import com.example.e_learning_system.Service.Interfaces.CourseService;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
@@ -20,6 +21,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+
+import org.springframework.boot.autoconfigure.security.SecurityProperties.User;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
@@ -71,6 +74,7 @@ public class CourseController {
             @RequestParam(required = false) List<CourseStatus> statuses,
             @RequestParam(required = false) List<DifficultyLevel> difficultyLevels,
             @RequestParam(required = false) String tags
+            
             ) {
 
                 
@@ -122,7 +126,9 @@ public class CourseController {
     public ResponseEntity<ApiResponse<CourseDetailsDto>> createCourse(
             @Valid @RequestBody CreateCourseDto createCourseDto
             ) {
-
+        //TODO use this instead of 1 in the create course method 
+        //int user_id = Math.toIntExact(UserUtil.getCurrentUserId());
+        
         // TODO - replace with actual user ID from JWT
         CourseDetailsDto course = courseService.createCourse(createCourseDto, 1);
         return ResponseEntity.status(HttpStatus.CREATED)

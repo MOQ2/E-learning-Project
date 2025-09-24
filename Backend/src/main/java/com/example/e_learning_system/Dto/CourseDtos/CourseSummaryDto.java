@@ -30,7 +30,7 @@ public class CourseSummaryDto {
     private BigDecimal oneTimePrice ;
     private Currency currency;
     private Set<TagDto> tags;
-    private String thumbnail;
+    private Integer thumbnail;
     private String instructor;
     private int estimatedDurationInHours;
 }

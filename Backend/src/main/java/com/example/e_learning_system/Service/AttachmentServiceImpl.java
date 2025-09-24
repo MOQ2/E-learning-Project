@@ -31,7 +31,7 @@ public class AttachmentServiceImpl implements AttachmentService {
     private final UserRepository userRepository;
 
     @Override
-    public void createAttachment(CreateAttachmentDto createAttachmentDto, int uploadedByUserId) {
+    public int createAttachment(CreateAttachmentDto createAttachmentDto, int uploadedByUserId) {
         try {
             // Find the user who is uploading
             UserEntity user = userRepository.findById(uploadedByUserId)
@@ -46,16 +46,19 @@ public class AttachmentServiceImpl implements AttachmentService {
             if (file != null && !file.isEmpty()) {
                 attachment.setFileData(file.getBytes());
 
-                // Set file metadata
                 AttachmentMapper.setFileMetadata(
                         attachment,
                         file.getOriginalFilename(),
                         file.getContentType(),
                         file.getSize()
                 );
+            } else {
+                throw new RuntimeException("File cannot be null or empty. Please provide a valid file.");
             }
 
-            attachmentRepository.save(attachment);
+            Attachment savedAttachment = attachmentRepository.save(attachment);
+            return savedAttachment.getId();
+
         } catch (IOException e) {
             throw new RuntimeException("Failed to store file: " + e.getMessage(), e);
         }

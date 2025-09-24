@@ -34,9 +34,7 @@ public class UpdateCourseDto{
 
     private Currency currency;
 
-    private String thumbnail;
-
-    private String previewVideoUrl;
+    private Integer thumbnail;
 
     @Min(value = 1, message = "Estimated duration must be positive")
     private Integer estimatedDurationInHours; // use Integer to allow null

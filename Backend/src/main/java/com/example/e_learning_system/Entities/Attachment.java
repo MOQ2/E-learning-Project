@@ -4,7 +4,10 @@ import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
+
 import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.type.SqlTypes;
 
@@ -13,10 +16,10 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
-@EqualsAndHashCode(callSuper = true)
 @Entity
 @Table(name = "attachments")
-@Data
+@Getter // ADD THIS
+@Setter
 @NoArgsConstructor
 @AllArgsConstructor
 public class Attachment extends BaseEntity {
@@ -30,14 +33,13 @@ public class Attachment extends BaseEntity {
     @Column(name = "metadata", columnDefinition = "jsonb", nullable = false)
     private Map<String, Object> metadata = new HashMap<>();
 
-    @Lob
     @Column(name = "data",columnDefinition = "BYTEA")
     private byte[] fileData;
 
     @Column(name = "is_active")
     private boolean isActive;
 
-    @ManyToOne(fetch = FetchType.LAZY, optional = false, cascade = CascadeType.ALL)
+    @ManyToOne(fetch = FetchType.LAZY, optional = false, cascade = {CascadeType.MERGE, CascadeType.PERSIST})
     @JoinColumn(name = "uploaded_by", nullable = false)
     private UserEntity uploadedBy;
 
