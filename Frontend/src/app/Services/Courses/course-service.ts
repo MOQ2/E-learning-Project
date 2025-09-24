@@ -107,7 +107,7 @@ private api = `${environment.apiUrl}`
         params = params.append('difficultyLevels', level.toUpperCase());
       });
     }
-    
+
     if (filters.tags && filters.tags.length > 0) {
       const tagsJson = JSON.stringify(filters.tags.map(tag => ({ name: tag })));
       params = params.set('tags', tagsJson);
@@ -120,6 +120,23 @@ private api = `${environment.apiUrl}`
 
   getCategories(): Observable<ApiResponse<TagDto[]>> {
     return this.http.get<ApiResponse<TagDto[]>>(`${this.api}/api/courses/categories`);
+  }
+
+  uploadAttachment(file: File, name: string): Observable<number> {
+    const formData = new FormData();
+    console.log("Uploading file:", file);
+    formData.append('file', file);
+    formData.append('title', name);
+    return this.http.post<ApiResponse<number>>(`${this.api}/api/attachments`, formData).pipe(
+      map(response => response.data)
+    );
+  }
+
+  createCourse(courseData: any): Observable<any> {
+    const headers = { 'Content-Type': 'application/json' };
+    return this.http.post<ApiResponse<any>>(`${this.api}/api/courses`, courseData, { headers }).pipe(
+      map(response => response.data)
+    );
   }
 
 

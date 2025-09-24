@@ -8,20 +8,24 @@
         <h1>
           <img src="assets/images/vector-69.svg" alt="" /> Course Overview
         </h1>
-        <div class="content-header__actions">
-          <button type="button" class="button" (click)="saveDraft()">
-            <img src="assets/images/vector-80.svg" alt="" /> Save draft
-          </button>
-          <button type="button" class="button button--primary" (click)="preview()">
-            <img src="assets/images/vector-87.svg" alt="" /> Preview
-          </button>
-        </div>
       </header>
 
       <app-course-form
-        [course]="currentCourse"
-        (formChange)="handleFormChange($event)">
+        [course]="currentCourseOverview"
+        (formChange)="handleFormChange($event)"
+        (fileSelected)="onFileSelected($event)">
       </app-course-form>
+
+      <footer class="content-footer">
+        <div class="content-footer__actions">
+          <button type="button" class="button" (click)="saveDraft()">
+            <img src="assets/images/vector-80.svg" alt="" /> Save draft
+          </button>
+          <button type="button" class="button button--primary" (click)="onContinue()">
+            Continue
+          </button>
+        </div>
+      </footer>
 
     </div>
   </main>

@@ -6,6 +6,8 @@ import { CourseFormComponent } from '../course-form/course-form';
 import { SidebarComponent } from '../sidebar/sidebar';
 import { NavBar } from '../../../../nav-bar/nav-bar';
 import { ViewEncapsulation } from '@angular/core';
+import { CourseService } from '../../../../../Services/Courses/course-service';
+import { Observable } from 'rxjs';
 
 @Component({
   selector: 'app-course-editor-page',
@@ -18,19 +20,17 @@ import { ViewEncapsulation } from '@angular/core';
 export class CourseEditorPageComponent implements OnInit {
 
 
-  currentCourse: CourseoverviewCreationDto | null = {
-    id: 'c1',
+  currentCourseOverview: CourseoverviewCreationDto | null = {
+    id: 2,
     name: 'Introduction to UX Design',
     description: 'A beginner-friendly course on user experience principles.',
     estimatedDurationInHours: 12,
-    difficultyLevel: 'beginner',
+    difficultyLevel: 'BIGINNER',
     status: 'DRAFT',
     currency: 'USD',
     category: 'design',
-    thumbnail: 'https://example.com/thumb.jpg',
+    thumbnail: 10,
     thumbnailName: 'thumbnail.jpg',
-    previewVideoUrl: 'https://example.com/preview.mp4',
-    createdBy: 'user1',
     tags: ['design', 'beginner', 'ux'],
     pricing: {
       oneTimePrice: 99.99,
@@ -44,8 +44,9 @@ export class CourseEditorPageComponent implements OnInit {
 
   // This will hold the latest state of the form from the child component
   private courseFormState!: FormGroup;
+  selectedFile: File | null = null;
 
-  constructor() {}
+  constructor(private courseService: CourseService) {}
 
   ngOnInit(): void {
     // fetch set up the courses data here if needed
@@ -54,6 +55,10 @@ export class CourseEditorPageComponent implements OnInit {
   // Captures the form group emitted from the course-form component
   handleFormChange(formGroup: FormGroup) {
     this.courseFormState = formGroup;
+  }
+
+  onFileSelected(file: File) {
+    this.selectedFile = file;
   }
 
   // --- Action Handlers ---
@@ -68,12 +73,41 @@ export class CourseEditorPageComponent implements OnInit {
   }
 
   onContinue() {
-    if (this.courseFormState.valid) {
-      console.log("Continue clicked. Form is valid. Data:", this.courseFormState.getRawValue());
-      // Navigate to the next step, e.g., modules
+    console.log("Continuing to next step...");
+    console.log("file size is ", this.selectedFile?.size);
+    console.log("file metadata is ", this.selectedFile);
+    console.log("file", this.selectedFile);
+
+    if (this.courseFormState && this.courseFormState.valid) {
+      if (this.selectedFile) {
+        this.uploadFile(this.selectedFile).subscribe(attachmentId => {
+          const raw = this.courseFormState.getRawValue();
+          const { thumbnailName, thumbnail, ...courseData } = raw;
+          courseData.thumbnail = attachmentId;
+          console.log ("attachment id is ", attachmentId);
+          this.createCourse(courseData);
+        });
+      } else {
+        const raw = this.courseFormState.getRawValue();
+        const { thumbnailName, ...courseData } = raw;
+        this.createCourse(courseData);
+      }
     } else {
       console.log("Form is invalid. Cannot continue.");
-      this.courseFormState.markAllAsTouched(); // Show validation errors
+      if (this.courseFormState) {
+        this.courseFormState.markAllAsTouched(); // Show validation errors
+      }
     }
+  }
+
+  private uploadFile(file: File): Observable<number> {
+    return this.courseService.uploadAttachment(file, this.currentCourseOverview?.thumbnailName ?? '');
+  }
+
+  private createCourse(courseData: any) {
+    this.courseService.createCourse(courseData).subscribe((response: any) => {
+      console.log('Course created:', response);
+      // Navigate or show success
+    });
   }
 }
