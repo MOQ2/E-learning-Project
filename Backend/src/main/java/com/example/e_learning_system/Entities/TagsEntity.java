@@ -11,18 +11,15 @@ import lombok.Setter;
 import java.util.HashSet;
 import java.util.Set;
 
-import com.example.e_learning_system.Config.Tags;
 
 
 @Getter
 @Setter
-
 @Entity(name = "tags")
 public class TagsEntity extends BaseEntity {
 
     @Column(name = "name", nullable = false, unique = true)
-    @Enumerated(EnumType.STRING)
-    private Tags name;
+    private String name;
 
     @Column(name = "description")
     private String description;
@@ -34,7 +31,7 @@ public class TagsEntity extends BaseEntity {
     public TagsEntity() {
     }
 
-    public TagsEntity(Tags name, String description, String color) {
+    public TagsEntity(String name, String description, String color) {
         this.name = name;
         this.description = description;
         this.color = color;

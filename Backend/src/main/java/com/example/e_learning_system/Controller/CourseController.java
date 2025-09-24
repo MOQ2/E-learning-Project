@@ -1,9 +1,9 @@
 package com.example.e_learning_system.Controller;
 
+import com.example.e_learning_system.Config.Category;
 import com.example.e_learning_system.Config.CourseStatus;
 import com.example.e_learning_system.Config.Currency;
 import com.example.e_learning_system.Config.DifficultyLevel;
-import com.example.e_learning_system.Config.Tags;
 import com.example.e_learning_system.Dto.ApiResponse;
 import com.example.e_learning_system.Dto.CourseDtos.CourseDetailsDto;
 import com.example.e_learning_system.Dto.CourseDtos.CourseFilterDto;
@@ -11,8 +11,6 @@ import com.example.e_learning_system.Dto.CourseDtos.CourseSummaryDto;
 import com.example.e_learning_system.Dto.CourseDtos.CreateCourseDto;
 import com.example.e_learning_system.Dto.CourseDtos.TagDto;
 import com.example.e_learning_system.Dto.CourseDtos.UpdateCourseDto;
-import com.example.e_learning_system.Entities.TagsEntity;
-import com.example.e_learning_system.Security.UserUtil;
 import com.example.e_learning_system.Service.Interfaces.CourseService;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
@@ -22,7 +20,6 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
-import org.springframework.boot.autoconfigure.security.SecurityProperties.User;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
@@ -34,7 +31,6 @@ import org.springframework.web.bind.annotation.*;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
 
 @Slf4j
@@ -73,8 +69,8 @@ public class CourseController {
             @RequestParam(required = false) Integer createdByUserId,
             @RequestParam(required = false) List<CourseStatus> statuses,
             @RequestParam(required = false) List<DifficultyLevel> difficultyLevels,
-            @RequestParam(required = false) String tags
-            
+            @RequestParam(required = false) String tags,
+            @RequestParam(required = false) List<Category> categories
             ) {
 
                 
@@ -89,6 +85,12 @@ public class CourseController {
                 }
             }
 
+        // Convert List<TagDto> to List<String> (tag names)
+        List<String> tagNames = new ArrayList<>();
+        for (TagDto tag : tagList) {
+            tagNames.add(tag.getName());
+        }
+
         CourseFilterDto filterDto = CourseFilterDto.builder()
                 .name(name)
                 .description(description)
@@ -102,7 +104,8 @@ public class CourseController {
                 .createdByUserId(createdByUserId)
                 .statuses(statuses)
                 .difficultyLevels(difficultyLevels)
-                .tags(tagList)
+                .categories(categories)
+                .tags(tagNames)
                 .build();
 
         Page<CourseSummaryDto> courses = courseService.getCourses(filterDto, pageable);

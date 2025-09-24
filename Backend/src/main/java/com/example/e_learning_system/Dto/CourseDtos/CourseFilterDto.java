@@ -2,10 +2,11 @@ package com.example.e_learning_system.Dto.CourseDtos;
 
 
 
+import com.example.e_learning_system.Config.Category;
 import com.example.e_learning_system.Config.CourseStatus;
 import com.example.e_learning_system.Config.Currency;
 import com.example.e_learning_system.Config.DifficultyLevel;
-import com.example.e_learning_system.Config.Tags;
+
 
 import lombok.*;
 
@@ -45,7 +46,8 @@ public class CourseFilterDto {
 
     private List<CourseStatus> statuses;
     private List<DifficultyLevel> difficultyLevels;
-    private List<TagDto> tags; 
+    private List<String> tags;
+    private List<Category> categories;
 
 
 }

@@ -14,8 +14,9 @@ import com.example.e_learning_system.Entities.TagsEntity;
 import com.example.e_learning_system.Entities.UserEntity;
 import com.example.e_learning_system.Repository.AttachmentRepository;
 import com.example.e_learning_system.Repository.TagsRepository;
-
+import com.example.e_learning_system.Config.Category;
 import java.util.Collections;
+
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
@@ -46,7 +47,6 @@ public class CourseMapper {
                 .subscriptionPrice6Months(course.getSubscriptionPrice6Months())
                 .allowsSubscription(course.getAllowsSubscription())
                 .currency(course.getCurrency())
-                .category(course.getCategory())
                 .thumbnail(course.getThumbnail() != null ? course.getThumbnail().getId() : null)
                 .estimatedDurationInHours(course.getEstimatedDrationInHours())
                 .status(course.getStatus())
@@ -55,6 +55,7 @@ public class CourseMapper {
                 .modules(fromCourseModulesToCourseModuleDtos(course.getCourseModules()))
                 .tags(convertTagsEntityToTagDtos(course.getTags()))
                 .instructor(course.getCreatedBy() != null ? course.getCreatedBy().getName() : null)
+                .category(course.getCategory())
                 .build();
     }
 
@@ -134,8 +135,8 @@ public class CourseMapper {
                 .subscriptionPrice6Months(createCourseDto.getSubscriptionPrice6Months())
                 .allowsSubscription(createCourseDto.getAllowsSubscription())
                 .currency(createCourseDto.getCurrency())
-                .category(createCourseDto.getCategory())
                 .thumbnail(thumbnail)
+                .category(createCourseDto.getCategory())
                 .estimatedDrationInHours(createCourseDto.getEstimatedDurationInHours())
                 .status(createCourseDto.getStatus())
                 .difficultyLevel(createCourseDto.getDifficultyLevel())
@@ -287,7 +288,7 @@ public class CourseMapper {
         }
 
         return tagsEntities.stream()
-                .map(tagEntity -> new TagDto(tagEntity.getName().name(), tagEntity.getDescription(), tagEntity.getColor().toString()))
+                .map(tagEntity -> new TagDto(tagEntity.getName(), tagEntity.getDescription(), tagEntity.getColor().toString()))
                 .collect(Collectors.toSet());
     }
 }

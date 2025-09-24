@@ -2,6 +2,7 @@ package com.example.e_learning_system.Entities;
 
 
 
+import com.example.e_learning_system.Config.Category;
 import com.example.e_learning_system.Config.CourseStatus;
 import com.example.e_learning_system.Config.Currency;
 import com.example.e_learning_system.Config.DifficultyLevel;
@@ -56,8 +57,13 @@ public class Course extends BaseEntity {
     @Column(name = "required_plan_level")
     @Builder.Default
     Integer requiredPlanLevel = 1;
+
+
     @Column(name = "category")
-    String category;
+    @Enumerated(EnumType.STRING)
+    Category category;
+    
+    
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "thumbnail")
     private Attachment thumbnail;
