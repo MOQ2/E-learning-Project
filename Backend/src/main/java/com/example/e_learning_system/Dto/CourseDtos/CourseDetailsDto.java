@@ -3,7 +3,7 @@ package com.example.e_learning_system.Dto.CourseDtos;
 import com.example.e_learning_system.Config.CourseStatus;
 import com.example.e_learning_system.Config.Currency;
 import com.example.e_learning_system.Config.DifficultyLevel;
-import com.example.e_learning_system.Entities.TagsEntity;
+
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -13,8 +13,7 @@ import lombok.NoArgsConstructor;
 import java.math.BigDecimal;
 import java.util.List;
 import java.util.Set;
-
-import org.testng.xml.dom.TagContent;
+import com.example.e_learning_system.Config.Category;
 
 @Data
 @Builder
@@ -30,7 +29,7 @@ public class CourseDetailsDto {
     private BigDecimal subscriptionPrice6Months;
     private Boolean allowsSubscription;
     private Currency currency;
-    private String category;
+    private Category category;
     private Integer thumbnail;
     private int estimatedDurationInHours;
     private CourseStatus status;

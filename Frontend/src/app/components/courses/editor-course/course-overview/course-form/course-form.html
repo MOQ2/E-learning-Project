@@ -32,9 +32,9 @@
           <select id="course-difficulty" formControlName="difficultyLevel">
             <option value="">Select</option>
 
-            <option value="BIGINNER">BIGINNER</option>
-            <option value="INTERMEDIATE">INTERMEDIATE</option>
-            <option value="ADVANCED">ADVANCED</option>
+            <option value="BIGINNER">Beginner</option>
+            <option value="INTERMEDIATE">Intermediate</option>
+            <option value="ADVANCED">Advanced</option>
           </select>
           <div *ngIf="courseForm.get('difficultyLevel')?.invalid && courseForm.get('difficultyLevel')?.touched" class="error-message">
             <span *ngIf="courseForm.get('difficultyLevel')?.errors?.['required']">Difficulty level is required.</span>
@@ -56,8 +56,16 @@
           <label for="course-category">Category</label>
           <select id="course-category" formControlName="category">
             <option value="">Select</option>
-            <option value="design">Design</option>
-            <option value="development">Development</option>
+            <option value="WEB_DEVELOPMENT">Web Development</option>
+            <option value="MACHINE_LEARNING">Machine Learning</option>
+            <option value="DATABASES">Databases</option>
+            <option value="PROGRAMMING">Programming</option>
+            <option value="CLOUD_COMPUTING">Cloud Computing</option>
+            <option value="SOFTWARE_ENGINEERING">Software Engineering</option>
+            <option value="DEVOPS">DevOps</option>
+            <option value="MOBILE_DEVELOPMENT">Mobile Development</option>
+            <option value="DATA_SCIENCE">Data Science</option>
+            <option value="CYBER_SECURITY">Cyber Security</option>
           </select>
         </div>
         <div class="form-field">

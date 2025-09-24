@@ -1,7 +1,6 @@
 package com.example.e_learning_system.Service;
 
 import com.example.e_learning_system.Config.CourseStatus;
-import com.example.e_learning_system.Config.Tags;
 import com.example.e_learning_system.Dto.CourseDtos.*;
 import com.example.e_learning_system.Entities.Course;
 import com.example.e_learning_system.Entities.CourseModules;
@@ -293,10 +292,16 @@ public class CourseServiceImpl implements CourseService {
 
         // Tags filter
         if (filterDto.getTags() != null && !filterDto.getTags().isEmpty()) {
-            for (TagDto tagDto : filterDto.getTags()) {
-                predicates.add(cb.isTrue(cb.literal(tagDto.getName()).in(root.join("tags").get("name"))));
+            for (String tagName : filterDto.getTags()) {
+                predicates.add(cb.equal(root.join("tags").get("name"), tagName));
             }
         }
+
+        // Category filter
+        if (filterDto.getCategories() != null && !filterDto.getCategories().isEmpty()) {
+            predicates.add(root.get("category").in(filterDto.getCategories()));
+        }
+
 
         log.info("Filter DTO: {}", filterDto);
         return predicates;
@@ -318,7 +323,7 @@ public class CourseServiceImpl implements CourseService {
         List<TagsEntity> tags = tagsRepository.findAll();
         List<TagDto> tagDtos = new ArrayList<>();
         for (TagsEntity tag : tags) {
-            tagDtos.add(new TagDto( tag.getName().name(), tag.getDescription(), tag.getColor()));
+            tagDtos.add(new TagDto( tag.getName(), tag.getDescription(), tag.getColor()));
         }
         return tagDtos;
     }

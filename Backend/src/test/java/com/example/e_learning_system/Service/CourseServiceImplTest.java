@@ -9,9 +9,11 @@ import com.example.e_learning_system.Entities.CourseModules;
 import com.example.e_learning_system.Entities.Module;
 import com.example.e_learning_system.Entities.UserEntity;
 import com.example.e_learning_system.Mapper.CourseMapper;
+import com.example.e_learning_system.Repository.AttachmentRepository;
 import com.example.e_learning_system.Repository.CourseModulesRepository;
 import com.example.e_learning_system.Repository.CourseRepository;
 import com.example.e_learning_system.Repository.ModuleRepository;
+import com.example.e_learning_system.Repository.TagsRepository;
 import com.example.e_learning_system.Repository.UserRepository;
 import com.example.e_learning_system.excpetions.ResourceNotFound;
 import jakarta.persistence.EntityManager;
@@ -64,6 +66,12 @@ class CourseServiceImplTest {
 
     @Mock
     private CourseModules courseModules;
+
+    @Mock
+    private TagsRepository tagsRepository;
+
+    @Mock
+    private AttachmentRepository attachmentRepository;
 
     private CreateCourseDto createCourseDto;
     private UpdateCourseDto updateCourseDto;
@@ -209,7 +217,7 @@ class CourseServiceImplTest {
         when(courseRepository.findById(courseId)).thenReturn(Optional.of(course));
         
         try (MockedStatic<CourseMapper> mockedMapper = mockStatic(CourseMapper.class)) {
-            mockedMapper.when(() -> CourseMapper.fromUpdateCourseDtoToCourseEntity(updateCourseDto, course))
+            mockedMapper.when(() -> CourseMapper.fromUpdateCourseDtoToCourseEntity(updateCourseDto, course, tagsRepository, attachmentRepository))
                        .thenAnswer(invocation -> null);
 
             // Act
@@ -218,7 +226,7 @@ class CourseServiceImplTest {
             // Assert
             verify(courseRepository).findById(courseId);
             verify(courseRepository).save(course);
-            mockedMapper.verify(() -> CourseMapper.fromUpdateCourseDtoToCourseEntity(updateCourseDto, course));
+            mockedMapper.verify(() -> CourseMapper.fromUpdateCourseDtoToCourseEntity(updateCourseDto, course, tagsRepository, attachmentRepository));
         }
     }
 

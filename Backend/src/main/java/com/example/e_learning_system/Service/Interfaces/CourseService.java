@@ -1,7 +1,6 @@
 package com.example.e_learning_system.Service.Interfaces;
 
 import com.example.e_learning_system.Dto.CourseDtos.*;
-import com.example.e_learning_system.Entities.TagsEntity;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;

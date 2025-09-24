@@ -12,7 +12,7 @@ import lombok.experimental.SuperBuilder;
 
 import java.math.BigDecimal;
 import java.util.List;
-
+import com.example.e_learning_system.Config.Category;
 
 @Data
 @AllArgsConstructor
@@ -38,7 +38,7 @@ public class CreateCourseDto {
 
     private Currency currency;
 
-    private String category;
+    private Category category;
 
     @NotNull(message = "Thumbnail is required")
     private Integer thumbnail;

@@ -1,6 +1,6 @@
 package com.example.e_learning_system.Config;
 
-public enum Tags {
+public enum Category {
     PROGRAMMING,
     DATA_SCIENCE,
     MACHINE_LEARNING,
