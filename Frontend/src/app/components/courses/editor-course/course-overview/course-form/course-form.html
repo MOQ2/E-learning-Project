@@ -1,28 +1,44 @@
 <div class="content-body" [formGroup]="courseForm">
   <div class="form-container">
     <section class="card">
-      <h2 class="card__title">Required & Details</h2>
       <div class="form-grid">
         <div class="form-field">
           <label for="course-title">Course Title</label>
           <input type="text" id="course-title" formControlName="name" placeholder="name • Course title">
+          <div *ngIf="courseForm.get('name')?.invalid && courseForm.get('name')?.touched" class="error-message">
+            <span *ngIf="courseForm.get('name')?.errors?.['required']">Course title is required.</span>
+            <span *ngIf="courseForm.get('name')?.errors?.['minlength']">Title must be at least 3 characters.</span>
+            <span *ngIf="courseForm.get('name')?.errors?.['maxlength']">Title must be less than 100 characters.</span>
+          </div>
         </div>
         <div class="form-field form-field--span-2">
           <label for="course-description">Brief Description</label>
           <textarea id="course-description" formControlName="description" rows="4" placeholder="description • Brief description"></textarea>
+          <div *ngIf="courseForm.get('description')?.invalid && courseForm.get('description')?.touched" class="error-message">
+            <span *ngIf="courseForm.get('description')?.errors?.['minlength']">Description must be at least 10 characters.</span>
+            <span *ngIf="courseForm.get('description')?.errors?.['maxlength']">Description must be less than 500 characters.</span>
+          </div>
         </div>
         <div class="form-field">
           <label for="course-duration">Estimated Duration (Hours)</label>
           <input type="number" id="course-duration" formControlName="estimatedDurationInHours" placeholder="e.g., 12">
+          <div *ngIf="courseForm.get('estimatedDurationInHours')?.invalid && courseForm.get('estimatedDurationInHours')?.touched" class="error-message">
+            <span *ngIf="courseForm.get('estimatedDurationInHours')?.errors?.['min']">Duration must be at least 1 hour.</span>
+            <span *ngIf="courseForm.get('estimatedDurationInHours')?.errors?.['max']">Duration must be less than 1000 hours.</span>
+          </div>
         </div>
         <div class="form-field">
           <label for="course-difficulty">Difficulty Level</label>
           <select id="course-difficulty" formControlName="difficultyLevel">
             <option value="">Select</option>
-            <option value="beginner">Beginner</option>
-            <option value="intermediate">Intermediate</option>
-            <option value="expert">Expert</option>
+
+            <option value="BIGINNER">BIGINNER</option>
+            <option value="INTERMEDIATE">INTERMEDIATE</option>
+            <option value="ADVANCED">ADVANCED</option>
           </select>
+          <div *ngIf="courseForm.get('difficultyLevel')?.invalid && courseForm.get('difficultyLevel')?.touched" class="error-message">
+            <span *ngIf="courseForm.get('difficultyLevel')?.errors?.['required']">Difficulty level is required.</span>
+          </div>
         </div>
         <div class="form-field">
           <label for="course-status">Status</label>
@@ -49,16 +65,8 @@
           <input type="file" id="course-thumbnail" accept="image/*" (change)="onThumbnailSelected($event)">
           <input type="text" formControlName="thumbnailName" placeholder="File Name">
         </div>
-        <div class="form-field">
-          <label for="course-preview-video">Preview Video URL</label>
-          <input type="url" id="course-preview-video" formControlName="previewVideoUrl" placeholder="Video URL">
-        </div>
-        <div class="form-field">
-          <label for="course-created-by">Created By</label>
-          <select id="course-created-by" formControlName="createdBy">
-            <option value="">Select user</option>
-            </select>
-        </div>
+
+
         <div class="form-field form-field--span-2">
           <label>Tags</label>
           <div class="tag-input">
@@ -71,12 +79,15 @@
   </div>
 
   <div class="side-container">
-    <section class="card" [formGroup]="pricingForm">
+    <section class="card">
       <h2 class="card__title">Pricing</h2>
       <div class="form-grid form-grid--single-col">
         <div class="form-field">
           <label for="price-onetime">One-time Price ({{courseForm.get('currency')?.value || '...'}})</label>
           <input type="number" id="price-onetime" formControlName="oneTimePrice" placeholder="e.g., 99.99">
+          <div *ngIf="courseForm.get('oneTimePrice')?.invalid && courseForm.get('oneTimePrice')?.touched" class="error-message">
+            <span *ngIf="courseForm.get('oneTimePrice')?.errors?.['min']">Price must be 0 or more.</span>
+          </div>
         </div>
         <div class="form-field form-field--toggle">
           <label for="allows-subscription">Allows Subscription</label>
@@ -88,14 +99,23 @@
         <div class="form-field">
           <label for="price-monthly">Monthly Subscription Price</label>
           <input type="number" id="price-monthly" formControlName="subscriptionPriceMonthly" placeholder="e.g., 9.99">
+          <div *ngIf="courseForm.get('subscriptionPriceMonthly')?.invalid && courseForm.get('subscriptionPriceMonthly')?.touched" class="error-message">
+            <span *ngIf="courseForm.get('subscriptionPriceMonthly')?.errors?.['min']">Price must be 0 or more.</span>
+          </div>
         </div>
         <div class="form-field">
           <label for="price-3months">3-Month Subscription Price</label>
           <input type="number" id="price-3months" formControlName="subscriptionPrice3Months" placeholder="e.g., 24.99">
+          <div *ngIf="courseForm.get('subscriptionPrice3Months')?.invalid && courseForm.get('subscriptionPrice3Months')?.touched" class="error-message">
+            <span *ngIf="courseForm.get('subscriptionPrice3Months')?.errors?.['min']">Price must be 0 or more.</span>
+          </div>
         </div>
         <div class="form-field">
           <label for="price-6months">6-Month Subscription Price</label>
           <input type="number" id="price-6months" formControlName="subscriptionPrice6Months" placeholder="e.g., 49.99">
+          <div *ngIf="courseForm.get('subscriptionPrice6Months')?.invalid && courseForm.get('subscriptionPrice6Months')?.touched" class="error-message">
+            <span *ngIf="courseForm.get('subscriptionPrice6Months')?.errors?.['min']">Price must be 0 or more.</span>
+          </div>
         </div>
         <div class="form-field form-field--toggle">
           <label for="is-active">Is Active</label>
@@ -114,7 +134,12 @@
         <div class="preview-content">
           <div class="form-field">
             <label for="preview-thumb">Thumbnail</label>
-            <input type="text" id="preview-thumb" readonly [value]="courseForm.get('thumbnail')?.value">
+            <div *ngIf="isThumbnailFile(); else textThumb">
+              <img [src]="getThumbnailUrl()" alt="Thumbnail preview" style="max-width: 100px; max-height: 100px;">
+            </div>
+            <ng-template #textThumb>
+              <input type="text" id="preview-thumb" readonly [value]="courseForm.get('thumbnail')?.value">
+            </ng-template>
           </div>
           <div class="form-field">
             <label for="preview-video-url">Video</label>
