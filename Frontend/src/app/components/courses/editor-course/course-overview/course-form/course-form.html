@@ -15,6 +15,7 @@
           <label for="course-description">Brief Description</label>
           <textarea id="course-description" formControlName="description" rows="4" placeholder="description • Brief description"></textarea>
           <div *ngIf="courseForm.get('description')?.invalid && courseForm.get('description')?.touched" class="error-message">
+            <span *ngIf="courseForm.get('description')?.errors?.['required']">Description is required.</span>
             <span *ngIf="courseForm.get('description')?.errors?.['minlength']">Description must be at least 10 characters.</span>
             <span *ngIf="courseForm.get('description')?.errors?.['maxlength']">Description must be less than 500 characters.</span>
           </div>
@@ -67,11 +68,17 @@
             <option value="DATA_SCIENCE">Data Science</option>
             <option value="CYBER_SECURITY">Cyber Security</option>
           </select>
+          <div *ngIf="courseForm.get('category')?.invalid && courseForm.get('category')?.touched" class="error-message">
+            <span *ngIf="courseForm.get('category')?.errors?.['required']">Category is required.</span>
+          </div>
         </div>
         <div class="form-field">
           <label for="course-thumbnail">Thumbnail</label>
           <input type="file" id="course-thumbnail" accept="image/*" (change)="onThumbnailSelected($event)">
           <input type="text" formControlName="thumbnailName" placeholder="File Name">
+          <div *ngIf="courseForm.get('thumbnailName')?.invalid && courseForm.get('thumbnailName')?.touched" class="error-message">
+            <span *ngIf="courseForm.get('thumbnailName')?.errors?.['required']">Thumbnail name is required.</span>
+          </div>
         </div>
 
 

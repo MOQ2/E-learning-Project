@@ -1,4 +1,4 @@
-<div class="lesson-form">
+<div class="lesson-form" [formGroup]="lessonForm">
   <div class="form-sections-wrapper">
     <section class="card">
       <h2 class="card-title">Lesson details</h2>
@@ -6,7 +6,11 @@
 
         <div class="form-group full-width">
           <label for="lesson-title">Title (max 250 chars)</label>
-          <input type="text" id="lesson-title" class="form-control" [(ngModel)]="lesson!.title" name="lessonTitle">
+          <input type="text" id="lesson-title" class="form-control" formControlName="title">
+          <div *ngIf="lessonForm.get('title')?.invalid && lessonForm.get('title')?.touched" class="error-message">
+            <span *ngIf="lessonForm.get('title')?.errors?.['required']">Title is required.</span>
+            <span *ngIf="lessonForm.get('title')?.errors?.['minlength']">Title must be at least 3 characters.</span>
+          </div>
         </div>
 
         <div class="form-group full-width">
@@ -19,19 +23,26 @@
               <button type="button">Italic</button>
               <button type="button">Quote</button>
             </div>
-            <textarea id="lesson-explanation" class="form-control" rows="5" [(ngModel)]="lesson!.explanation" name="lessonExplanation"></textarea>
+            <textarea id="lesson-explanation" class="form-control" rows="5" formControlName="explanation"></textarea>
+          </div>
+          <div *ngIf="lessonForm.get('explanation')?.invalid && lessonForm.get('explanation')?.touched" class="error-message">
+            <span *ngIf="lessonForm.get('explanation')?.errors?.['required']">Explanation is required.</span>
+            <span *ngIf="lessonForm.get('explanation')?.errors?.['minlength']">Explanation must be at least 10 characters.</span>
           </div>
         </div>
 
         <div class="form-group full-width">
           <label>What We Will Learn (bullet points)</label>
-          <div class="scrollable-list">
+          <div class="scrollable-list" formArrayName="whatWeWillLearn">
             <ol class="bullet-list numbered-list" start="3">
-              <li *ngFor="let item of lesson!.whatWeWillLearn; let i = index; trackBy: trackByIndex">
-                <input type="text" class="form-control" [(ngModel)]="lesson!.whatWeWillLearn[i]" [name]="'whatWeWillLearn' + i">
+              <li *ngFor="let item of whatWeWillLearnControls; let i = index">
+                <input type="text" class="form-control" [formControlName]="i">
                 <button type="button" class="btn-remove" (click)="removeBullet('whatWeWillLearn', i)">Remove</button>
               </li>
             </ol>
+          </div>
+          <div *ngIf="lessonForm.get('whatWeWillLearn')?.invalid && lessonForm.get('whatWeWillLearn')?.touched" class="error-message">
+            At least one bullet point is required.
           </div>
           <button type="button" class="btn-add" (click)="addBullet('whatWeWillLearn')">+ Add bullet</button>
         </div>
@@ -48,29 +59,36 @@
 
         <div class="form-group">
           <label for="duration">Duration (in minutes)</label>
-          <input type="number" id="duration" class="form-control" placeholder="e.g., 16" [(ngModel)]="lesson!.duration" name="duration">
+          <input type="number" id="duration" class="form-control" placeholder="e.g., 16" formControlName="duration">
+          <div *ngIf="lessonForm.get('duration')?.invalid && lessonForm.get('duration')?.touched" class="error-message">
+            <span *ngIf="lessonForm.get('duration')?.errors?.['required']">Duration is required.</span>
+            <span *ngIf="lessonForm.get('duration')?.errors?.['min']">Duration must be at least 1 minute.</span>
+          </div>
         </div>
 
         <div class="form-group">
           <label>Status</label>
           <div class="status-toggle">
-            <input type="radio" id="status-inactive" value="Inactive" name="lesson-status" [(ngModel)]="lesson!.status">
+            <input type="radio" id="status-inactive" value="Inactive" formControlName="status">
             <label for="status-inactive" class="btn tag">Inactive</label>
 
-            <input type="radio" id="status-active" value="Active" name="lesson-status" [(ngModel)]="lesson!.status">
+            <input type="radio" id="status-active" value="Active" formControlName="status">
             <label for="status-active" class="btn tag">Active</label>
           </div>
         </div>
 
         <div class="form-group full-width">
           <label>Prerequisites (bullet points)</label>
-          <div class="scrollable-list">
+          <div class="scrollable-list" formArrayName="prerequisites">
             <ul class="bullet-list">
-              <li *ngFor="let item of lesson!.prerequisites; let i = index; trackBy: trackByIndex">
-                <input type="text" class="form-control" [(ngModel)]="lesson!.prerequisites[i]" [name]="'prerequisite' + i">
+              <li *ngFor="let item of prerequisitesControls; let i = index">
+                <input type="text" class="form-control" [formControlName]="i">
                 <button type="button" class="btn-remove" (click)="removeBullet('prerequisites', i)">Remove</button>
               </li>
             </ul>
+          </div>
+          <div *ngIf="lessonForm.get('prerequisites')?.invalid && lessonForm.get('prerequisites')?.touched" class="error-message">
+            At least one prerequisite is required.
           </div>
           <button type="button" class="btn-add" (click)="addBullet('prerequisites')">+ Add prerequisite</button>
         </div>
@@ -80,10 +98,10 @@
 
     <section class="card">
       <h2 class="card-title">Attachments</h2>
-      <div class="attachment-list scrollable-list">
-        <div class="attachment-item" *ngFor="let attachment of lesson!.attachments; let i = index">
+      <div class="attachment-list scrollable-list" formArrayName="attachments">
+        <div class="attachment-item" *ngFor="let attachment of attachments.controls; let i = index" [formGroupName]="i">
           <input type="file" class="form-control file-input" (change)="onFileSelected($event, i)">
-          <input type="text" class="form-control" placeholder="Display name" [(ngModel)]="attachment.displayName" [name]="'attachmentName' + i">
+          <input type="text" class="form-control" placeholder="Display name" formControlName="displayName">
           <button type="button" class="btn-remove" (click)="removeAttachment(i)">Remove</button>
         </div>
       </div>

@@ -1,6 +1,6 @@
-import { Component, Input, Output, EventEmitter, ViewEncapsulation } from '@angular/core';
-import { Lesson } from '../lesson-page/lesson.model'; // Using the same model
-import { FormsModule } from '@angular/forms';
+import { Component, Input, Output, EventEmitter, ViewEncapsulation, OnChanges } from '@angular/core';
+import { Lesson } from '../lesson-page/lesson.model';
+import { ReactiveFormsModule, FormBuilder, FormGroup, Validators, FormArray, FormControl } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 
 @Component({
@@ -8,10 +8,10 @@ import { CommonModule } from '@angular/common';
   templateUrl: './lesson-from.html',
   styleUrl: './lesson-from.css',
   standalone: true,
-  imports: [FormsModule, CommonModule],
+  imports: [ReactiveFormsModule, CommonModule],
   encapsulation: ViewEncapsulation.None
 })
-export class LessonEditorComponent {
+export class LessonEditorComponent implements OnChanges {
 
   // @Input() allows the parent component to pass data into this component.
   // The 'lesson' property will be populated by the parent's [lesson]="lessonData" binding.
@@ -24,27 +24,113 @@ export class LessonEditorComponent {
   @Output() preview = new EventEmitter<Lesson>();
   @Output() goBack = new EventEmitter<void>();
 
+  lessonForm!: FormGroup;
+
+  constructor(private fb: FormBuilder) {
+    this.initForm();
+  }
+
+  ngOnChanges() {
+    if (this.lesson) {
+      this.populateForm();
+    }
+  }
+
+  private initForm(): void {
+    this.lessonForm = this.fb.group({
+      title: ['', [Validators.required, Validators.minLength(3)]],
+      explanation: ['', [Validators.required, Validators.minLength(10)]],
+      duration: [1, [Validators.required, Validators.min(1)]],
+      status: ['Active'],
+      whatWeWillLearn: this.fb.array([new FormControl('', Validators.required)]),
+      prerequisites: this.fb.array([new FormControl('', Validators.required)]),
+      attachments: this.fb.array([])
+    });
+  }
+
+  private populateForm(): void {
+    if (this.lesson) {
+      this.lessonForm.patchValue({
+        title: this.lesson.title,
+        explanation: this.lesson.explanation,
+        duration: Math.floor(this.lesson.duration / 60),
+        status: this.lesson.status
+      });
+      this.setFormArray('whatWeWillLearn', this.lesson.whatWeWillLearn);
+      this.setFormArray('prerequisites', this.lesson.prerequisites);
+      this.attachments.clear();
+      this.lesson.attachments.forEach(att => {
+        this.attachments.push(this.fb.group({
+          displayName: [att.displayName]
+        }));
+      });
+    }
+  }
+
+  private setFormArray(arrayName: 'whatWeWillLearn' | 'prerequisites', values: string[]): void {
+    const formArray = this.lessonForm.get(arrayName) as FormArray;
+    formArray.clear();
+    values.forEach(value => {
+      formArray.push(new FormControl(value || '', Validators.required));
+    });
+  }
+
+  get whatWeWillLearnControls() {
+    return (this.lessonForm.get('whatWeWillLearn') as FormArray).controls;
+  }
+
+  get prerequisitesControls() {
+    return (this.lessonForm.get('prerequisites') as FormArray).controls;
+  }
+
+  get attachments() {
+    return this.lessonForm.get('attachments') as FormArray;
+  }
+
   // --- METHODS THAT EMIT EVENTS TO THE PARENT ---
 
   onFormSubmit() {
-    if (this.lesson) {
-      // Convert duration from minutes to seconds
-      const lessonToSave = { ...this.lesson, duration: this.lesson.duration * 60 };
+    if (this.lessonForm.valid) {
+      const formValue = this.lessonForm.value;
+      const lessonToSave: Lesson = {
+        ...this.lesson,
+        ...formValue,
+        duration: formValue.duration * 60, // Convert to seconds
+        attachments: formValue.attachments.map((att: any) => ({ file: null, displayName: att.displayName }))
+      };
       this.saveLesson.emit(lessonToSave);
+    } else {
+      this.lessonForm.markAllAsTouched();
     }
   }
 
   onSaveDraftClick() {
-    if (this.lesson) {
-      const lessonToSave = { ...this.lesson, duration: this.lesson.duration * 60 };
+    if (this.lessonForm.valid) {
+      const formValue = this.lessonForm.value;
+      const lessonToSave: Lesson = {
+        ...this.lesson,
+        ...formValue,
+        duration: formValue.duration * 60,
+        attachments: formValue.attachments.map((att: any) => ({ file: null, displayName: att.displayName }))
+      };
       this.saveDraft.emit(lessonToSave);
+    } else {
+      this.lessonForm.markAllAsTouched();
     }
   }
 
   onPreviewClick() {
-    if (this.lesson) {
-      const lessonToSave = { ...this.lesson, duration: this.lesson.duration * 60 };
+    if (this.lessonForm.valid) {
+      const formValue = this.lessonForm.value;
+      const lessonToSave: Lesson = {
+        ...this.lesson,
+        ...formValue,
+        duration: formValue.duration * 60,
+        attachments: formValue.attachments.map((att: any) => ({ file: null, displayName: att.displayName }))
+      };
       this.preview.emit(lessonToSave);
+    } else {
+      this.lessonForm.markAllAsTouched();
     }
   }
 
@@ -56,34 +142,29 @@ export class LessonEditorComponent {
   // --- UI INTERACTION METHODS ---
 
   addBullet(list: 'whatWeWillLearn' | 'prerequisites') {
-    if (this.lesson) {
-      this.lesson[list].push('');
-    }
+    const formArray = this.lessonForm.get(list) as FormArray;
+    formArray.push(new FormControl('', Validators.required));
   }
 
   removeBullet(list: 'whatWeWillLearn' | 'prerequisites', index: number) {
-    if (this.lesson) {
-      this.lesson[list].splice(index, 1);
+    const formArray = this.lessonForm.get(list) as FormArray;
+    if (formArray.length > 1) {
+      formArray.removeAt(index);
     }
   }
 
   addAttachment() {
-    if (this.lesson) {
-      this.lesson.attachments.push({ file: null, displayName: '' });
-    }
+    this.attachments.push(this.fb.group({
+      displayName: ['']
+    }));
   }
 
   removeAttachment(index: number) {
-    if (this.lesson) {
-      this.lesson.attachments.splice(index, 1);
-    }
+    this.attachments.removeAt(index);
   }
 
   onFileSelected(event: any, index: number) {
-    const file = event.target.files[0];
-    if (this.lesson && file) {
-      this.lesson.attachments[index].file = file;
-    }
+    // Handle file selection, perhaps store in a separate array
   }
 
   // Helper for tracking items in ngFor loops to improve performance.

@@ -52,14 +52,14 @@ export class CourseFormComponent implements OnInit, OnChanges, OnDestroy {
   private initForm(): void {
     this.courseForm = this.fb.group({
       name: [this.course?.name || '', [Validators.required, Validators.minLength(3), Validators.maxLength(100)]],
-      description: [this.course?.description || '', [Validators.minLength(10), Validators.maxLength(500)]],
+      description: [this.course?.description || '', [Validators.required, Validators.minLength(10), Validators.maxLength(500)]],
       estimatedDurationInHours: [this.course?.estimatedDurationInHours || null, [Validators.min(1), Validators.max(1000)]],
       difficultyLevel: [this.course?.difficultyLevel || '', Validators.required],
       status: [{ value: this.course?.status || 'DRAFT', disabled: true }],
       currency: [this.course?.currency || 'USD', Validators.required],
-      category: [this.course?.category || ''],
+      category: [this.course?.category || '', Validators.required],
       thumbnail: [this.course?.thumbnail || ''],
-      thumbnailName: [this.course?.thumbnailName || ''],
+      thumbnailName: [this.course?.thumbnailName || '', Validators.required],
       tags: [this.course?.tags || []],
       oneTimePrice: [this.course?.pricing?.oneTimePrice || null, Validators.min(0)],
       allowsSubscription: [this.course?.pricing?.allowsSubscription || false],
