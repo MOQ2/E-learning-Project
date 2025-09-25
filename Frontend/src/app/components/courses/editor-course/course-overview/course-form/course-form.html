@@ -125,12 +125,15 @@
             <span *ngIf="courseForm.get('subscriptionPrice6Months')?.errors?.['min']">Price must be 0 or more.</span>
           </div>
         </div>
-        <div class="form-field form-field--toggle">
-          <label for="is-active">Is Active</label>
-          <label class="toggle-switch" for="is-active">
-            <input type="checkbox" id="is-active" formControlName="isActive">
-            <span class="toggle-slider"></span>
-          </label>
+        <div class="form-field">
+          <label>Status</label>
+          <div class="status-toggle">
+            <input type="radio" id="status-inactive" value="Inactive" formControlName="isActive">
+            <label for="status-inactive" class="btn tag">Inactive</label>
+
+            <input type="radio" id="status-active" value="Active" formControlName="isActive">
+            <label for="status-active" class="btn tag">Active</label>
+          </div>
         </div>
       </div>
     </section>
