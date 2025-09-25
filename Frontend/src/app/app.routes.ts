@@ -15,7 +15,7 @@ export const routes: Routes = [
   {path: 'signUp',  component:Signup},
   {path: 'payment',  component:Payment},
   {path: 'submitQuiz' , component: SubmitQuiz},
-  {path: 'quizzes' , component: FetchQuizzes}
+  {path: 'quizzes' , component: FetchQuizzes},
   {path: 'courses', component:ExploreCoursesPage}
 
 ];
