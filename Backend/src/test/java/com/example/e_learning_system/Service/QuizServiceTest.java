@@ -4,9 +4,12 @@ import com.example.e_learning_system.Dto.quizzes.*;
 import com.example.e_learning_system.Entities.Course;
 import com.example.e_learning_system.Entities.QuizEntity;
 import com.example.e_learning_system.Entities.QuizQuestionEntity;
+import com.example.e_learning_system.Entities.VideoEntity;
 import com.example.e_learning_system.Mapper.Quizzes.QuizMapper;
 import com.example.e_learning_system.Repository.CourseRepository;
+import com.example.e_learning_system.Repository.QuizQuestionRepository;
 import com.example.e_learning_system.Repository.QuizRepository;
+import com.example.e_learning_system.Repository.VideoRepository;
 import com.example.e_learning_system.excpetions.ClientException;
 import com.example.e_learning_system.excpetions.InvalidQuizException;
 import org.junit.jupiter.api.BeforeEach;
@@ -34,6 +37,9 @@ class QuizServiceTest {
     @Mock
     private CourseRepository courseRepository;
 
+    @Mock
+    private VideoRepository videoRepository;
+
     @BeforeEach
     void setUp() {
         MockitoAnnotations.openMocks(this);
@@ -49,13 +55,13 @@ class QuizServiceTest {
         question.setQuestionMark(5f);
         createDTO.setQuestions(List.of(question));
 
-        Course course = new Course();
-        course.setId(1);
+        VideoEntity  video = new VideoEntity();
+        video.setId(1);
         QuizEntity quizEntity = new QuizEntity();
         quizEntity.setId(100);
 
-        when(courseRepository.findById(1)).thenReturn(Optional.of(course));
-        when(quizMapper.dtoToEntity(createDTO, course)).thenReturn(quizEntity);
+        when(videoRepository.findById(video.getId())).thenReturn(Optional.of(video));
+        when(quizMapper.dtoToEntity(createDTO, video)).thenReturn(quizEntity);
         when(quizRepository.save(quizEntity)).thenReturn(quizEntity);
         QuizResponseDTO responseDTO = new QuizResponseDTO();
         responseDTO.setId(100);

@@ -18,7 +18,7 @@ public class QuizSubmissionsController {
 
     private final QuizSubmissions quizSubmissions;
 
-    @PreAuthorize("hasAuthority('course:write')")
+    @PreAuthorize("hasAuthority('course:read')")
     @PostMapping("submitQuiz")
     public ResponseEntity<QuizSubmissionResponseDTO> submitQuiz(@Valid @RequestBody QuizSubmitDTO quizSubmitDTO) {
         QuizSubmissionResponseDTO response = quizSubmissions.submitQuiz(quizSubmitDTO);

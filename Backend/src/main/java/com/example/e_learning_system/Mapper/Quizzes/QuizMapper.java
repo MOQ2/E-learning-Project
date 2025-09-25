@@ -13,9 +13,9 @@ import java.util.stream.Collectors;
 @Component
 public class QuizMapper {
 
-    public QuizEntity dtoToEntity(CreateQuizDTO dto,Course course) {
+    public QuizEntity dtoToEntity(CreateQuizDTO dto,VideoEntity video) {
         QuizEntity quiz = new QuizEntity();
-        quiz.setCourse(course);
+        quiz.setVideo(video);
         quiz.setTitle(dto.getTitle());
         quiz.setTotalScore(dto.getTotalScore());
         quiz.setIsActive(dto.getIsActive());
@@ -135,7 +135,7 @@ public class QuizMapper {
     public QuizResponseDTO entityToDto(QuizEntity entity) {
         QuizResponseDTO dto = new QuizResponseDTO();
         dto.setId(entity.getId());
-        dto.setCourseId(entity.getCourse().getId());
+        dto.setVideoId(entity.getVideo().getId());
         dto.setTitle(entity.getTitle());
         dto.setTotalScore(entity.getTotalScore());
         dto.setIsActive(entity.getIsActive());
