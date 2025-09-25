@@ -239,6 +239,17 @@ textarea.form-control {
   display: none;
 }
 
+/* --- Error Messages --- */
+.error-message {
+  color: #dc2626;
+  font-size: 12px;
+  margin-top: 4px;
+  background-color: rgba(220, 38, 38, 0.1);
+  padding: 4px 8px;
+  border-radius: var(--border-radius-sm);
+  border: 1px solid rgba(220, 38, 38, 0.2);
+}
+
 @media (max-width: 1024px) {
   .form-grid {
     grid-template-columns: 1fr;

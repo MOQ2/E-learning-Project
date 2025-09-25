@@ -1,7 +1,7 @@
 
 import { Component, Input, Output, EventEmitter, OnChanges, SimpleChanges } from '@angular/core';
 import { Module } from '../../course-editor-page-component/course-editor-page-component';
-import { FormsModule } from '@angular/forms';
+import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { ViewEncapsulation } from '@angular/core';
 
@@ -10,7 +10,7 @@ import { ViewEncapsulation } from '@angular/core';
   templateUrl: './module-form.html',
   styleUrls: ['./module-form.css'],
   standalone: true,
-  imports: [FormsModule, CommonModule],
+  imports: [ReactiveFormsModule, CommonModule],
   encapsulation: ViewEncapsulation.None
 })
 export class ModuleFormComponent implements OnChanges {
@@ -24,9 +24,12 @@ export class ModuleFormComponent implements OnChanges {
    */
   @Output() saveDraft = new EventEmitter<Module>();
 
-  // A local copy of the module to avoid directly mutating the input object.
-  // This is good practice and prevents unintended side effects.
+  moduleForm!: FormGroup;
   editableModule!: Module;
+
+  constructor(private fb: FormBuilder) {
+    this.initForm();
+  }
 
   /**
    * A lifecycle hook that runs when any @Input() property changes.
@@ -36,6 +39,24 @@ export class ModuleFormComponent implements OnChanges {
     if (changes['module'] && this.module) {
       // Create a deep copy to prevent two-way binding issues
       this.editableModule = JSON.parse(JSON.stringify(this.module));
+      this.populateForm();
+    }
+  }
+
+  private initForm(): void {
+    this.moduleForm = this.fb.group({
+      title: ['', [Validators.required, Validators.minLength(3)]],
+      summary: ['', [Validators.required, Validators.minLength(10)]],
+      order: [1],
+      estimatedTime: [1, [Validators.required, Validators.min(1)]],
+      isOptional: [false],
+      status: ['Active']
+    });
+  }
+
+  private populateForm(): void {
+    if (this.editableModule) {
+      this.moduleForm.patchValue(this.editableModule, { emitEvent: false });
     }
   }
 
@@ -43,6 +64,11 @@ export class ModuleFormComponent implements OnChanges {
    * Emits the current state of the editableModule to the parent.
    */
   onSaveChanges(): void {
-    this.saveDraft.emit(this.editableModule);
+    if (this.moduleForm.valid) {
+      this.editableModule = { ...this.editableModule, ...this.moduleForm.value };
+      this.saveDraft.emit(this.editableModule);
+    } else {
+      this.moduleForm.markAllAsTouched();
+    }
   }
 }

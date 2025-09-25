@@ -1,37 +1,49 @@
             <!-- Bind form controls to the editableModule object -->
 <div class="module-form-card" >
-            <form class="module-details-form">
+            <form class="module-details-form" [formGroup]="moduleForm">
                 <h3>Module details</h3>
                 <div class="form-group">
                     <label for="module-title">Module title</label>
-                    <input type="text" id="module-title" placeholder="Enter module title" [(ngModel)]="editableModule.title" name="title">
+                    <input type="text" id="module-title" formControlName="title">
+                    <div *ngIf="moduleForm.get('title')?.invalid && moduleForm.get('title')?.touched" class="error-message">
+                        <span *ngIf="moduleForm.get('title')?.errors?.['required']">Title is required.</span>
+                        <span *ngIf="moduleForm.get('title')?.errors?.['minlength']">Title must be at least 3 characters.</span>
+                    </div>
                 </div>
                 <div class="form-group">
                     <label for="module-summary">Brief summary of this module</label>
-                    <textarea id="module-summary" rows="4" placeholder="Enter a brief summary" [(ngModel)]="editableModule.summary" name="summary"></textarea>
+                    <textarea id="module-summary" rows="4" formControlName="summary"></textarea>
+                    <div *ngIf="moduleForm.get('summary')?.invalid && moduleForm.get('summary')?.touched" class="error-message">
+                        <span *ngIf="moduleForm.get('summary')?.errors?.['required']">Summary is required.</span>
+                        <span *ngIf="moduleForm.get('summary')?.errors?.['minlength']">Summary must be at least 10 characters.</span>
+                    </div>
                 </div>
                 <div class="form-group-inline">
                     <div class="form-group">
                         <label for="module-order">Order</label>
-                        <input type="number" id="module-order" [(ngModel)]="editableModule.order" name="order">
+                        <input type="number" id="module-order" formControlName="order">
                     </div>
                     <div class="form-group">
                         <label for="module-time">Estimated time (min)</label>
-                        <input type="number" id="module-time" placeholder="e.g., 30" [(ngModel)]="editableModule.estimatedTime" name="time">
+                        <input type="number" id="module-time" formControlName="estimatedTime">
+                        <div *ngIf="moduleForm.get('estimatedTime')?.invalid && moduleForm.get('estimatedTime')?.touched" class="error-message">
+                            <span *ngIf="moduleForm.get('estimatedTime')?.errors?.['required']">Estimated time is required.</span>
+                            <span *ngIf="moduleForm.get('estimatedTime')?.errors?.['min']">Estimated time must be at least 1 minute.</span>
+                        </div>
                     </div>
                 </div>
                  <div class="form-group form-group--checkbox">
-                    <input type="checkbox" id="module-optional" [(ngModel)]="editableModule.isOptional" name="optional">
+                    <input type="checkbox" id="module-optional" formControlName="isOptional">
                     <label for="module-optional">Make module optional</label>
                 </div>
 
                 <div class="form-group">
                     <label>Status</label>
                     <div class="status-toggle">
-                        <input type="radio" id="status-inactive" value="Inactive" name="module-status" [(ngModel)]="editableModule.status">
+                        <input type="radio" id="status-inactive" value="Inactive" formControlName="status">
                         <label for="status-inactive" class="btn tag">Inactive</label>
 
-                        <input type="radio" id="status-active" value="Active" name="module-status" [(ngModel)]="editableModule.status">
+                        <input type="radio" id="status-active" value="Active" formControlName="status">
                         <label for="status-active" class="btn tag">Active</label>
                     </div>
                 </div>
