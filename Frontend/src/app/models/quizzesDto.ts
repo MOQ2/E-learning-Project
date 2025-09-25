@@ -79,3 +79,11 @@ export interface UpdateQuizDTO {
   questions: QuizQuestionUpdateDTO[];
 }
 
+export interface StudentAnswerResponseDTO {
+  questionId: number;
+  questionText: string;
+  selectedOptionId?: number;
+  selectedOptionText?: string;
+  isCorrect: boolean;
+  correctAnswer:string;
+}

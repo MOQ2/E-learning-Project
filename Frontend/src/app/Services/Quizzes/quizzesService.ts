@@ -5,7 +5,7 @@ import {
   CreateQuizDTO,
   QuizResponseDTO,
   QuizSubmissionResponseDTO,
-  QuizSubmitDTO,
+  QuizSubmitDTO, StudentAnswerResponseDTO,
   UpdateQuizDTO
 } from '../../models/quizzesDto';
 import {Observable} from 'rxjs';
@@ -37,6 +37,13 @@ export class QuizzesService {
     return this.http.patch<QuizResponseDTO>(`${this.api}/quizzes/${quizId}`, quiz);
   }
 
+  getSubmissions(quizId: number): Observable<QuizSubmissionResponseDTO[]> {
+    return this.http.get<QuizSubmissionResponseDTO[]>(`${this.api}/${quizId}/attempts`);
+  }
+
+  getSubmissionAnswers(submissionId: number) {
+    return this.http.get<StudentAnswerResponseDTO[]>(`${this.api}/${submissionId}/answers`);
+  }
 
 
 }
