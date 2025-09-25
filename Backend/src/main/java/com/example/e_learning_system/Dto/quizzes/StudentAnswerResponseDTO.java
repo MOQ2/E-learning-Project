@@ -14,5 +14,6 @@ public class StudentAnswerResponseDTO {
     private String questionText;
     private Integer selectedOptionId;
     private String selectedOptionText;
+    private String correctAnswer;
     private Boolean isCorrect;
 }

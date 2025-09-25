@@ -274,7 +274,7 @@ VALUES
 -- 12. INSERT DUMMY QUIZZES
 -- ================================
 
-INSERT INTO quizzes (course_id, title, total_score, is_active)
+INSERT INTO quizzes (video_id, title, total_score, is_active)
 VALUES
     (1, 'Java Fundamentals Quiz', 100, true), -- Java course
     (2, 'Python Data Structures Quiz', 100, true), -- Python DS course
