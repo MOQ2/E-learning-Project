@@ -66,7 +66,7 @@ export class CourseFormComponent implements OnInit, OnChanges, OnDestroy {
       subscriptionPriceMonthly: [this.course?.pricing?.subscriptionPriceMonthly || null, Validators.min(0)],
       subscriptionPrice3Months: [this.course?.pricing?.subscriptionPrice3Months || null, Validators.min(0)],
       subscriptionPrice6Months: [this.course?.pricing?.subscriptionPrice6Months || null, Validators.min(0)],
-      isActive: [this.course?.isActive || true],
+      isActive: [this.course?.isActive ? 'Active' : 'Inactive'],
     });
   }
 

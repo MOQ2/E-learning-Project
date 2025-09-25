@@ -1,0 +1,140 @@
+<div class="page-wrapper">
+  <app-nav-bar></app-nav-bar>
+
+  <!-- Overview Page Layout -->
+  <ng-container *ngIf="activePage === 'overview'">
+    <main class="course-editor">
+      <app-sidebar [activeLink]="activePage" (activeLinkChange)="onActiveLinkChange($event)"></app-sidebar>
+
+      <div class="content-panel">
+        <header class="content-header">
+          <h1>
+            <img src="assets/images/vector-69.svg" alt="" /> Course Overview
+          </h1>
+          <div class="content-header__actions">
+            <button type="button" class="button">
+              <img src="assets/images/vector-80.svg" alt="" /> Save draft
+            </button>
+            <button type="button" class="button button--primary">
+              <img src="assets/images/vector-87.svg" alt="" /> Preview
+            </button>
+          </div>
+        </header>
+
+        <app-course-form
+          [course]="currentCourseOverview"
+          (formChange)="handleFormChange($event)"
+          (fileSelected)="onFileSelected($event)">
+        </app-course-form>
+
+        <footer class="content-footer">
+          <div class="content-footer__actions">
+            <button type="button" class="button" (click)="saveDraft()">
+              <img src="assets/images/vector-80.svg" alt="" /> Save draft
+            </button>
+            <button type="button" class="button button--primary" (click)="onContinue()">
+              Continue
+            </button>
+          </div>
+        </footer>
+      </div>
+    </main>
+  </ng-container>
+
+  <!-- Modules Page Layout -->
+  <ng-container *ngIf="activePage === 'modules'">
+    <main class="course-creation-page">
+      <aside class="course-sidebar">
+        <app-sidebar [activeLink]="activePage" (activeLinkChange)="onActiveLinkChange($event)"></app-sidebar>
+        <!-- Modules list rendered by the reusable ModulesListComponent -->
+        <app-modules-list
+          [modules]="modules"
+          [selectedModule]="currentModule"
+          (moduleSelected)="onModuleSelected($event)"
+          (addModule)="onAddModule()">
+        </app-modules-list>
+      </aside>
+
+      <div class="editor-content">
+        <section class="editor-card">
+          <header class="editor-header">
+            <div class="editor-header__title">
+              <h2>Modules • Editor</h2>
+            </div>
+            <div class="editor-header__status">
+              <span>Module status</span>
+              <span class="tag tag--green">Active</span>
+            </div>
+            <div class="editor-header__actions">
+              <button class="btn btn--secondary">Save draft</button>
+              <button class="btn btn--primary">Preview</button>
+            </div>
+          </header>
+
+          <div class="editor-body">
+            <app-module-form [module]="currentModule"></app-module-form>
+          </div>
+
+          <footer class="editor-footer">
+            <button class="btn btn--secondary">Back to Overview</button>
+            <button class="btn btn--primary-light">Go to Lessons</button>
+            <button class="btn btn--primary">Continue to Review</button>
+          </footer>
+        </section>
+      </div>
+    </main>
+  </ng-container>
+
+  <!-- Add Lesson Page Layout -->
+  <ng-container *ngIf="activePage === 'add-lesson'">
+    <main class="course-creation-page">
+      <aside class="course-sidebar">
+        <app-sidebar [activeLink]="activePage" (activeLinkChange)="onActiveLinkChange($event)"></app-sidebar>
+        <!-- Perhaps add module details or lessons list here if needed -->
+      </aside>
+
+      <div class="editor-content">
+        <section class="editor-card">
+          <header class="editor-header">
+            <div class="editor-header__title">
+              <h2>Add Lesson • Editor</h2>
+            </div>
+            <div class="editor-header__status">
+              <span>Lesson status</span>
+              <span class="tag tag--green">Active</span>
+            </div>
+            <div class="editor-header__actions">
+              <button class="btn btn--secondary" (click)="lessonEditor.onSaveDraftClick()">Save draft</button>
+              <button class="btn btn--primary" (click)="lessonEditor.onPreviewClick()">Preview</button>
+            </div>
+          </header>
+
+          <div class="editor-body">
+            <app-lesson-editor [lesson]="currentLesson" (saveLesson)="onSaveLesson($event)" (saveDraft)="onSaveDraftLesson($event)" (preview)="onPreviewLesson($event)" (goBack)="onGoBackFromLesson()"></app-lesson-editor>
+          </div>
+
+          <footer class="editor-footer">
+            <button class="btn btn--secondary" (click)="onGoBackFromLesson()">Back to Modules</button>
+            <button class="btn btn--primary" (click)="lessonEditor.onFormSubmit()">Save & Continue</button>
+          </footer>
+        </section>
+      </div>
+    </main>
+  </ng-container>
+
+  <!-- Publish Page -->
+  <ng-container *ngIf="activePage === 'publish'">
+    <main class="course-editor">
+      <app-sidebar [activeLink]="activePage" (activeLinkChange)="onActiveLinkChange($event)"></app-sidebar>
+      <div class="content-panel">
+        <header class="content-header">
+          <h1>Review & Publish</h1>
+        </header>
+        <div class="content-body">
+          <p>Review & Publish content here</p>
+        </div>
+      </div>
+    </main>
+  </ng-container>
+
+</div>

@@ -1,0 +1,58 @@
+            <!-- Bind form controls to the editableModule object -->
+<div class="module-form-card" >
+            <form class="module-details-form">
+                <h3>Module details</h3>
+                <div class="form-group">
+                    <label for="module-title">Module title</label>
+                    <input type="text" id="module-title" placeholder="Enter module title" [(ngModel)]="editableModule.title" name="title">
+                </div>
+                <div class="form-group">
+                    <label for="module-summary">Brief summary of this module</label>
+                    <textarea id="module-summary" rows="4" placeholder="Enter a brief summary" [(ngModel)]="editableModule.summary" name="summary"></textarea>
+                </div>
+                <div class="form-group-inline">
+                    <div class="form-group">
+                        <label for="module-order">Order</label>
+                        <input type="number" id="module-order" [(ngModel)]="editableModule.order" name="order">
+                    </div>
+                    <div class="form-group">
+                        <label for="module-time">Estimated time (min)</label>
+                        <input type="number" id="module-time" placeholder="e.g., 30" [(ngModel)]="editableModule.estimatedTime" name="time">
+                    </div>
+                </div>
+                 <div class="form-group form-group--checkbox">
+                    <input type="checkbox" id="module-optional" [(ngModel)]="editableModule.isOptional" name="optional">
+                    <label for="module-optional">Make module optional</label>
+                </div>
+
+                <div class="form-group">
+                    <label>Status</label>
+                    <div class="status-toggle">
+                        <input type="radio" id="status-inactive" value="Inactive" name="module-status" [(ngModel)]="editableModule.status">
+                        <label for="status-inactive" class="btn tag">Inactive</label>
+
+                        <input type="radio" id="status-active" value="Active" name="module-status" [(ngModel)]="editableModule.status">
+                        <label for="status-active" class="btn tag">Active</label>
+                    </div>
+                </div>
+            </form>
+
+            <div class="lesson-manager">
+                <header class="lesson-manager-header">
+                    <h3>Lessons in this module</h3>
+                    <button class="btn btn--primary-light btn--small">Add lesson</button>
+                </header>
+                <ul class="lesson-list">
+                    <li class="lesson-item" *ngFor="let lesson of editableModule.lessons">
+                        <button class="lesson-item__handle" aria-label="Reorder lesson">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="12" r="1"></circle><circle cx="9" cy="5" r="1"></circle><circle cx="9" cy="19" r="1"></circle><circle cx="15" cy="12" r="1"></circle><circle cx="15" cy="5" r="1"></circle><circle cx="15" cy="19" r="1"></circle></svg>
+                        </button>
+                        <p class="lesson-item__title">{{ lesson.title }}</p>
+                        <div class="lesson-item__actions">
+                            <button class="btn btn--secondary btn--small">Edit</button>
+                            <button class="btn btn--secondary btn--small">Remove</button>
+                        </div>
+                    </li>
+                </ul>
+            </div>
+</div>

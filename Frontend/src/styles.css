@@ -24,6 +24,550 @@
 /* Apply global page background using the custom property */
 html, body {
   height: 100%;
-  background: var(--background, #FFF7FA);
-  margin: 0;
-}
+  background: var(--background, #FFF7FA);}
+  /* --- Global Setup & Variables --- */
+  :root {
+    --color-primary: rgba(124, 58, 237, 1); /* Purple */
+    --color-primary-light: rgba(255, 228, 181, 1); /* Light Orange/Yellow */
+    --color-secondary: rgba(255, 241, 247, 1); /* Light Pink */
+    --color-secondary-darker: #F3DFF0; /* A slightly darker pink from the design */
+    --color-background: rgba(255, 247, 250, 1); /* Page Background */
+    --color-text-dark: rgba(15, 23, 36, 1);
+    --color-text-medium: rgba(48, 25, 52, 1);
+    --color-text-light: rgba(107, 114, 128, 1);
+    --color-text-accent: rgba(70, 36, 0, 1); /* Brown for light buttons */
+    --color-white: rgba(255, 255, 255, 1);
+    --color-border: rgba(176, 153, 173, 1);
+    --color-success: rgba(16, 185, 129, 1); /* Green */
+    --color-info: rgba(6, 182, 212, 1); /* Cyan */
+    --color-light-gray-bg: rgba(248, 250, 252, 1);
+    --font-family-main: 'Inter', sans-serif;
+    --border-radius-sm: 8px;
+    --border-radius-md: 14px;
+  }
+
+  * {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+  }
+
+  body {
+    font-family: var(--font-family-main);
+    background-color: var(--color-background);
+    color: var(--color-text-dark);
+    line-height: 1.5;
+  }
+
+  ul {
+    list-style: none;
+  }
+
+  a {
+    text-decoration: none;
+    color: inherit;
+  }
+
+  /* --- Page Wrapper --- */
+  .page-wrapper {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 0 24px;
+  }
+
+  /* --- Buttons & Tags --- */
+  .btn {
+    font-family: var(--font-family-main);
+    font-weight: 700;
+    font-size: 14px;
+    padding: 10px 16px;
+    border-radius: var(--border-radius-sm);
+    border: 1px solid transparent;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    transition: opacity 0.2s ease;
+  }
+
+  .btn:hover {
+    opacity: 0.9;
+  }
+
+  .btn--primary {
+    background-color: var(--color-primary);
+    color: var(--color-white);
+  }
+
+  .btn--primary-light {
+    background-color: var(--color-primary-light);
+    color: var(--color-text-accent);
+  }
+
+  .btn--secondary {
+    background-color: var(--color-white);
+    color: var(--color-text-dark);
+    border: 1px solid var(--color-border);
+  }
+
+  /* FIX: This style was identical to btn--primary-light, can be used interchangeably */
+  .btn--secondary-light {
+    background-color: var(--color-primary-light);
+    color: var(--color-text-accent);
+    border: none;
+  }
+
+  .btn--small {
+    padding: 6px 10px;
+    font-size: 12px;
+  }
+
+  /* FIX: Added style for icon-only buttons */
+  .btn--icon {
+    padding: 8px;
+    background-color: transparent;
+    border: 1px solid var(--color-border);
+    color: var(--color-text-medium);
+  }
+
+  .tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 7px 10px;
+    border-radius: 48px;
+    font-size: 12px;
+    font-weight: 700;
+  }
+
+  .tag--green {
+    background-color: var(--color-success);
+    color: var(--color-white);
+  }
+
+  .tag--gray {
+    background-color: var(--color-light-gray-bg);
+    color: var(--color-text-light);
+    border: 1px solid var(--color-border);
+  }
+
+  .tag--cyan {
+    background-color: var(--color-info);
+    color: var(--color-text-dark);
+  }
+
+  /* --- Main Header --- */
+  .main-header {
+    display: flex;
+    align-items: center;
+    padding: 16px 0;
+    border-bottom: 1px solid var(--color-border);
+    background-color: var(--color-white);
+    width: 100%;
+  }
+
+  .logo {
+    font-weight: 700;
+    font-size: 20px;
+    color: var(--color-text-dark);
+    margin-right: 40px;
+  }
+
+  .main-nav {
+    margin-right: auto;
+  }
+
+  .main-nav ul {
+    display: flex;
+    gap: 12px;
+  }
+
+  .main-nav a {
+    padding: 8px 12px;
+    font-weight: 700;
+    font-size: 16px;
+    border-radius: var(--border-radius-sm);
+  }
+
+  .main-nav a:hover {
+    background-color: var(--color-light-gray-bg);
+  }
+
+  .header-actions {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-left: auto;
+  }
+
+  .mobile-nav-toggle {
+    display: none; /* Hidden by default, shown on mobile */
+  }
+
+  /* --- Main Content Layout --- */
+  .course-creation-page {
+    display: flex;
+    gap: 20px;
+    padding: 20px 0;
+  }
+
+  /* --- Course Sidebar (Left) --- */
+  .course-sidebar {
+    flex: 0 0 28%; /* Sidebar width */
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+
+  .sidebar-title {
+    font-size: 14px;
+    color: var(--color-text-medium);
+    padding: 0 12px;
+  }
+
+  .sidebar-nav ul {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    padding: 12px;
+    background-color: var(--color-secondary);
+    border: 1px solid var(--color-border);
+    border-radius: var(--border-radius-md);
+  }
+
+  .sidebar-nav a {
+    display: block;
+    padding: 8px;
+    border-radius: var(--border-radius-sm);
+    font-weight: 700;
+  }
+
+  .sidebar-nav li.active a {
+    /* FIX: Using a variable for consistency */
+    background-color: var(--color-secondary-darker);
+    color: var(--color-primary);
+  }
+
+  .module-list-card {
+    background-color: var(--color-white);
+    border: 1px solid var(--color-border);
+    border-radius: var(--border-radius-md);
+    padding: 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .module-list-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .module-list-header__title-group {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .module-list-header h3 {
+    font-size: 14px;
+    color: var(--color-text-medium);
+  }
+
+  .module-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    max-height: 280px;
+    overflow-y: auto;
+    padding-right: 8px;
+  }
+
+  .module-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px;
+    border: 1px solid var(--color-border);
+    border-radius: var(--border-radius-sm);
+  }
+
+  .module-item__number {
+    background-color: var(--color-light-gray-bg);
+    border-radius: var(--border-radius-sm);
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--color-text-light);
+    padding: 8px 12px;
+  }
+
+  .module-item__details {
+    margin-right: auto;
+  }
+
+  .module-item__title {
+    font-weight: 700;
+    font-size: 14px;
+    color: var(--color-text-medium);
+  }
+
+  .module-item__meta {
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--color-text-light);
+  }
+
+  .module-item__actions {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  /* --- Editor Content (Right) --- */
+  .editor-content {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .editor-card {
+    background-color: var(--color-white);
+    border: 1px solid var(--color-border);
+    border-radius: var(--border-radius-md);
+    flex-grow: 1;
+    /* FIX: Ensure card acts as a flex container for the footer */
+    display: flex;
+    flex-direction: column;
+  }
+
+  .editor-header {
+    display: flex;
+    align-items: center;
+    padding: 16px;
+    border-bottom: 1px solid var(--color-border);
+    gap: 16px;
+    flex-wrap: wrap;
+  }
+
+  .editor-header__title {
+    font-size: 18px;
+    font-weight: 700;
+    margin-right: auto;
+  }
+
+  .editor-header__status {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--color-text-light);
+  }
+
+  .editor-header__actions {
+    display: flex;
+    gap: 8px;
+  }
+
+  .editor-body {
+    display: flex;
+    gap: 16px;
+    padding: 16px;
+    flex-grow: 1; /* Allows body to fill available space */
+  }
+
+  /* --- Forms --- */
+  .module-details-form {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    padding: 16px;
+    border: 1px solid var(--color-border);
+    border-radius: var(--border-radius-md);
+  }
+
+  .module-details-form h3 {
+    font-size: 14px;
+  }
+
+  .form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  .form-group-inline {
+    display: flex;
+    gap: 16px;
+  }
+
+  .form-group-inline .form-group {
+    flex: 1;
+  }
+
+  .form-group label {
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--color-text-light);
+  }
+
+  .form-group input[type="text"],
+  .form-group input[type="number"],
+  .form-group textarea {
+    width: 100%;
+    padding: 12px;
+    border-radius: var(--border-radius-sm);
+    border: 1px solid var(--color-border);
+    font-family: var(--font-family-main);
+    font-size: 14px;
+  }
+
+  .form-group--checkbox {
+    flex-direction: row;
+    align-items: center;
+  }
+
+  .form-group--checkbox input {
+    margin-right: 8px;
+  }
+
+  /* FIX: New styles for functional radio button toggle */
+  .status-toggle {
+    display: flex;
+    gap: 8px;
+  }
+
+  .status-toggle input[type="radio"] {
+    display: none;
+  }
+
+  .status-toggle label {
+    cursor: pointer;
+    background-color: var(--color-light-gray-bg);
+    color: var(--color-text-light);
+    border: 1px solid var(--color-border);
+    padding: 7px 10px;
+    font-size: 12px;
+    font-weight: 700;
+    border-radius: 48px;
+    transition: all 0.2s ease;
+  }
+
+  .status-toggle input[type="radio"]:checked + label {
+    background-color: var(--color-success);
+    color: var(--color-white);
+    border-color: var(--color-success);
+  }
+
+  /* --- Lesson Manager --- */
+  .lesson-manager {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    padding: 16px;
+    border: 1px solid var(--color-border);
+    border-radius: var(--border-radius-md);
+  }
+
+  .lesson-manager-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .lesson-manager-header h3 {
+    font-size: 14px;
+  }
+
+  .lesson-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    max-height: 250px;
+    overflow-y: auto;
+    padding-right: 8px;
+  }
+
+  .lesson-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px;
+    border: 1px solid var(--color-border);
+    border-radius: var(--border-radius-sm);
+  }
+
+  /* FIX: Styles for the new semantic handle button */
+  .lesson-item__handle {
+    color: var(--color-text-light);
+    cursor: grab;
+    background: transparent;
+    border: none;
+    padding: 0;
+  }
+
+  .lesson-item__title {
+    margin-right: auto;
+    font-weight: 700;
+    font-size: 14px;
+  }
+  .lesson-item__actions {
+    display: flex;
+    gap: 8px;
+  }
+
+  /* --- Editor Footer --- */
+  .editor-footer {
+    display: flex;
+    justify-content: flex-end;
+    gap: 8px;
+    padding: 16px;
+    border-top: 1px solid var(--color-border);
+    background-color: var(--color-white);
+    /* FIX: Negative margin is no longer needed due to HTML structure change */
+    border-radius: 0 0 var(--border-radius-md) var(--border-radius-md);
+  }
+
+  /* --- Responsive Design --- */
+  @media (max-width: 1024px) {
+    .course-creation-page {
+      flex-direction: column;
+    }
+    .course-sidebar {
+      flex: 0 0 auto; /* Allow sidebar to take its own height */
+      width: 100%;
+    }
+    .editor-body {
+      flex-direction: column;
+    }
+  }
+
+  @media (max-width: 768px) {
+    .page-wrapper {
+      padding: 0 16px;
+    }
+    .main-nav {
+      display: none; /* Hide nav links */
+    }
+    /* FIX: Show the hamburger menu on smaller screens */
+    .mobile-nav-toggle {
+      display: inline-flex;
+    }
+    /* FIX: Hide the main "Create Course" button to avoid duplication if it's in the mobile menu */
+    .header-actions .btn:not(.mobile-nav-toggle) {
+      display: none;
+    }
+    .logo {
+      margin-right: auto; /* Push logo to the left */
+    }
+    .header-actions {
+      margin-left: 0; /* Reset margin */
+    }
+    .editor-header {
+      flex-direction: column;
+      align-items: stretch;
+    }
+  }

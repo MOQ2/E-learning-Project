@@ -1,0 +1,249 @@
+/* Main Content Body for Lesson Editor */
+.content-body {
+    background-color: var(--color-white);
+    border: 1px solid var(--color-border);
+    border-radius: var(--border-radius-md);
+    /* The form itself is now the content-body */
+    display: flex;
+    flex-direction: column;
+}
+
+.btn {
+  font-family: var(--font-family-main);
+  font-weight: 700;
+  font-size: 14px;
+  padding: 10px 16px;
+  border-radius: var(--border-radius-sm);
+  border: 1px solid transparent;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  transition: opacity 0.2s ease;
+}
+
+.btn:hover {
+  opacity: 0.9;
+}
+
+.btn-primary {
+  background-color: var(--color-primary);
+  color: var(--color-white);
+}
+
+.btn-outline {
+  background-color: var(--color-white);
+  color: var(--color-text-dark);
+  border: 1px solid var(--color-border);
+}
+
+.btn-secondary {
+  background-color: var(--color-light-gray-bg);
+  color: var(--color-text-dark);
+  border: 1px solid var(--color-border);
+}
+
+.lesson-form {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+}
+
+.form-sections-wrapper {
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.card {
+  border: 1px solid var(--color-border);
+  border-radius: 14px;
+  padding: 16px;
+}
+
+.card-title {
+  font-size: 14px;
+  margin-bottom: 16px;
+}
+
+.form-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 24px;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.form-group.full-width {
+  grid-column: 1 / -1;
+}
+
+.form-group label {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--color-text-gray);
+}
+
+.form-control {
+  width: 100%;
+  padding: 12px 14px;
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+  font-family: inherit;
+  font-size: 14px;
+  background-color: var(--color-white);
+}
+.form-control:focus {
+    outline: 2px solid var(--color-primary);
+    border-color: transparent;
+}
+
+textarea.form-control {
+    resize: vertical;
+}
+
+.rich-text-editor {
+    border: 1px solid var(--color-border);
+    border-radius: 8px;
+    overflow: hidden;
+}
+.rich-text-editor .toolbar {
+    display: flex;
+    gap: 8px;
+    padding: 8px;
+    background-color: #f9fafb;
+    border-bottom: 1px solid var(--color-border);
+}
+.rich-text-editor .toolbar button {
+    background: var(--color-white);
+    border: 1px solid var(--color-border);
+    padding: 6px 10px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 12px;
+    font-weight: 700;
+}
+.rich-text-editor textarea {
+    border: none;
+}
+.rich-text-editor textarea:focus {
+    outline: none;
+}
+
+.scrollable-list {
+  max-height: 200px;
+  overflow-y: auto;
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+  padding: 8px;
+}
+
+.numbered-list {
+  list-style-type: decimal;
+  padding-left: 20px;
+}
+.bullet-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  list-style: disc;
+  padding-left: 20px;
+}
+.bullet-list li {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.bullet-list li .form-control {
+  flex-grow: 1;
+}
+.btn-remove {
+  background: #f8fafc;
+  border: none;
+  border-radius: 24px;
+  color: var(--color-text-gray);
+  padding: 6px 12px;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+}
+.btn-add {
+  margin-top: 12px;
+  background: transparent;
+  border: 1px solid var(--color-border);
+  padding: 12px;
+  border-radius: 14px;
+  font-weight: 700;
+  color: var(--color-text-gray);
+  cursor: pointer;
+  width: 100%;
+  text-align: center;
+}
+
+/* --- Radio Button Status Toggle --- */
+.status-toggle {
+    display: flex;
+    gap: 8px;
+}
+
+.status-toggle input[type="radio"] {
+    display: none;
+}
+
+.status-toggle label {
+    cursor: pointer;
+    background-color: var(--color-light-gray-bg);
+    color: var(--color-text-light);
+    border: 1px solid var(--color-border);
+    /* Re-uses tag styles for pill shape */
+    padding: 7px 10px;
+    font-size: 12px;
+    font-weight: 700;
+    border-radius: 48px;
+    transition: all 0.2s ease;
+}
+
+.status-toggle input[type="radio"]:checked + label {
+    background-color: var(--color-success);
+    color: var(--color-white);
+    border-color: var(--color-success);
+}
+
+.attachment-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.attachment-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.attachment-item .form-control {
+  flex: 1;
+}
+
+.attachment-item .file-input {
+  flex: 1;
+}
+
+.hidden-file-input {
+  display: none;
+}
+
+@media (max-width: 1024px) {
+  .form-grid {
+    grid-template-columns: 1fr;
+  }
+}
+@media (max-width: 768px) {
+  /* Removed form-header and form-footer styles */
+}
