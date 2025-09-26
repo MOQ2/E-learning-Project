@@ -132,10 +132,10 @@ public class S3Service {
         if (durationSeconds != null) {
             video.setDurationSeconds(durationSeconds);
         }
-
-        // Update thumbnail URL if provided
+         
+        // Update thumbnail if provided
         if (thumbnailUrl != null) {
-            video.setThumbnailUrl(thumbnailUrl);
+            video.setThumbnail(null); // TODO: handle thumbnail URL properly
         }
 
         // Update metadata with processing results

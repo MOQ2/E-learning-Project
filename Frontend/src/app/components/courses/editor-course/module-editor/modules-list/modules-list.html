@@ -27,6 +27,14 @@
                     [class.tag--gray]="module.status === 'Inactive'">
                     {{ module.status }}
                 </span>
+                <span
+                    class="tag tag--small"
+                    [class.tag--blue]="module.state === 'new'"
+                    [class.tag--yellow]="module.state === 'edited'"
+                    [class.tag--green]="module.state === 'saved'"
+                    *ngIf="module.state">
+                    {{ module.state }}
+                </span>
                 <button class="btn btn--secondary-light btn--small" (click)="moduleSelected.emit(module)">Open</button>
             </div>
 

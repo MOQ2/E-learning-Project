@@ -9,10 +9,11 @@ import { ViewEncapsulation } from '@angular/core';
   encapsulation: ViewEncapsulation.None
 })
 export class SidebarComponent {
-  @Input() activeLink: 'overview' | 'modules' | 'add-lesson' | 'publish' = 'overview';
-  @Output() activeLinkChange = new EventEmitter<'overview' | 'modules' | 'add-lesson' | 'publish'>();
+  @Input() activeLink: 'overview' | 'modules' | 'lesson' | 'publish' = 'overview';
+  @Input() courseCreated: boolean = false;
+  @Output() activeLinkChange = new EventEmitter<'overview' | 'modules' | 'lesson' | 'publish'>();
 
-  setActiveLink(link: 'overview' | 'modules' | 'add-lesson' | 'publish') {
+  setActiveLink(link: 'overview' | 'modules' | 'lesson' | 'publish') {
     this.activeLink = link;
     this.activeLinkChange.emit(link);
   }

@@ -42,9 +42,13 @@
     background-color: rgba(0,0,0,0.05);
 }
 
-@media (max-width: 768px) {
-  .sidebar {
-    flex-basis: auto;
-    width: 100%;
-  }
+.sidebar__nav li.disabled a {
+    opacity: 0.5;
+    cursor: not-allowed;
+    pointer-events: none;
+}
+
+.sidebar__nav a.disabled-link {
+    opacity: 0.5;
+    cursor: not-allowed;
 }

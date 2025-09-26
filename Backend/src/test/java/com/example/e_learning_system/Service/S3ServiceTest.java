@@ -219,7 +219,7 @@ class S3ServiceTest {
         assertThat(result).isNotNull();
         verify(videoRepository).findByVideoKey(videoKey);
         verify(videoEntity).setDurationSeconds(durationSeconds);
-        verify(videoEntity).setThumbnailUrl(thumbnailUrl);
+        verify(videoEntity).setThumbnail(attachment);
         verify(videoEntity).setMetadata(any());
         verify(videoRepository).save(videoEntity);
     }

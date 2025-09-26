@@ -25,14 +25,27 @@ public class VideoEntity extends BaseEntity {
     @Column(name = "video_url", columnDefinition = "TEXT")
     private String videoKey;
 
-    @Column(name = "thumbnail_url", columnDefinition = "TEXT")
-    private String thumbnailUrl;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "thumbnail_id")
+    private Attachment thumbnail;
 
     @Column(name = "duration_seconds")
     private Integer durationSeconds;
 
     @Column(name = "is_active", nullable = false)
     private Boolean isActive = true;
+
+    @Column(name = "explanation", columnDefinition = "TEXT")
+    private String explanation;
+
+    @Column(name = "what_we_will_learn", columnDefinition = "TEXT")
+    private String whatWeWillLearn;
+
+    @Column(name = "status", columnDefinition = "TEXT")
+    private String status;
+
+    @Column(name = "prerequisites", columnDefinition = "TEXT")
+    private String prerequisites;
 
     @Override
     @Transient

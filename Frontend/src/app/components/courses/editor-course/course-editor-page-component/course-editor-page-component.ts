@@ -24,6 +24,7 @@ export interface Module {
   isOptional: boolean;
   status: 'Active' | 'Inactive';
   lessons?: Lesson[];
+  state?: 'saved' | 'edited' | 'new';
 }
 
 @Component({
@@ -38,16 +39,21 @@ export class CourseEditorPageComponent implements OnInit {
 
   @ViewChild(LessonEditorComponent) lessonEditor!: LessonEditorComponent;
 
-  activePage: 'overview' | 'modules' | 'add-lesson' | 'publish' = 'overview';
+  activePage: 'overview' | 'modules' | 'lesson' | 'publish' = 'overview';
+
+  // Track if course has been created (has ID)
+  courseCreated: boolean = true;
 
   currentLesson: Lesson = {
+    order: 0,
     title: '',
     explanation: '',
     whatWeWillLearn: [''],
     duration: 0,
     status: 'Active',
     attachments: [],
-    prerequisites: ['']
+    prerequisites: [''],
+    state: 'new'
   };
 
   currentModule: Module = {
@@ -58,20 +64,21 @@ export class CourseEditorPageComponent implements OnInit {
     isOptional: false,
     status: 'Active',
     lessons: [
-      { id: 1, title: 'Lesson 1 • Welcome', explanation: '', whatWeWillLearn: [], duration: 0, status: 'Active', attachments: [], prerequisites: [] },
-      { id: 2, title: 'Lesson 2 • Setting up your Environment', explanation: '', whatWeWillLearn: [], duration: 0, status: 'Active', attachments: [], prerequisites: [] },
-      { id: 3, title: 'Lesson 3 • Basic Syntax', explanation: '', whatWeWillLearn: [], duration: 0, status: 'Active', attachments: [], prerequisites: [] },
-      { id: 4, title: 'Lesson 4 • Your First Program', explanation: '', whatWeWillLearn: [], duration: 0, status: 'Active', attachments: [], prerequisites: [] }
-    ]
+      { id: 1, order: 1, title: 'Lesson 1 • Welcome', explanation: '', whatWeWillLearn: [], duration: 0, status: 'Active', attachments: [], prerequisites: [] },
+      { id: 2, order: 2, title: 'Lesson 2 • Setting up your Environment', explanation: '', whatWeWillLearn: [], duration: 0, status: 'Active', attachments: [], prerequisites: [] },
+      { id: 3, order: 3, title: 'Lesson 3 • Basic Syntax', explanation: '', whatWeWillLearn: [], duration: 0, status: 'Active', attachments: [], prerequisites: [] },
+      { id: 4, order: 4, title: 'Lesson 4 • Your First Program', explanation: '', whatWeWillLearn: [], duration: 0, status: 'Active', attachments: [], prerequisites: [] }
+    ],
+    state: 'new'
   };
 
   // Sample modules to power the sidebar list
   modules: Module[] = [
-    { id: 1, title: 'Introduction to Python', summary: '', order: 1, estimatedTime: 15, isOptional: false, status: 'Active', lessons: [{ id: 1, title: 'Lesson 1', explanation: '', whatWeWillLearn: [], duration: 5, status: 'Active', attachments: [], prerequisites: [] }, { id: 2, title: 'Lesson 2', explanation: '', whatWeWillLearn: [], duration: 10, status: 'Active', attachments: [], prerequisites: [] }] },
-    { id: 2, title: 'Data Types & Variables', summary: '', order: 2, estimatedTime: 35, isOptional: false, status: 'Inactive', lessons: [{ id: 3, title: 'Lesson 1', explanation: '', whatWeWillLearn: [], duration: 15, status: 'Active', attachments: [], prerequisites: [] }] },
-    { id: 3, title: 'Control Flow', summary: '', order: 3, estimatedTime: 50, isOptional: false, status: 'Active', lessons: [{ id: 4, title: 'Lesson 1', explanation: '', whatWeWillLearn: [], duration: 20, status: 'Active', attachments: [], prerequisites: [] }] },
-    { id: 4, title: 'Functions', summary: '', order: 4, estimatedTime: 45, isOptional: false, status: 'Inactive', lessons: [] },
-    { id: 5, title: 'Object-Oriented Programming', summary: '', order: 5, estimatedTime: 75, isOptional: false, status: 'Inactive', lessons: [] }
+    { id: 1, title: 'Introduction to Python', summary: '', order: 1, estimatedTime: 15, isOptional: false, status: 'Active', lessons: [{ id: 1, order: 1, title: 'Lesson 1', explanation: '', whatWeWillLearn: [], duration: 5, status: 'Active', attachments: [], prerequisites: [] }, { id: 2, order: 2, title: 'Lesson 2', explanation: '', whatWeWillLearn: [], duration: 10, status: 'Active', attachments: [], prerequisites: [] }], state: 'saved' },
+    { id: 2, title: 'Data Types & Variables', summary: '', order: 2, estimatedTime: 35, isOptional: false, status: 'Inactive', lessons: [{ id: 3, order: 1, title: 'Lesson 1', explanation: '', whatWeWillLearn: [], duration: 15, status: 'Active', attachments: [], prerequisites: [] }], state: 'saved' },
+    { id: 3, title: 'Control Flow', summary: '', order: 3, estimatedTime: 50, isOptional: false, status: 'Active', lessons: [{ id: 4, order: 1, title: 'Lesson 1', explanation: '', whatWeWillLearn: [], duration: 20, status: 'Active', attachments: [], prerequisites: [] }], state: 'saved' },
+    { id: 4, title: 'Functions', summary: '', order: 4, estimatedTime: 45, isOptional: false, status: 'Inactive', lessons: [], state: 'saved' },
+    { id: 5, title: 'Object-Oriented Programming', summary: '', order: 5, estimatedTime: 75, isOptional: false, status: 'Inactive', lessons: [], state: 'saved' }
   ];
 
   onModuleSelected(module: Module) {
@@ -81,31 +88,31 @@ export class CourseEditorPageComponent implements OnInit {
 
   onAddModule() {
     const nextOrder = this.modules.length + 1;
-    const newModule: Module = { id: nextOrder, title: `New module ${nextOrder}`, summary: '', order: nextOrder, estimatedTime: 0, isOptional: false, status: 'Inactive', lessons: [] };
+    const newModule: Module = { id: nextOrder, title: `New module ${nextOrder}`, summary: '', order: nextOrder, estimatedTime: 0, isOptional: false, status: 'Inactive', lessons: [], state: 'new' };
     this.modules = [...this.modules, newModule];
   }
 
 
   currentCourseOverview: CourseoverviewCreationDto | null = {
     id: 2,
-    name: 'Introduction to UX Design',
-    description: 'A beginner-friendly course on user experience principles.',
-    estimatedDurationInHours: 12,
+    name: '',
+    description: '',
+    estimatedDurationInHours: 0,
     difficultyLevel: 'BIGINNER',
     status: 'DRAFT',
     currency: 'USD',
-    category: 'design',
-    thumbnail: 10,
-    thumbnailName: 'thumbnail.jpg',
-    tags: ['design', 'beginner', 'ux'],
+    category: '',
+    thumbnail: 0,
+    thumbnailName: '',
+    tags: [],
     pricing: {
-      oneTimePrice: 99.99,
-      allowsSubscription: true,
-      subscriptionPriceMonthly: 9.99,
-      subscriptionPrice3Months: 24.99,
-      subscriptionPrice6Months: 49.99,
+      oneTimePrice: 0,
+      allowsSubscription: false,
+      subscriptionPriceMonthly: 0,
+      subscriptionPrice3Months: 0,
+      subscriptionPrice6Months: 0,
     },
-    isActive: true
+    isActive: false
   };
 
   // This will hold the latest state of the form from the child component
@@ -118,7 +125,7 @@ export class CourseEditorPageComponent implements OnInit {
     // fetch set up the courses data here if needed
   }
 
-  onActiveLinkChange(link: 'overview' | 'modules' | 'add-lesson' | 'publish') {
+  onActiveLinkChange(link: 'overview' | 'modules' | 'lesson' | 'publish') {
     this.activePage = link;
   }
 
@@ -177,7 +184,12 @@ export class CourseEditorPageComponent implements OnInit {
   private createCourse(courseData: any) {
     this.courseService.createCourse(courseData).subscribe((response: any) => {
       console.log('Course created:', response);
-      // Navigate or show success
+      // Update the course with the returned ID
+      if (this.currentCourseOverview) {
+        this.currentCourseOverview.id = response.id; // Assuming response has id
+        this.courseCreated = true;
+        this.activePage = 'modules'; // Navigate to modules after creation
+      }
     });
   }
 
@@ -198,5 +210,27 @@ export class CourseEditorPageComponent implements OnInit {
 
   onGoBackFromLesson() {
     this.activePage = 'modules';
+  }
+
+  onAddLesson() {
+    // Create a new lesson
+    this.currentLesson = {
+      order: 0,
+      title: '',
+      explanation: '',
+      whatWeWillLearn: [''],
+      duration: 0,
+      status: 'Active',
+      attachments: [],
+      prerequisites: [''],
+      state: 'new'
+    };
+    this.activePage = 'lesson';
+  }
+
+  onEditLesson(lesson: Lesson) {
+    // Set the current lesson to the one being edited
+    this.currentLesson = { ...lesson };
+    this.activePage = 'lesson';
   }
 }

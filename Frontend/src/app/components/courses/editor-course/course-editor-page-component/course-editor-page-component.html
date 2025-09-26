@@ -4,21 +4,13 @@
   <!-- Overview Page Layout -->
   <ng-container *ngIf="activePage === 'overview'">
     <main class="course-editor">
-      <app-sidebar [activeLink]="activePage" (activeLinkChange)="onActiveLinkChange($event)"></app-sidebar>
+      <app-sidebar [activeLink]="activePage" [courseCreated]="courseCreated" (activeLinkChange)="onActiveLinkChange($event)"></app-sidebar>
 
       <div class="content-panel">
         <header class="content-header">
           <h1>
             <img src="assets/images/vector-69.svg" alt="" /> Course Overview
           </h1>
-          <div class="content-header__actions">
-            <button type="button" class="button">
-              <img src="assets/images/vector-80.svg" alt="" /> Save draft
-            </button>
-            <button type="button" class="button button--primary">
-              <img src="assets/images/vector-87.svg" alt="" /> Preview
-            </button>
-          </div>
         </header>
 
         <app-course-form
@@ -29,9 +21,6 @@
 
         <footer class="content-footer">
           <div class="content-footer__actions">
-            <button type="button" class="button" (click)="saveDraft()">
-              <img src="assets/images/vector-80.svg" alt="" /> Save draft
-            </button>
             <button type="button" class="button button--primary" (click)="onContinue()">
               Continue
             </button>
@@ -45,7 +34,7 @@
   <ng-container *ngIf="activePage === 'modules'">
     <main class="course-creation-page">
       <aside class="course-sidebar">
-        <app-sidebar [activeLink]="activePage" (activeLinkChange)="onActiveLinkChange($event)"></app-sidebar>
+        <app-sidebar [activeLink]="activePage" [courseCreated]="courseCreated" (activeLinkChange)="onActiveLinkChange($event)"></app-sidebar>
         <!-- Modules list rendered by the reusable ModulesListComponent -->
         <app-modules-list
           [modules]="modules"
@@ -65,39 +54,34 @@
               <span>Module status</span>
               <span class="tag tag--green">Active</span>
             </div>
-            <div class="editor-header__actions">
-              <button class="btn btn--secondary">Save draft</button>
-              <button class="btn btn--primary">Preview</button>
-            </div>
           </header>
 
           <div class="editor-body">
-            <app-module-form [module]="currentModule"></app-module-form>
+            <app-module-form [module]="currentModule" (addLesson)="onAddLesson()" (editLesson)="onEditLesson($event)"></app-module-form>
           </div>
 
           <footer class="editor-footer">
-            <button class="btn btn--secondary">Back to Overview</button>
+            <button class="btn btn--secondary" (click)="onActiveLinkChange('overview')">Back to Overview</button>
             <button class="btn btn--primary-light">Go to Lessons</button>
-            <button class="btn btn--primary">Continue to Review</button>
+            <button class="btn btn--primary" (click)="onActiveLinkChange('publish')">Continue to Review</button>
           </footer>
         </section>
       </div>
     </main>
   </ng-container>
 
-  <!-- Add Lesson Page Layout -->
-  <ng-container *ngIf="activePage === 'add-lesson'">
+  <!-- Lesson Page Layout -->
+  <ng-container *ngIf="activePage === 'lesson'">
     <main class="course-creation-page">
       <aside class="course-sidebar">
-        <app-sidebar [activeLink]="activePage" (activeLinkChange)="onActiveLinkChange($event)"></app-sidebar>
-        <!-- Perhaps add module details or lessons list here if needed -->
+        <app-sidebar [activeLink]="activePage" [courseCreated]="courseCreated" (activeLinkChange)="onActiveLinkChange($event)"></app-sidebar>
       </aside>
 
       <div class="editor-content">
         <section class="editor-card">
           <header class="editor-header">
             <div class="editor-header__title">
-              <h2>Add Lesson • Editor</h2>
+              <h2>Lesson • Editor</h2>
             </div>
             <div class="editor-header__status">
               <span>Lesson status</span>
@@ -125,7 +109,7 @@
   <!-- Publish Page -->
   <ng-container *ngIf="activePage === 'publish'">
     <main class="course-editor">
-      <app-sidebar [activeLink]="activePage" (activeLinkChange)="onActiveLinkChange($event)"></app-sidebar>
+      <app-sidebar [activeLink]="activePage" [courseCreated]="courseCreated" (activeLinkChange)="onActiveLinkChange($event)"></app-sidebar>
       <div class="content-panel">
         <header class="content-header">
           <h1>Review & Publish</h1>
