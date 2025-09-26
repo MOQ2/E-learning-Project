@@ -87,3 +87,18 @@
     align-items: center;
     gap: 8px;
 }
+
+.tag--small {
+    font-size: 10px;
+    padding: 2px 6px;
+}
+
+.tag--blue {
+    background-color: #e3f2fd;
+    color: #1976d2;
+}
+
+.tag--yellow {
+    background-color: #fff3e0;
+    color: #f57c00;
+}

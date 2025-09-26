@@ -7,18 +7,13 @@
           <img src="assets/images/vector-32.svg" alt="" /> Overview
         </a>
       </li>
-      <li [class.active]="activeLink === 'modules'">
-        <a href="#" (click)="setActiveLink('modules'); $event.preventDefault()">
+      <li [class.active]="activeLink === 'modules'" [class.disabled]="!courseCreated">
+        <a href="#" [class.disabled-link]="!courseCreated" (click)="courseCreated && setActiveLink('modules'); $event.preventDefault()">
           <img src="assets/images/vector-40.svg" alt="" /> Modules
         </a>
       </li>
-      <li [class.active]="activeLink === 'add-lesson'">
-        <a href="#" (click)="setActiveLink('add-lesson'); $event.preventDefault()">
-          <img src="assets/images/vector-47.svg" alt="" /> Add Lesson
-        </a>
-      </li>
-      <li [class.active]="activeLink === 'publish'">
-        <a href="#" (click)="setActiveLink('publish'); $event.preventDefault()">
+      <li [class.active]="activeLink === 'publish'" [class.disabled]="!courseCreated">
+        <a href="#" [class.disabled-link]="!courseCreated" (click)="courseCreated && setActiveLink('publish'); $event.preventDefault()">
           <img src="assets/images/vector-61.svg" alt="" /> Review & Publish
         </a>
       </li>

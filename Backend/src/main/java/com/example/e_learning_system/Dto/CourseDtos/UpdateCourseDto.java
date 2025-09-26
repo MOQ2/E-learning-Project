@@ -1,6 +1,7 @@
 package com.example.e_learning_system.Dto.CourseDtos;
 
 
+import com.example.e_learning_system.Config.Category;
 import com.example.e_learning_system.Config.CourseStatus;
 import com.example.e_learning_system.Config.Currency;
 import com.example.e_learning_system.Config.DifficultyLevel;
@@ -12,7 +13,6 @@ import lombok.experimental.SuperBuilder;
 
 import java.math.BigDecimal;
 import java.util.List;
-import java.util.Locale.Category;
 
 @Data
 @AllArgsConstructor
@@ -28,6 +28,11 @@ public class UpdateCourseDto{
 
     @DecimalMin(value = "0.0", inclusive = false, message = "Price must be greater than zero")
     private BigDecimal oneTimePrice;
+
+    private BigDecimal subscriptionPriceMonthly;
+    private BigDecimal subscriptionPrice3Months;
+    private BigDecimal subscriptionPrice6Months;
+    private Boolean allowsSubscription;
 
     private Currency currency;
 

@@ -33,6 +33,15 @@ export class LessonEditorComponent implements OnChanges {
   ngOnChanges() {
     if (this.lesson) {
       this.populateForm();
+      // Set initial state
+      this.lesson.state = this.lesson.id ? 'saved' : 'new';
+
+      // Track form changes to update state
+      this.lessonForm.valueChanges.subscribe(() => {
+        if (this.lesson.state !== 'new') {
+          this.lesson.state = 'edited';
+        }
+      });
     }
   }
 
@@ -40,6 +49,7 @@ export class LessonEditorComponent implements OnChanges {
     this.lessonForm = this.fb.group({
       title: ['', [Validators.required, Validators.minLength(3)]],
       explanation: ['', [Validators.required, Validators.minLength(10)]],
+      order: [0, [Validators.required, Validators.min(0)]],
       duration: [1, [Validators.required, Validators.min(1)]],
       status: ['Active'],
       whatWeWillLearn: this.fb.array([new FormControl('', Validators.required)]),
@@ -53,6 +63,7 @@ export class LessonEditorComponent implements OnChanges {
       this.lessonForm.patchValue({
         title: this.lesson.title,
         explanation: this.lesson.explanation,
+        order: this.lesson.order,
         duration: Math.floor(this.lesson.duration / 60),
         status: this.lesson.status
       });
@@ -90,7 +101,7 @@ export class LessonEditorComponent implements OnChanges {
   // --- METHODS THAT EMIT EVENTS TO THE PARENT ---
 
   onFormSubmit() {
-    if (this.lessonForm.valid) {
+    if (this.lessonForm.valid && (this.lesson.state === 'edited' || this.lesson.state === 'new')) {
       const formValue = this.lessonForm.value;
       const lessonToSave: Lesson = {
         ...this.lesson,
@@ -99,13 +110,15 @@ export class LessonEditorComponent implements OnChanges {
         attachments: formValue.attachments.map((att: any) => ({ file: null, displayName: att.displayName }))
       };
       this.saveLesson.emit(lessonToSave);
+      // Set state to saved after emitting
+      this.lesson.state = 'saved';
     } else {
       this.lessonForm.markAllAsTouched();
     }
   }
 
   onSaveDraftClick() {
-    if (this.lessonForm.valid) {
+    if (this.lessonForm.valid && (this.lesson.state === 'edited' || this.lesson.state === 'new')) {
       const formValue = this.lessonForm.value;
       const lessonToSave: Lesson = {
         ...this.lesson,
@@ -114,6 +127,8 @@ export class LessonEditorComponent implements OnChanges {
         attachments: formValue.attachments.map((att: any) => ({ file: null, displayName: att.displayName }))
       };
       this.saveDraft.emit(lessonToSave);
+      // Set state to saved after emitting
+      this.lesson.state = 'saved';
     } else {
       this.lessonForm.markAllAsTouched();
     }

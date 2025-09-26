@@ -4,7 +4,8 @@ import { Component } from '@angular/core';
   selector: 'app-nav-bar',
   imports: [],
   templateUrl: './nav-bar.html',
-  styleUrl: './nav-bar.css'
+  styleUrl: './nav-bar.css',
+  standalone: true
 })
 export class NavBar {
   activeLink: string = 'Courses'; // Default active link

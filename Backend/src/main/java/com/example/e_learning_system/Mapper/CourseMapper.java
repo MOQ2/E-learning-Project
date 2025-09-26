@@ -163,8 +163,23 @@ public class CourseMapper {
         if (updateCourseDto.getOneTimePrice() != null ) {
             existingCourse.setOneTimePrice(updateCourseDto.getOneTimePrice());
         }
+        if (updateCourseDto.getSubscriptionPriceMonthly() != null ) {
+            existingCourse.setSubscriptionPriceMonthly(updateCourseDto.getSubscriptionPriceMonthly());
+        }
+        if (updateCourseDto.getSubscriptionPrice3Months() != null ) {
+            existingCourse.setSubscriptionPrice3Months(updateCourseDto.getSubscriptionPrice3Months());
+        }
+        if (updateCourseDto.getSubscriptionPrice6Months() != null ) {
+            existingCourse.setSubscriptionPrice6Months(updateCourseDto.getSubscriptionPrice6Months());
+        }
+        if (updateCourseDto.getAllowsSubscription() != null ) {
+            existingCourse.setAllowsSubscription(updateCourseDto.getAllowsSubscription());
+        }
         if (updateCourseDto.getCurrency() != null ) {
             existingCourse.setCurrency(updateCourseDto.getCurrency());
+        }
+        if (updateCourseDto.getCategory() != null ) {
+            existingCourse.setCategory(updateCourseDto.getCategory());
         }
         if (updateCourseDto.getThumbnail() != null ) {
             Attachment thumbnail = attachmentRepository.findById(updateCourseDto.getThumbnail()).orElse(null);

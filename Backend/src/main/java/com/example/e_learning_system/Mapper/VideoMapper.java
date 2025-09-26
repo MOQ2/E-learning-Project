@@ -3,6 +3,7 @@ package com.example.e_learning_system.Mapper;
 import com.example.e_learning_system.Dto.AttachmentDtos.AttachmentDto;
 import com.example.e_learning_system.Dto.VideoDtos.CreatVideoDto;
 import com.example.e_learning_system.Dto.VideoDtos.VideoDto;
+import com.example.e_learning_system.Entities.Attachment;
 import com.example.e_learning_system.Entities.VideoEntity;
 import com.example.e_learning_system.Entities.UserEntity;
 import com.example.e_learning_system.Entities.VideoAttachments;
@@ -27,8 +28,7 @@ public class VideoMapper {
                 .id(videoEntity.getId())
                 .title(videoEntity.getTitle())
                 .metadata(videoEntity.getMetadata())
-                .videoKey(videoEntity.getVideoKey())
-                .thumbnailUrl(videoEntity.getThumbnailUrl())
+                .thumbnail(AttachmentMapper.fromEntity(videoEntity.getThumbnail()))
                 .durationSeconds(videoEntity.getDurationSeconds())
                 .isActive(videoEntity.getIsActive())
                 .uploadedById(videoEntity.getUploadedBy() != null ? videoEntity.getUploadedBy().getId() : null)
@@ -36,6 +36,10 @@ public class VideoMapper {
                 .attachments(fromVideoAttachmentsToAttachmentDtos(videoEntity.getVideoAttachments()))
                 .createdAt(videoEntity.getCreatedAt())
                 .updatedAt(videoEntity.getUpdatedAt())
+                .explanation(videoEntity.getExplanation())
+                .whatWeWillLearn(videoEntity.getWhatWeWillLearn())
+                .status(videoEntity.getStatus())
+                .prerequisites(videoEntity.getPrerequisites())
                 .build();
     }
 
@@ -55,6 +59,10 @@ public class VideoMapper {
         videoEntity.setMetadata(Collections.emptyMap()); // Initialize with empty map
         videoEntity.setCreatedAt(LocalDateTime.now());
         videoEntity.setUpdatedAt(LocalDateTime.now());
+        videoEntity.setExplanation(createVideoDto.getExplanation());
+        videoEntity.setWhatWeWillLearn(createVideoDto.getWhatWeWillLearn());
+        videoEntity.setStatus(createVideoDto.getStatus());
+        videoEntity.setPrerequisites(createVideoDto.getPrerequisites());
 
         return videoEntity;
     }
@@ -83,6 +91,10 @@ public class VideoMapper {
         existingVideoEntity.setTitle(createVideoDto.getTitle());
         existingVideoEntity.setDurationSeconds(createVideoDto.getDurationSeconds());
         existingVideoEntity.setUpdatedAt(LocalDateTime.now());
+        existingVideoEntity.setExplanation(createVideoDto.getExplanation());
+        existingVideoEntity.setWhatWeWillLearn(createVideoDto.getWhatWeWillLearn());
+        existingVideoEntity.setStatus(createVideoDto.getStatus());
+        existingVideoEntity.setPrerequisites(createVideoDto.getPrerequisites());
     }
 
     /**
@@ -110,10 +122,17 @@ public class VideoMapper {
         videoEntity.setId(videoDto.getId());
         videoEntity.setTitle(videoDto.getTitle());
         videoEntity.setMetadata(videoDto.getMetadata());
-        videoEntity.setVideoKey(videoDto.getVideoKey());
-        videoEntity.setThumbnailUrl(videoDto.getThumbnailUrl());
+        if (videoDto.getThumbnail() != null) {
+            Attachment thumbnail = new Attachment();
+            thumbnail.setId(videoDto.getThumbnail().getId());
+            videoEntity.setThumbnail(thumbnail);
+        }
         videoEntity.setDurationSeconds(videoDto.getDurationSeconds());
         videoEntity.setIsActive(videoDto.getIsActive());
+        videoEntity.setExplanation(videoDto.getExplanation());
+        videoEntity.setWhatWeWillLearn(videoDto.getWhatWeWillLearn());
+        videoEntity.setStatus(videoDto.getStatus());
+        videoEntity.setPrerequisites(videoDto.getPrerequisites());
         videoEntity.setCreatedAt(videoDto.getCreatedAt());
         videoEntity.setUpdatedAt(videoDto.getUpdatedAt());
 

@@ -1,246 +1,121 @@
 package com.example.e_learning_system.Controller;
 
-import com.example.e_learning_system.Entities.VideoEntity;
-import com.example.e_learning_system.Service.S3Service;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import com.example.e_learning_system.Dto.ApiResponse;
+import com.example.e_learning_system.Dto.VideoDtos.CreatVideoDto;
+import com.example.e_learning_system.Dto.VideoDtos.VideoDto;
+import com.example.e_learning_system.Service.Interfaces.VideoService;
+import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PageableDefault;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.time.Duration;
+import jakarta.validation.Valid;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
-import java.util.stream.Stream;
 
 @RestController
 @RequestMapping("/api/videos")
+@RequiredArgsConstructor
 public class VideoController {
 
-    private final S3Service s3Service;
-    private final ObjectMapper objectMapper;
+    private final VideoService videoService;
 
-    public VideoController(S3Service s3Service, ObjectMapper objectMapper) {
-        this.s3Service = s3Service;
-        this.objectMapper = objectMapper;
-    }
-
-    // Endpoint for uploading a video with complete metadata
+    /**
+     * Upload a new video
+     */
     @PostMapping("/upload")
-    public ResponseEntity<?> uploadVideo(
+    public ResponseEntity<ApiResponse<VideoDto>> uploadVideo(
             @RequestParam("file") MultipartFile file,
             @RequestParam("title") String title,
+            @RequestParam("durationSeconds") int durationSeconds,
             @RequestParam("uploadedBy") Integer uploadedByUserId,
-            @RequestParam(value = "description", required = false) String description,
-            @RequestParam(value = "category", required = false) String category,
-            @RequestParam(value = "tags", required = false) String tags,
-            @RequestParam(value = "metadata", required = false) String additionalMetadataJson) {
+            @RequestParam(value = "explanation", required = false) String explanation,
+            @RequestParam(value = "whatWeWillLearn", required = false) String whatWeWillLearn,
+            @RequestParam(value = "status", required = false) String status,
+            @RequestParam(value = "prerequisites", required = false) String prerequisites) {
 
-        try {
-            // Validate required fields
-            if (file.isEmpty()) {
-                return ResponseEntity.badRequest().body(Map.of("error", "File cannot be empty"));
-            }
+        CreatVideoDto createVideoDto = CreatVideoDto.builder()
+                .title(title)
+                .durationSeconds(durationSeconds)
+                .createdByUserId(uploadedByUserId)
+                .explanation(explanation)
+                .whatWeWillLearn(whatWeWillLearn)
+                .status(status)
+                .prerequisites(prerequisites)
+                .build();
 
-            if (title == null || title.trim().isEmpty()) {
-                return ResponseEntity.badRequest().body(Map.of("error", "Title is required"));
-            }
-
-            if (uploadedByUserId == null) {
-                return ResponseEntity.badRequest().body(Map.of("error", "uploadedBy user ID is required"));
-            }
-
-            // Validate file type (optional - add your allowed types)
-            String contentType = file.getContentType();
-            if (contentType == null || !contentType.startsWith("video/")) {
-                return ResponseEntity.badRequest().body(Map.of("error", "Only video files are allowed"));
-            }
-
-            // Parse additional metadata if provided
-            Map<String, Object> additionalMetadata = new HashMap<>();
-            if (category != null && !category.trim().isEmpty()) {
-                additionalMetadata.put("category", category.trim());
-            }
-
-            if (tags != null && !tags.trim().isEmpty()) {
-                // Split tags by comma and clean them
-                String[] tagArray = tags.split(",");
-                List<String> cleanTags = Stream.of(tagArray)
-                        .map(String::trim)
-                        .filter(tag -> !tag.isEmpty())
-                        .toList();
-                additionalMetadata.put("tags", cleanTags);
-            }
-
-            // Parse additional JSON metadata if provided
-            if (additionalMetadataJson != null && !additionalMetadataJson.trim().isEmpty()) {
-                try {
-                    @SuppressWarnings("unchecked")
-                    Map<String, Object> jsonMetadata = objectMapper.readValue(additionalMetadataJson, Map.class);
-                    additionalMetadata.putAll(jsonMetadata);
-                } catch (Exception e) {
-                    return ResponseEntity.badRequest().body(Map.of("error", "Invalid JSON in metadata parameter"));
-                }
-            }
-
-            // Upload video
-            VideoEntity videoEntity = s3Service.uploadVideo(file, title.trim(), uploadedByUserId,
-                    description, additionalMetadata);
-
-            // Return success response with video details
-            Map<String, Object> response = new HashMap<>();
-            response.put("success", true);
-            response.put("message", "Video uploaded successfully");
-            response.put("videoId", videoEntity.getId());
-            response.put("videoKey", videoEntity.getVideoKey());
-            response.put("title", videoEntity.getTitle());
-            response.put("videoUrl", videoEntity.getVideoKey());
-
-            return ResponseEntity.ok(response);
-
-        } catch (Exception e) {
-            return ResponseEntity.internalServerError()
-                    .body(Map.of("error", "Upload failed: " + e.getMessage()));
-        }
+        VideoDto videoDto = videoService.uploadVideo(file, createVideoDto, uploadedByUserId);
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .body(ApiResponse.success("Video uploaded successfully", videoDto));
+    }    /**
+     * Get video by ID
+     */
+    @GetMapping("/{id}")
+    public ResponseEntity<ApiResponse<VideoDto>> getVideo(@PathVariable Integer id) {
+        VideoDto video = videoService.getVideoById(id);
+        return ResponseEntity.ok(ApiResponse.success("Video retrieved successfully", video));
     }
 
-    // Endpoint for getting a secure viewing URL
-    @GetMapping("/{videoKey}/url")
-    public ResponseEntity<?> getVideoUrl(@PathVariable String videoKey,
-                                         @RequestParam(value = "duration", defaultValue = "5") Integer durationMinutes) {
-        try {
-            // Check if video exists
-            Optional<VideoEntity> videoOpt = s3Service.getVideoByKey(videoKey);
-            if (videoOpt.isEmpty()) {
-                return ResponseEntity.notFound().build();
-            }
-
-            VideoEntity video = videoOpt.get();
-
-            // Check if video is active
-            if (!video.getIsActive()) {
-                return ResponseEntity.badRequest().body(Map.of("error", "Video is not active"));
-            }
-
-            //to-do check if the user is enrloed ....
-
-            // Validate duration (max 60 minutes for security)
-            if (durationMinutes > 60) {
-                durationMinutes = 60;
-            }
-
-            String presignedUrl = s3Service.generatePresignedUrl(videoKey, Duration.ofMinutes(durationMinutes));
-
-            Map<String, Object> response = new HashMap<>();
-            response.put("videoKey", videoKey);
-            response.put("title", video.getTitle());
-            response.put("presignedUrl", presignedUrl);
-            response.put("expiresInMinutes", durationMinutes);
-            response.put("duration", video.getDurationSeconds());
-            response.put("thumbnailUrl", video.getThumbnailUrl());
-
-            return ResponseEntity.ok(response);
-
-        } catch (Exception e) {
-            return ResponseEntity.internalServerError()
-                    .body(Map.of("error", "Failed to generate URL: " + e.getMessage()));
-        }
+    /**
+     * Get all videos with pagination
+     */
+    @GetMapping
+    public ResponseEntity<ApiResponse<Page<VideoDto>>> getVideos(
+            @PageableDefault(size = 20) Pageable pageable) {
+        Page<VideoDto> videos = videoService.getVideos(pageable);
+        return ResponseEntity.ok(ApiResponse.success("Videos retrieved successfully", videos));
     }
 
-    // Endpoint for getting video metadata
-    @GetMapping("/{videoKey}")
-    public ResponseEntity<?> getVideoMetadata(@PathVariable String videoKey) {
-        try {
-            Optional<VideoEntity> videoOpt = s3Service.getVideoByKey(videoKey);
-            if (videoOpt.isEmpty()) {
-                return ResponseEntity.notFound().build();
-            }
-
-            VideoEntity video = videoOpt.get();
-
-            Map<String, Object> response = new HashMap<>();
-            response.put("id", video.getId());
-            response.put("videoKey", video.getVideoKey());
-            response.put("title", video.getTitle());
-            response.put("videoUrl", video.getVideoKey());
-            response.put("thumbnailUrl", video.getThumbnailUrl());
-            response.put("durationSeconds", video.getDurationSeconds());
-            response.put("uploadedBy", Map.of(
-                    "id", video.getUploadedBy().getId(),
-                    "username", video.getUploadedBy().getName()
-            ));
-            response.put("metadata", video.getMetadata());
-            response.put("isActive", video.getIsActive());
-            response.put("createdAt", video.getCreatedAt());
-            response.put("updatedAt", video.getUpdatedAt());
-
-            return ResponseEntity.ok(response);
-
-        } catch (Exception e) {
-            return ResponseEntity.internalServerError()
-                    .body(Map.of("error", "Failed to get video metadata: " + e.getMessage()));
-        }
+    /**
+     * Get videos by user
+     */
+    @GetMapping("/user/{userId}")
+    public ResponseEntity<ApiResponse<List<VideoDto>>> getVideosByUser(@PathVariable Integer userId) {
+        List<VideoDto> videos = videoService.getVideosByUser(userId);
+        return ResponseEntity.ok(ApiResponse.success("User videos retrieved successfully", videos));
     }
 
-    // Endpoint for updating video metadata (after processing)
-    @PutMapping("/{videoKey}/metadata")
-    public ResponseEntity<?> updateVideoMetadata(
-            @PathVariable String videoKey,
-            @RequestParam(value = "durationSeconds", required = false) Integer durationSeconds,
-            @RequestParam(value = "thumbnailUrl", required = false) String thumbnailUrl,
-            @RequestParam(value = "processingResults", required = false) String processingResultsJson) {
-
-        try {
-            Map<String, Object> processingResults = null;
-
-            if (processingResultsJson != null && !processingResultsJson.trim().isEmpty()) {
-                try {
-                    @SuppressWarnings("unchecked")
-                    Map<String, Object> jsonResults = objectMapper.readValue(processingResultsJson, Map.class);
-                    processingResults = jsonResults;
-                } catch (Exception e) {
-                    return ResponseEntity.badRequest().body(Map.of("error", "Invalid JSON in processingResults"));
-                }
-            }
-
-            VideoEntity updatedVideo = s3Service.updateVideoMetadata(videoKey, durationSeconds,
-                    thumbnailUrl, processingResults);
-
-            Map<String, Object> response = new HashMap<>();
-            response.put("success", true);
-            response.put("message", "Video metadata updated successfully");
-            response.put("videoKey", updatedVideo.getVideoKey());
-            response.put("durationSeconds", updatedVideo.getDurationSeconds());
-            response.put("thumbnailUrl", updatedVideo.getThumbnailUrl());
-
-            return ResponseEntity.ok(response);
-
-        } catch (Exception e) {
-            return ResponseEntity.internalServerError()
-                    .body(Map.of("error", "Failed to update metadata: " + e.getMessage()));
-        }
+    /**
+     * Update video
+     */
+    @PutMapping("/{id}")
+    public ResponseEntity<ApiResponse<VideoDto>> updateVideo(
+            @PathVariable Integer id,
+            @Valid @RequestBody CreatVideoDto updateVideoDto) {
+        VideoDto video = videoService.updateVideo(id, updateVideoDto);
+        return ResponseEntity.ok(ApiResponse.success("Video updated successfully", video));
     }
 
-    // Endpoint for deleting a video
-    @DeleteMapping("/{videoKey}")
-    public ResponseEntity<?> deleteVideo(@PathVariable String videoKey) {
-        try {
-            // TODO: Add permission check here
-            // Only allow video owner or admin to delete
+    /**
+     * Delete video
+     */
+    @DeleteMapping("/{id}")
+    public ResponseEntity<ApiResponse<Void>> deleteVideo(@PathVariable Integer id) {
+        videoService.deleteVideo(id);
+        return ResponseEntity.ok(ApiResponse.success("Video deleted successfully", null));
+    }
 
-            s3Service.deleteVideo(videoKey);
+    /**
+     * Get video URL for viewing
+     */
+    @GetMapping("/{id}/url")
+    public ResponseEntity<ApiResponse<Map<String, Object>>> getVideoUrl(
+            @PathVariable Integer id,
+            @RequestParam(value = "duration", defaultValue = "5") Integer durationMinutes) {
 
-            return ResponseEntity.ok(Map.of(
-                    "success", true,
-                    "message", "Video deleted successfully",
-                    "videoKey", videoKey
-            ));
+        String presignedUrl = videoService.getVideoUrl(id, durationMinutes);
 
-        } catch (Exception e) {
-            return ResponseEntity.internalServerError()
-                    .body(Map.of("error", "Failed to delete video: " + e.getMessage()));
-        }
+        Map<String, Object> response = new HashMap<>();
+        response.put("videoId", id);
+        response.put("presignedUrl", presignedUrl);
+        response.put("expiresInMinutes", durationMinutes);
+
+        return ResponseEntity.ok(ApiResponse.success("Video URL generated successfully", response));
     }
 
     

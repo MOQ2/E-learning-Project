@@ -115,7 +115,7 @@ public class CourseController {
     /**
      * Get course details by ID
      */
-    @GetMapping("/{id}/modules")
+    @GetMapping("/{id}")
     public ResponseEntity<ApiResponse<CourseDetailsDto>> getCourseById(@PathVariable Integer id) {
         CourseDetailsDto course = courseService.getCourseById(id);
         return ResponseEntity.ok(ApiResponse.success("Course retrieved successfully", course));

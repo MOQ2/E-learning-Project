@@ -18,4 +18,8 @@ public class CreatVideoDto {
     private int durationSeconds;
     @NotNull
     private int createdByUserId;
+    private String explanation;
+    private String whatWeWillLearn;
+    private String status;
+    private String prerequisites;
 }

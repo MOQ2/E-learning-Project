@@ -5,6 +5,7 @@ export interface Attachment {
 
 export interface Lesson {
   id?: number;
+  order: number;
   title: string;
   explanation: string;
   whatWeWillLearn: string[];
@@ -14,4 +15,5 @@ export interface Lesson {
   status: 'Active' | 'Inactive';
   attachments: Attachment[];
   prerequisites: string[];
+  state?: 'saved' | 'edited' | 'new';
 }

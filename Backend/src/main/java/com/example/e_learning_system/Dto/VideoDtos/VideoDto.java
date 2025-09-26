@@ -19,8 +19,7 @@ public class VideoDto {
     private Integer id;
     private String title;
     private Map<String, Object> metadata;
-    private String videoKey;
-    private String thumbnailUrl;
+    private AttachmentDto thumbnail;
     private Integer durationSeconds;
     private Boolean isActive;
     private Integer uploadedById;
@@ -28,4 +27,8 @@ public class VideoDto {
     private List<AttachmentDto> attachments;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
+    private String explanation;
+    private String whatWeWillLearn;
+    private String status;
+    private String prerequisites;
 }
