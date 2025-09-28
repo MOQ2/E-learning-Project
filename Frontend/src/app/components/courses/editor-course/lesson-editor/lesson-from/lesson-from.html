@@ -53,7 +53,19 @@
 
         <div class="form-group">
           <label for="thumbnail-data">Thumbnail Data (only one)</label>
-          <input type="file" id="thumbnail-data" class="form-control file-input" placeholder="Upload thumbnail image" (change)="onThumbnailFileChange($event)">
+
+          <ng-container *ngIf="lessonForm.get('thumbnail')?.value && !(isLessonThumbnailFile()); else uploadThumbLesson">
+            <div class="existing-attachment-info">
+              <span class="attachment-name">{{ lessonForm.get('thumbnailName')?.value || 'Thumbnail' }}</span>
+              <a [href]="getLessonThumbnailUrl()" target="_blank" class="btn-download">Download</a>
+              <button type="button" class="btn-remove" (click)="removeLessonThumbnail()">Remove</button>
+            </div>
+          </ng-container>
+
+          <ng-template #uploadThumbLesson>
+            <input type="file" id="thumbnail-data" class="form-control file-input" placeholder="Upload thumbnail image" (change)="onThumbnailFileChange($event)">
+            <input type="text" class="form-control" placeholder="Thumbnail name" formControlName="thumbnailName">
+          </ng-template>
         </div>
 
         <div class="form-group">
@@ -107,10 +119,22 @@
     <section class="card">
       <h2 class="card-title">Attachments</h2>
       <div class="attachment-list scrollable-list" formArrayName="attachments">
+        <!-- All attachments -->
         <div class="attachment-item" *ngFor="let attachment of attachments.controls; let i = index" [formGroupName]="i">
-          <input type="file" class="form-control file-input" (change)="onFileSelected($event, i)">
-          <input type="text" class="form-control" placeholder="Display name" formControlName="displayName">
-          <button type="button" class="btn-remove" (click)="removeAttachment(i)">Remove</button>
+          <ng-container *ngIf="attachment.get('id')?.value">
+            <!-- Existing attachment with download link -->
+            <div class="existing-attachment-info">
+              <span class="attachment-name">{{ attachment.get('displayName')?.value }}</span>
+              <a [href]="'http://localhost:5000/api/attachments/' + attachment.get('id')?.value + '/download'" target="_blank" class="btn-download">Download</a>
+              <button type="button" class="btn-remove" (click)="removeAttachment(i)">Remove</button>
+            </div>
+          </ng-container>
+          <ng-container *ngIf="!attachment.get('id')?.value">
+            <!-- New attachment input -->
+            <input type="file" class="form-control file-input" (change)="onFileSelected($event, i)">
+            <input type="text" class="form-control" placeholder="Display name" formControlName="displayName">
+            <button type="button" class="btn-remove" (click)="removeAttachment(i)">Remove</button>
+          </ng-container>
         </div>
       </div>
       <button type="button" class="btn-add" (click)="addAttachment()">+ Add attachment</button>

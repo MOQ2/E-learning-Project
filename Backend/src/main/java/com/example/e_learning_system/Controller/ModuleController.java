@@ -23,9 +23,20 @@ public class ModuleController {
 
     @PostMapping
     public ResponseEntity<ApiResponse<Integer>> createModule(@Valid @RequestBody CreateModuleDto createModuleDto) {
-        int moduleId = moduleService.createModule(createModuleDto);
-        return ResponseEntity.status(HttpStatus.CREATED)
-                .body(ApiResponse.success("Module created successfully", moduleId));
+        if (createModuleDto.getId() != null) {
+            UpdateModuleDto updateDto = UpdateModuleDto.builder()
+                    .moduleName(createModuleDto.getModuleName())
+                    .moduleDescription(createModuleDto.getModuleDescription())
+                    .isActive(createModuleDto.isActive())
+                    .estimatedDuration(createModuleDto.getEstimatedDuration())
+                    .build();
+            moduleService.updateModule(updateDto, createModuleDto.getId());
+            return ResponseEntity.ok(ApiResponse.success("Module updated successfully", createModuleDto.getId()));
+        } else {
+            int moduleId = moduleService.createModule(createModuleDto);
+            return ResponseEntity.status(HttpStatus.CREATED)
+                    .body(ApiResponse.success("Module created successfully", moduleId));
+        }
     }
 
     @PutMapping("/{moduleId}")
@@ -67,6 +78,23 @@ public class ModuleController {
             @PathVariable int videoId) {
         moduleService.removeVideoFromModule(moduleId, videoId);
         return ResponseEntity.ok(ApiResponse.success("Video removed from module successfully", null));
+    }
+
+    @PutMapping("/{moduleId}/videos/{videoId}/order/{newOrder}")
+    public ResponseEntity<ApiResponse<Void>> updateVideoOrder(
+            @PathVariable int moduleId,
+            @PathVariable int videoId,
+            @PathVariable int newOrder) {
+        moduleService.updateVideoOrderInModule(moduleId, videoId, newOrder);
+        return ResponseEntity.ok(ApiResponse.success("Video order updated successfully", null));
+    }
+
+    @PutMapping("/{moduleId}/videos/order")
+    public ResponseEntity<ApiResponse<Void>> updateVideoOrders(
+            @PathVariable int moduleId,
+            @RequestBody java.util.List<com.example.e_learning_system.Dto.OrderDtos.IdOrderDto> orders) {
+        moduleService.updateVideoOrdersInModule(moduleId, orders);
+        return ResponseEntity.ok(ApiResponse.success("Video orders updated successfully", null));
     }
 
     @PostMapping("/{moduleId}/lessons/{lessonId}")

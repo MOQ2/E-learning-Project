@@ -6,6 +6,8 @@ import { SidebarComponent } from '../course-overview/sidebar/sidebar';
 import { NavBar } from '../../../nav-bar/nav-bar';
 import { ViewEncapsulation } from '@angular/core';
 import { CourseService } from '../../../../Services/Courses/course-service';
+import { ToastService } from '../../../../Services/ToastService/toast-service';
+import { environment } from '../../../../../environments/environment';
 import { Observable, forkJoin } from 'rxjs';
 import { ModuleFormComponent } from '../module-editor/module-form/module-form';
 import { LessonEditorComponent } from '../lesson-editor/lesson-from/lesson-from';
@@ -112,7 +114,7 @@ export class CourseEditorPageComponent implements OnInit, OnDestroy {
   private quillLink: HTMLLinkElement | null = null;
   private quillScript: HTMLScriptElement | null = null;
 
-  constructor(private courseService: CourseService, private renderer: Renderer2, @Inject(DOCUMENT) private document: Document) {}
+  constructor(private courseService: CourseService, private toast: ToastService, private renderer: Renderer2, @Inject(DOCUMENT) private document: Document) {}
 
   ngOnInit(): void {
     // Dynamically load Quill.js CSS and JS for this component
@@ -215,6 +217,10 @@ export class CourseEditorPageComponent implements OnInit, OnDestroy {
       this.courseService.updateCourse(this.currentCourseOverview.id, courseData).subscribe({
         next: (response) => {
           console.log('Course updated successfully:', response);
+          if (!response) {
+            console.error('Empty response from updateCourse; aborting update of local state.');
+            return;
+          }
           // Update the course with the returned data
           const courseDetails = response;
           this.currentCourseOverview = {
@@ -251,11 +257,15 @@ export class CourseEditorPageComponent implements OnInit, OnDestroy {
       this.courseService.createCourse(courseData).subscribe({
         next: (response) => {
           console.log('Course created successfully, response:', response);
+          if (!response) {
+            console.error('Empty response from createCourse; aborting update of local state.');
+            return;
+          }
           // Update the course with the returned data to preserve form values
           if (this.currentCourseOverview) {
             const courseDetails = response; // response is already the data from the service
             console.log('courseDetails:', courseDetails);
-            console.log('courseDetails.id:', courseDetails.id);
+            console.log('courseDetails.id:', courseDetails?.id);
             this.currentCourseOverview = {
               id: courseDetails.id,
               name: courseDetails.name,
@@ -469,9 +479,35 @@ export class CourseEditorPageComponent implements OnInit, OnDestroy {
   }
 
   onEditLesson(lesson: Lesson) {
-    // Set the current lesson to the one being edited
-    this.currentLesson = { ...lesson };
-    this.activePage = 'lesson';
+    if (lesson.id) {
+      // Fetch the full lesson data from backend
+      this.courseService.getLesson(lesson.id).subscribe({
+        next: (videoDto: any) => {
+          // Convert VideoDto to Lesson model
+          this.currentLesson = this.convertVideoDtoToLesson(videoDto);
+          this.activePage = 'lesson';
+        },
+        error: (error: any) => {
+          console.error('Error fetching lesson:', error);
+          // Fallback to local data
+          // Ensure existing attachments (and thumbnail) have download links
+          const mappedAttachments = (lesson.attachments ?? []).map(att => ({
+            ...att,
+            downloadUrl: att.id ? this.getAttachmentDownloadUrl(att.id) : undefined
+          }));
+          this.currentLesson = { ...lesson, attachments: mappedAttachments };
+          this.activePage = 'lesson';
+        }
+      });
+    } else {
+      // New lesson, use as is
+      const mappedAttachments = (lesson.attachments ?? []).map(att => ({
+        ...att,
+        downloadUrl: att.id ? this.getAttachmentDownloadUrl(att.id) : undefined
+      }));
+      this.currentLesson = { ...lesson, attachments: mappedAttachments };
+      this.activePage = 'lesson';
+    }
   }
 
   onDeleteLesson(lesson: Lesson) {
@@ -504,6 +540,66 @@ export class CourseEditorPageComponent implements OnInit, OnDestroy {
         }
       },
       error: (error: any) => console.error('Error removing attachment:', error)
+    });
+  }
+
+  // Called when lessons were reordered inside a module
+  onLessonOrderChanged(event: { moduleId?: number, lessons: Lesson[] }) {
+    const moduleId = event.moduleId;
+    if (!moduleId) {
+      console.warn('Module id missing when updating lesson order');
+      return;
+    }
+    // Optimistic UI: already updated in child; call batched endpoint to persist
+    const payload = event.lessons.filter(l => l.id).map(l => ({ id: l.id as number, order: l.order }));
+    if (payload.length === 0) return;
+
+    // Keep a copy for rollback
+    const previous = this.currentModule.lessons ? this.currentModule.lessons.map(l => ({ id: l.id, order: l.order })) : [];
+
+    this.courseService.updateLessonOrdersInModule(moduleId, payload).subscribe({
+      next: () => {
+        this.toast.success('Lesson order saved');
+      },
+      error: (err) => {
+        console.error('Error updating lesson orders:', err);
+        this.toast.error('Failed to save lesson order. Reverting changes.');
+        // rollback
+        if (this.currentModule.lessons) {
+          this.currentModule.lessons.forEach(l => {
+            const prev = previous.find(p => p.id === l.id);
+            if (prev) l.order = prev.order as number;
+          });
+        }
+      }
+    });
+  }
+
+  // Called when modules list was reordered
+  onModulesReordered(modules: Module[]) {
+    if (!this.currentCourseOverview?.id) {
+      console.warn('Course id missing when updating module order');
+      return;
+    }
+
+    // Optimistic UI: replace local modules immediately
+    const previous = this.modules.map(m => ({ id: m.id, order: m.order }));
+    this.modules = modules.map(m => ({ ...m }));
+
+    const payload = modules.filter(m => m.id).map(m => ({ id: m.id as number, order: m.order }));
+    if (payload.length === 0) return;
+
+    this.courseService.updateModuleOrdersInCourse(this.currentCourseOverview!.id as number, payload).subscribe({
+      next: () => this.toast.success('Module order saved'),
+      error: (err) => {
+        console.error('Error updating module orders:', err);
+        this.toast.error('Failed to save module order. Reverting.');
+        // rollback
+        this.modules.forEach(m => {
+          const prev = previous.find(p => p.id === m.id);
+          if (prev) m.order = prev.order as number;
+        });
+      }
     });
   }
 
@@ -562,5 +658,39 @@ export class CourseEditorPageComponent implements OnInit, OnDestroy {
         }
       });
     }
+  }
+
+  private convertVideoDtoToLesson(videoDto: any): Lesson {
+    console.log('Converting VideoDto to Lesson:', videoDto);
+    console.log('VideoDto attachments:', videoDto.attachments);
+    const lesson: Lesson = {
+      id: videoDto.id,
+      order: (videoDto.order !== undefined && videoDto.order !== null) ? videoDto.order : 0,
+      title: videoDto.title || '',
+      explanation: videoDto.explanation || '',
+      whatWeWillLearn: videoDto.whatWeWillLearn ? videoDto.whatWeWillLearn.split(', ') : [''],
+      duration: videoDto.durationSeconds || 0,
+      status: videoDto.status || 'Active',
+      attachments: videoDto.attachments ? videoDto.attachments.map((att: any) => {
+        console.log('Mapping attachment:', att);
+        return {
+          id: att.id,
+          file: null, // Existing attachments don't have File objects
+          displayName: att.fileName || att.title || 'Attachment',
+          downloadUrl: att.id ? this.getAttachmentDownloadUrl(att.id) : undefined
+        };
+      }) : [],
+      prerequisites: videoDto.prerequisites ? videoDto.prerequisites.split(', ') : [''],
+      state: 'saved'
+    };
+    console.log('Converted lesson:', lesson);
+    return lesson;
+  }
+
+  // Helper to construct download URL for attachments (including thumbnails)
+  // Use the same `environment.apiUrl` value that the CourseService uses.
+  private getAttachmentDownloadUrl(id: number | string): string {
+
+    return `localhost:5000/api/attachments/${encodeURIComponent(String(id))}/download`;
   }
 }

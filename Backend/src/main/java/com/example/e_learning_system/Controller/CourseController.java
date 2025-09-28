@@ -143,12 +143,13 @@ public class CourseController {
      * Update an existing course
      */
     @PutMapping(value = "/{id}", consumes = org.springframework.http.MediaType.MULTIPART_FORM_DATA_VALUE)
-    public ResponseEntity<ApiResponse<Void>> updateCourse(
+    public ResponseEntity<ApiResponse<CourseDetailsDto>> updateCourse(
             @PathVariable Integer id,
             @Valid @ModelAttribute UpdateCourseDto updateCourseDto) {
                 
         courseService.updateCourse(updateCourseDto , id);
-        return ResponseEntity.ok(ApiResponse.success("Course updated successfully", null));
+        CourseDetailsDto updatedCourse = courseService.getCourseById(id);
+        return ResponseEntity.ok(ApiResponse.success("Course updated successfully", updatedCourse));
     }
 
     /**
@@ -346,6 +347,15 @@ public class CourseController {
     ){
         courseService.updateModuleOrderInCourse(courseId, moduleId, newOrder);
         return ResponseEntity.ok(ApiResponse.success("Module %d order updated to %d in course %d".formatted(moduleId, newOrder, courseId), null));
+    }
+
+    @PutMapping("{courseId}/modules/order")
+    public ResponseEntity<ApiResponse<Void>> updateModuleOrdersInCourse(
+            @PathVariable int courseId,
+            @RequestBody java.util.List<com.example.e_learning_system.Dto.OrderDtos.IdOrderDto> orders
+    ){
+        courseService.updateModuleOrdersInCourse(courseId, orders);
+        return ResponseEntity.ok(ApiResponse.success("Module orders updated successfully", null));
     }
 
     @GetMapping("/categories")

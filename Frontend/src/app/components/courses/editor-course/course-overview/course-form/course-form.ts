@@ -58,8 +58,10 @@ export class CourseFormComponent implements OnInit, OnChanges, OnDestroy {
       status: [{ value: this.course?.status || 'DRAFT', disabled: true }],
       currency: [this.course?.currency || 'USD', Validators.required],
       category: [this.course?.category || '', Validators.required],
-      thumbnail: [this.course?.thumbnail || ''],
-      thumbnailName: [this.course?.thumbnailName || '', Validators.required],
+  thumbnail: [this.course?.thumbnail || ''],
+  // thumbnailName should only be required when the user selects a new file for upload.
+  // Keep it optional for existing thumbnails so editing other fields doesn't fail validation.
+  thumbnailName: [this.course?.thumbnailName || ''],
       tags: [this.course?.tags || []],
       oneTimePrice: [this.course?.pricing?.oneTimePrice || null, [Validators.min(0), Validators.required]],
       allowsSubscription: [this.course?.pricing?.allowsSubscription || false],
@@ -87,6 +89,12 @@ export class CourseFormComponent implements OnInit, OnChanges, OnDestroy {
       this.selectedFile = file;
       this.thumbnailUrl = URL.createObjectURL(file);
       this.courseForm.patchValue({ thumbnail: file, thumbnailName: file.name });
+      // Make thumbnailName required when a new file is selected
+      const thumbCtrl = this.courseForm.get('thumbnailName');
+      if (thumbCtrl) {
+        thumbCtrl.setValidators([Validators.required]);
+        thumbCtrl.updateValueAndValidity();
+      }
       this.fileSelected.emit(file);
     }
   }
@@ -129,11 +137,31 @@ export class CourseFormComponent implements OnInit, OnChanges, OnDestroy {
     if (thumbnail instanceof File) {
       return this.thumbnailUrl;
     }
+    // If thumbnail is a number (ID), construct download URL
+    if (typeof thumbnail === 'number' && thumbnail > 0) {
+      return `http://localhost:5000/api/attachments/${thumbnail}/download`;
+    }
     return thumbnail || '';
   }
 
   isThumbnailFile(): boolean {
     return this.courseForm.get('thumbnail')?.value instanceof File;
+  }
+
+  removeCourseThumbnail(): void {
+    // Clear thumbnail and name so upload UI appears
+    this.courseForm.patchValue({ thumbnail: '', thumbnailName: '' });
+    this.selectedFile = null;
+    // Remove required validation for thumbnailName when not uploading
+    const thumbCtrl = this.courseForm.get('thumbnailName');
+    if (thumbCtrl) {
+      thumbCtrl.clearValidators();
+      thumbCtrl.updateValueAndValidity();
+    }
+    if (this.thumbnailUrl) {
+      URL.revokeObjectURL(this.thumbnailUrl);
+      this.thumbnailUrl = '';
+    }
   }
 
   ngOnDestroy(): void {

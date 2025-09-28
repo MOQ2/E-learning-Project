@@ -27,5 +27,6 @@ public class CreatVideoDto {
     private String prerequisites;
     private Set<Integer> attachments;
     private Integer thumbnail ;
+    private int order;
 
 }

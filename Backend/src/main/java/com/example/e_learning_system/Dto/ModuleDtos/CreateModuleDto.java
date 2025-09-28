@@ -13,6 +13,7 @@ import lombok.experimental.SuperBuilder;
 @NoArgsConstructor
 @AllArgsConstructor
 public class CreateModuleDto {
+    private Integer id;
     @NotBlank
     @NotEmpty
     @Size(min = 4, max = 200)

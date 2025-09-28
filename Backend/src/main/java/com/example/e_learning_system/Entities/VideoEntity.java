@@ -5,7 +5,6 @@ import lombok.*;
 import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.type.SqlTypes;
 
-import com.example.e_learning_system.Dto.VideoDtos.CreatVideoDto;
 
 import java.util.*;
 
@@ -95,17 +94,18 @@ public class VideoEntity extends BaseEntity {
         this.videoAttachments.remove(videoAttachments);
     }
     public void removeVideoAttachmentByids(int videoId , int attachmentid){
+        VideoAttachments toRemove = null;
         for (VideoAttachments videoAttachment : this.videoAttachments) {
-            if (videoAttachment.getAttachment().getId() == videoId && videoAttachment.getAttachment().getId() == attachmentid) {
-                this.videoAttachments.remove(videoAttachment);
-                return;
+            if (videoAttachment.getVideo().getId() == videoId && videoAttachment.getAttachment().getId() == attachmentid) {
+                toRemove = videoAttachment;
+                break;
             }
         }
+        if (toRemove != null) {
+            this.videoAttachments.remove(toRemove);
+        }
     }
-    public CreatVideoDto findById(int id) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'findById'");
-    }
+
 
     public void setAttachments(List<Attachment> attachments) {
         this.videoAttachments.clear();
@@ -115,5 +115,6 @@ public class VideoEntity extends BaseEntity {
             }
         }
     }
+
 
 }

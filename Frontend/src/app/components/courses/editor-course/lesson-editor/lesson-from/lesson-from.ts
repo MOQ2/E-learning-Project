@@ -33,6 +33,8 @@ export class LessonEditorComponent implements OnChanges, AfterViewInit {
   }
 
   ngOnChanges() {
+    console.log('LessonEditorComponent ngOnChanges called with lesson:', this.lesson);
+    console.log('Lesson has attachments:', this.lesson?.attachments);
     if (this.lesson) {
       this.populateForm();
       this.lesson.state = this.lesson.id ? 'saved' : 'new';
@@ -85,6 +87,9 @@ export class LessonEditorComponent implements OnChanges, AfterViewInit {
     this.lessonForm = this.fb.group({
       title: ['', [Validators.required, Validators.minLength(3)]],
       explanation: ['', [Validators.required, Validators.minLength(10)]],
+      // thumbnail holds either an attachment id (number) or a File object or empty string
+      thumbnail: [''],
+      thumbnailName: [''],
       order: [0, [Validators.required, Validators.min(0)]],
       duration: [1, [Validators.required, Validators.min(1)]],
       status: ['Active'],
@@ -96,9 +101,13 @@ export class LessonEditorComponent implements OnChanges, AfterViewInit {
 
   private populateForm(): void {
     if (this.lesson) {
+      console.log('Populating form with lesson:', this.lesson);
+      console.log('Lesson attachments:', this.lesson.attachments);
       this.lessonForm.patchValue({
         title: this.lesson.title,
         explanation: this.lesson.explanation,
+  thumbnail: this.lesson.thumbnailFile ? this.lesson.thumbnailFile : (this.lesson.attachments && this.lesson.attachments.length ? this.lesson.attachments[0].id : ''),
+  thumbnailName: this.lesson.thumbnailFile ? (this.lesson.thumbnailFile.name || '') : (this.lesson.attachments && this.lesson.attachments.length ? this.lesson.attachments[0].displayName : ''),
         order: this.lesson.order,
         duration: Math.floor(this.lesson.duration / 60),
         status: this.lesson.status
@@ -112,12 +121,43 @@ export class LessonEditorComponent implements OnChanges, AfterViewInit {
       this.attachments.clear();
       this.selectedFiles = [];
       this.lesson.attachments.forEach(att => {
+        console.log('Processing attachment:', att);
         this.attachments.push(this.fb.group({
           id: [att.id],
           displayName: [att.displayName]
         }));
-        this.selectedFiles.push(att.file);
+        // Only add to selectedFiles if it's a new file (not existing attachment)
+        if (att.file) {
+          this.selectedFiles.push(att.file);
+        } else {
+          this.selectedFiles.push(null);
+        }
       });
+      console.log('Form attachments after population:', this.attachments.value);
+    }
+  }
+
+  isLessonThumbnailFile(): boolean {
+    return this.lessonForm.get('thumbnail')?.value instanceof File;
+  }
+
+  getLessonThumbnailUrl(): string {
+    const thumb = this.lessonForm.get('thumbnail')?.value;
+    if (thumb instanceof File) {
+      return URL.createObjectURL(thumb);
+    }
+    if (typeof thumb === 'number' && thumb > 0) {
+      return 'http://localhost:5000/api/attachments/' + thumb + '/download';
+    }
+    return thumb || '';
+  }
+
+  removeLessonThumbnail(): void {
+    // Clear the thumbnail control and thumbnailName so upload UI appears
+    this.lessonForm.patchValue({ thumbnail: '', thumbnailName: '' });
+    // Also clear local lesson file reference if present
+    if (this.lesson) {
+      this.lesson.thumbnailFile = undefined;
     }
   }
 

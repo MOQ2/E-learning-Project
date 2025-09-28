@@ -7,13 +7,15 @@
         <button class="btn btn--primary-light btn--small" (click)="addModule.emit()">Add module</button>
     </header>
 
-    <ul class="module-list">
+    <ul class="module-list" cdkDropList (cdkDropListDropped)="drop($event)">
         <li
             class="module-item"
             *ngFor="let module of modules"
+            cdkDrag
             [class.active]="module.id === selectedModule?.id">
 
             <span class="module-item__number">{{ module.order }}</span>
+            <button class="module-item__handle" cdkDragHandle aria-label="Reorder module">☰</button>
 
             <div class="module-item__details">
                 <p class="module-item__title">{{ module.title }}</p>

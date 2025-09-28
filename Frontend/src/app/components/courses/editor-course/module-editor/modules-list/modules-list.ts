@@ -1,6 +1,8 @@
 import { Component, Input, Output, EventEmitter } from '@angular/core';
+import { CdkDragDrop, moveItemInArray } from '@angular/cdk/drag-drop';
 import { Module } from '../../course-editor-page-component/course-editor-page-component';
 import { CommonModule } from '@angular/common';
+import { DragDropModule } from '@angular/cdk/drag-drop';
 import { ViewEncapsulation } from '@angular/core';
 
 @Component({
@@ -8,7 +10,7 @@ import { ViewEncapsulation } from '@angular/core';
   templateUrl: './modules-list.html',
   styleUrls: ['./modules-list.css'],
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, DragDropModule],
   encapsulation: ViewEncapsulation.None
 })
 export class ModulesListComponent {
@@ -34,6 +36,10 @@ export class ModulesListComponent {
    * OUTPUT: Emits when the 'Add module' button is clicked.
    */
   @Output() addModule = new EventEmitter<void>();
+  /**
+   * OUTPUT: Emits when modules are reordered via drag/drop. Payload: modules array with updated orders.
+   */
+  @Output() modulesReordered = new EventEmitter<Module[]>();
 
   /**
    * Calculates the total number of lessons for a given module.
@@ -44,5 +50,12 @@ export class ModulesListComponent {
     const lessonsCount = module.lessons?.length || 0;
     const lessonPlural = lessonsCount === 1 ? 'lesson' : 'lessons';
     return `${lessonsCount} ${lessonPlural} • ${module.estimatedTime} min`;
+  }
+
+  drop(event: CdkDragDrop<Module[]>) {
+    moveItemInArray(this.modules, event.previousIndex, event.currentIndex);
+    // update orders
+    this.modules.forEach((m, i) => m.order = i + 1);
+    this.modulesReordered.emit(this.modules);
   }
 }

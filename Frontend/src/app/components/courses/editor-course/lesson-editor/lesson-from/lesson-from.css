@@ -228,6 +228,7 @@ textarea.form-control {
   display: flex;
   align-items: center;
   gap: 12px;
+  margin-bottom: 8px;
 }
 
 .attachment-item .form-control {
@@ -236,6 +237,72 @@ textarea.form-control {
 
 .attachment-item .file-input {
   flex: 1;
+}
+
+.existing-attachment-info {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex: 1;
+  padding: 8px;
+  background-color: var(--color-light-gray-bg);
+  border-radius: var(--border-radius-sm);
+}
+
+.attachment-name {
+  flex: 1;
+  font-size: 14px;
+  color: var(--color-text-dark);
+  font-weight: 500;
+}
+
+.btn-download {
+  background-color: var(--color-primary);
+  color: var(--color-white);
+  padding: 8px 12px;
+  border-radius: var(--border-radius-sm);
+  text-decoration: none;
+  font-size: 12px;
+  font-weight: 600;
+  transition: opacity 0.2s ease;
+}
+
+.btn-download:hover {
+  opacity: 0.9;
+  text-decoration: none;
+  color: var(--color-white);
+}
+
+.btn-remove {
+  background-color: #dc2626;
+  color: white;
+  border: none;
+  padding: 8px 12px;
+  border-radius: var(--border-radius-sm);
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: opacity 0.2s ease;
+}
+
+.btn-remove:hover {
+  opacity: 0.9;
+}
+
+.btn-add {
+  background-color: var(--color-light-gray-bg);
+  color: var(--color-text-dark);
+  border: 1px solid var(--color-border);
+  padding: 10px 16px;
+  border-radius: var(--border-radius-sm);
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: opacity 0.2s ease;
+}
+
+.btn-add:hover {
+  opacity: 0.9;
 }
 
 .hidden-file-input {

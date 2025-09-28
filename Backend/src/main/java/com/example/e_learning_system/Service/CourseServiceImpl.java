@@ -32,8 +32,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
-import java.util.Set;
-import java.util.stream.Collectors;
+// ...existing imports... (removed unused imports)
 
 @Service
 @RequiredArgsConstructor
@@ -341,6 +340,38 @@ public class CourseServiceImpl implements CourseService {
         }
         courseModule.setModuleOrder(newOrder);
         courseModulesRepository.save(courseModule);
+    }
+
+    @Override
+    public void updateModuleOrdersInCourse(int courseId, java.util.List<com.example.e_learning_system.Dto.OrderDtos.IdOrderDto> orders) {
+        if (orders == null || orders.isEmpty()) return;
+
+        Course course = courseRepository.findById(courseId)
+                .orElseThrow(() -> ResourceNotFound.courseNotFound(courseId + ""));
+
+        // Validate no duplicate orders in payload
+        java.util.Set<Integer> seen = new java.util.HashSet<>();
+        for (com.example.e_learning_system.Dto.OrderDtos.IdOrderDto od : orders) {
+            if (od.getOrder() == null || od.getOrder() < 0) throw new RuntimeException("Invalid order");
+            if (!seen.add(od.getOrder())) throw new RuntimeException("Duplicate order in payload");
+        }
+
+        // Apply updates
+        for (com.example.e_learning_system.Dto.OrderDtos.IdOrderDto od : orders) {
+            int moduleId = od.getId();
+            int newOrder = od.getOrder();
+            CourseModules cm = courseModulesRepository.findByCourseIdAndModuleId(courseId, moduleId)
+                    .orElseThrow(() -> ResourceNotFound.moduleNotFoundInCourse(moduleId + "", courseId + ""));
+
+            // ensure uniqueness among existing ones (excluding current)
+            boolean exists = course.getCourseModules().stream()
+                    .anyMatch(cmod -> cmod.getModuleOrder() == newOrder && cmod.getModule().getId() != moduleId);
+            if (exists) {
+                throw new RuntimeException("module order already exists in the course");
+            }
+            cm.setModuleOrder(newOrder);
+            courseModulesRepository.save(cm);
+        }
     }
 
     @Override

@@ -59,7 +59,7 @@ public class ModuleMapper {
                 .isActive(module.isActive())
                 .build();
 
-        List <VideoDto> videosDto = module.getModuleVideos() == null ? null : VideoMapper.fromVideoEntitiesToVideoDtos(module.getVideos().stream().toList());
+        List <VideoDto> videosDto = module.getModuleVideos() == null ? null : VideoMapper.fromModuleVideosToVideoDtos(module.getModuleVideos().stream().toList());
 
         detailedModule.setVideos(videosDto);
         return detailedModule;

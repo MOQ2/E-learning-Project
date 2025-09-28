@@ -74,11 +74,22 @@
         </div>
         <div class="form-field">
           <label for="course-thumbnail">Thumbnail</label>
-          <input type="file" id="course-thumbnail" accept="image/*" (change)="onThumbnailSelected($event)">
-          <input type="text" formControlName="thumbnailName" placeholder="File Name">
-          <div *ngIf="courseForm.get('thumbnailName')?.invalid && courseForm.get('thumbnailName')?.touched" class="error-message">
-            <span *ngIf="courseForm.get('thumbnailName')?.errors?.['required']">Thumbnail name is required.</span>
-          </div>
+
+          <ng-container *ngIf="courseForm.get('thumbnail')?.value && !isThumbnailFile(); else uploadThumbCourse">
+            <div class="existing-attachment-info">
+              <span class="attachment-name">{{ courseForm.get('thumbnailName')?.value || 'Thumbnail' }}</span>
+              <a [href]="getThumbnailUrl()" target="_blank" class="btn-download">Download</a>
+              <button type="button" class="btn-remove" (click)="removeCourseThumbnail()">Remove</button>
+            </div>
+          </ng-container>
+
+          <ng-template #uploadThumbCourse>
+            <input type="file" id="course-thumbnail" accept="image/*" (change)="onThumbnailSelected($event)">
+            <input type="text" formControlName="thumbnailName" placeholder="File Name">
+            <div *ngIf="isThumbnailFile() && courseForm.get('thumbnailName')?.invalid && courseForm.get('thumbnailName')?.touched" class="error-message">
+              <span *ngIf="courseForm.get('thumbnailName')?.errors?.['required']">Thumbnail name is required.</span>
+            </div>
+          </ng-template>
         </div>
 
 
