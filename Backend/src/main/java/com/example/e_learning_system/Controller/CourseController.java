@@ -125,14 +125,15 @@ public class CourseController {
      * Create a new course
      * TODO: Extract user ID from JWT token instead of using request parameter
      */
-    @PostMapping
+    @PostMapping(consumes = org.springframework.http.MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<ApiResponse<CourseDetailsDto>> createCourse(
-            @Valid @RequestBody CreateCourseDto createCourseDto
+            @Valid @ModelAttribute CreateCourseDto createCourseDto
             ) {
         //TODO use this instead of 1 in the create course method 
         //int user_id = Math.toIntExact(UserUtil.getCurrentUserId());
         
         // TODO - replace with actual user ID from JWT
+        log.info("tags list is {}" , createCourseDto.getTags());
         CourseDetailsDto course = courseService.createCourse(createCourseDto, 1);
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(ApiResponse.success("Course created successfully", course));
@@ -141,10 +142,10 @@ public class CourseController {
     /**
      * Update an existing course
      */
-    @PutMapping("/{id}")
+    @PutMapping(value = "/{id}", consumes = org.springframework.http.MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<ApiResponse<Void>> updateCourse(
             @PathVariable Integer id,
-            @Valid @RequestBody UpdateCourseDto updateCourseDto) {
+            @Valid @ModelAttribute UpdateCourseDto updateCourseDto) {
                 
         courseService.updateCourse(updateCourseDto , id);
         return ResponseEntity.ok(ApiResponse.success("Course updated successfully", null));
@@ -324,7 +325,7 @@ public class CourseController {
                 @PathVariable int moduleOrder
         ){
 
-            courseService.addMoudelToCourse(courseId, moduleId, moduleOrder);
+            courseService.addModuleToCourse(courseId, moduleId, moduleOrder);
             return ResponseEntity.ok(ApiResponse.success("module %d have been added to course %d in order {}".formatted(moduleId,courseId,moduleOrder),null));
         }
 
@@ -333,17 +334,27 @@ public class CourseController {
             @PathVariable int courseId,
             @PathVariable int moduleId
     ){
-        courseService.removeMoudelFromCourse(courseId, moduleId);
-        return ResponseEntity.ok(ApiResponse.success("module %d have been added to course %d".formatted(moduleId,courseId),null));
+        courseService.removeModuleFromCourse(courseId, moduleId);
+        return ResponseEntity.ok(ApiResponse.success("module %d have been removed from course %d".formatted(moduleId,courseId),null));
     }
 
+    @PutMapping("{courseId}/modules/{moduleId}/order/{newOrder}")
+    public ResponseEntity<ApiResponse<Void>> updateModuleOrderInCourse(
+            @PathVariable int courseId,
+            @PathVariable int moduleId,
+            @PathVariable int newOrder
+    ){
+        courseService.updateModuleOrderInCourse(courseId, moduleId, newOrder);
+        return ResponseEntity.ok(ApiResponse.success("Module %d order updated to %d in course %d".formatted(moduleId, newOrder, courseId), null));
+    }
 
     @GetMapping("/categories")
     public ResponseEntity<ApiResponse<List<TagDto>>> getCategories() {
 
         return ResponseEntity.ok(ApiResponse.success("Tags retrieved successfully", courseService.getAllTags()));
     }
-    
+
+
 
 
 }

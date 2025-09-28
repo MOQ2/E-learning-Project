@@ -1,7 +1,10 @@
-import { Component, Input, Output, EventEmitter, ViewEncapsulation, OnChanges } from '@angular/core';
+import { Component, Input, Output, EventEmitter, ViewEncapsulation, OnChanges, AfterViewInit, ElementRef } from '@angular/core';
 import { Lesson } from '../lesson-page/lesson.model';
 import { ReactiveFormsModule, FormBuilder, FormGroup, Validators, FormArray, FormControl } from '@angular/forms';
 import { CommonModule } from '@angular/common';
+
+// Declare Quill to avoid TypeScript errors.
+declare var Quill: any;
 
 @Component({
   selector: 'app-lesson-editor',
@@ -11,35 +14,68 @@ import { CommonModule } from '@angular/common';
   imports: [ReactiveFormsModule, CommonModule],
   encapsulation: ViewEncapsulation.None
 })
-export class LessonEditorComponent implements OnChanges {
+export class LessonEditorComponent implements OnChanges, AfterViewInit {
 
-  // @Input() allows the parent component to pass data into this component.
-  // The 'lesson' property will be populated by the parent's [lesson]="lessonData" binding.
   @Input() lesson!: Lesson;
 
-  // @Output() creates custom events that this component can emit up to the parent.
-  // The parent listens for these events like (saveLesson)="handler($event)".
   @Output() saveLesson = new EventEmitter<Lesson>();
   @Output() saveDraft = new EventEmitter<Lesson>();
   @Output() preview = new EventEmitter<Lesson>();
+  @Output() deleteAttachment = new EventEmitter<{lessonId: number, attachmentId: number}>();
   @Output() goBack = new EventEmitter<void>();
 
   lessonForm!: FormGroup;
+  private quillEditor: any;
+  selectedFiles: (File | null)[] = [];
 
-  constructor(private fb: FormBuilder) {
+  constructor(private fb: FormBuilder, private elementRef: ElementRef) {
     this.initForm();
   }
 
   ngOnChanges() {
     if (this.lesson) {
       this.populateForm();
-      // Set initial state
       this.lesson.state = this.lesson.id ? 'saved' : 'new';
 
-      // Track form changes to update state
       this.lessonForm.valueChanges.subscribe(() => {
         if (this.lesson.state !== 'new') {
           this.lesson.state = 'edited';
+        }
+      });
+    }
+  }
+
+  ngAfterViewInit(): void {
+    const editorElement = this.elementRef.nativeElement.querySelector('#editor-container');
+    if (editorElement) {
+      this.quillEditor = new Quill(editorElement, {
+        theme: 'snow',
+        modules: {
+          toolbar: [
+            [{ 'header': [1, 2, 3, 4, 5, 6, false] }],
+            ['bold', 'italic', 'underline', 'strike'],
+            ['blockquote', 'code-block'],
+            [{ 'list': 'ordered' }, { 'list': 'bullet' }],
+            [{ 'indent': '-1' }, { 'indent': '+1' }],
+            [{ 'align': [] }],
+            ['link', 'image', 'video'],
+            ['clean']
+          ]
+        }
+      });
+
+      // Set initial content from form if available
+      const initialContent = this.lessonForm.get('explanation')?.value;
+      if (initialContent) {
+        this.quillEditor.root.innerHTML = initialContent;
+      }
+
+      // Listen for changes and update the form control
+      this.quillEditor.on('text-change', () => {
+        const html = this.quillEditor.root.innerHTML;
+        // Avoid setting value on initial load if it's just an empty paragraph
+        if (html !== '<p><br></p>' || this.lessonForm.get('explanation')?.value) {
+          this.lessonForm.get('explanation')?.setValue(html, { emitEvent: false });
         }
       });
     }
@@ -67,13 +103,20 @@ export class LessonEditorComponent implements OnChanges {
         duration: Math.floor(this.lesson.duration / 60),
         status: this.lesson.status
       });
+      // If editor is initialized, update its content
+      if (this.quillEditor) {
+        this.quillEditor.root.innerHTML = this.lesson.explanation || '';
+      }
       this.setFormArray('whatWeWillLearn', this.lesson.whatWeWillLearn);
       this.setFormArray('prerequisites', this.lesson.prerequisites);
       this.attachments.clear();
+      this.selectedFiles = [];
       this.lesson.attachments.forEach(att => {
         this.attachments.push(this.fb.group({
+          id: [att.id],
           displayName: [att.displayName]
         }));
+        this.selectedFiles.push(att.file);
       });
     }
   }
@@ -81,10 +124,15 @@ export class LessonEditorComponent implements OnChanges {
   private setFormArray(arrayName: 'whatWeWillLearn' | 'prerequisites', values: string[]): void {
     const formArray = this.lessonForm.get(arrayName) as FormArray;
     formArray.clear();
-    values.forEach(value => {
-      formArray.push(new FormControl(value || '', Validators.required));
-    });
+    if (values && values.length > 0) {
+        values.forEach(value => {
+            formArray.push(new FormControl(value || '', Validators.required));
+        });
+    } else {
+        formArray.push(new FormControl('', Validators.required)); // Ensure there's at least one field
+    }
   }
+
 
   get whatWeWillLearnControls() {
     return (this.lessonForm.get('whatWeWillLearn') as FormArray).controls;
@@ -98,19 +146,16 @@ export class LessonEditorComponent implements OnChanges {
     return this.lessonForm.get('attachments') as FormArray;
   }
 
-  // --- METHODS THAT EMIT EVENTS TO THE PARENT ---
-
   onFormSubmit() {
     if (this.lessonForm.valid && (this.lesson.state === 'edited' || this.lesson.state === 'new')) {
       const formValue = this.lessonForm.value;
       const lessonToSave: Lesson = {
         ...this.lesson,
         ...formValue,
-        duration: formValue.duration * 60, // Convert to seconds
-        attachments: formValue.attachments.map((att: any) => ({ file: null, displayName: att.displayName }))
+        duration: formValue.duration * 60,
+        attachments: formValue.attachments.map((att: any, idx: number) => ({ id: att.id, file: this.selectedFiles[idx], displayName: att.displayName }))
       };
       this.saveLesson.emit(lessonToSave);
-      // Set state to saved after emitting
       this.lesson.state = 'saved';
     } else {
       this.lessonForm.markAllAsTouched();
@@ -124,10 +169,9 @@ export class LessonEditorComponent implements OnChanges {
         ...this.lesson,
         ...formValue,
         duration: formValue.duration * 60,
-        attachments: formValue.attachments.map((att: any) => ({ file: null, displayName: att.displayName }))
+        attachments: formValue.attachments.map((att: any, idx: number) => ({ id: att.id, file: this.selectedFiles[idx], displayName: att.displayName }))
       };
       this.saveDraft.emit(lessonToSave);
-      // Set state to saved after emitting
       this.lesson.state = 'saved';
     } else {
       this.lessonForm.markAllAsTouched();
@@ -141,7 +185,7 @@ export class LessonEditorComponent implements OnChanges {
         ...this.lesson,
         ...formValue,
         duration: formValue.duration * 60,
-        attachments: formValue.attachments.map((att: any) => ({ file: null, displayName: att.displayName }))
+        attachments: formValue.attachments.map((att: any, idx: number) => ({ id: att.id, file: this.selectedFiles[idx], displayName: att.displayName }))
       };
       this.preview.emit(lessonToSave);
     } else {
@@ -150,11 +194,8 @@ export class LessonEditorComponent implements OnChanges {
   }
 
   onBackClick() {
-    // Emits a simple event without any data.
     this.goBack.emit();
   }
-
-  // --- UI INTERACTION METHODS ---
 
   addBullet(list: 'whatWeWillLearn' | 'prerequisites') {
     const formArray = this.lessonForm.get(list) as FormArray;
@@ -170,19 +211,46 @@ export class LessonEditorComponent implements OnChanges {
 
   addAttachment() {
     this.attachments.push(this.fb.group({
+      id: [null],
       displayName: ['']
     }));
+    this.selectedFiles.push(null);
   }
 
   removeAttachment(index: number) {
+    const attachment = this.attachments.at(index);
+    const attachmentId = attachment.get('id')?.value;
+    const lessonId = this.lesson.id;
+    if (attachmentId && lessonId) {
+      this.deleteAttachment.emit({ lessonId, attachmentId });
+    }
     this.attachments.removeAt(index);
+    this.selectedFiles.splice(index, 1);
   }
 
   onFileSelected(event: any, index: number) {
-    // Handle file selection, perhaps store in a separate array
+    const file = event.target.files[0];
+    if (file) {
+      this.selectedFiles[index] = file;
+      const attachmentGroup = this.attachments.at(index);
+      attachmentGroup.patchValue({ displayName: file.name });
+    }
   }
 
-  // Helper for tracking items in ngFor loops to improve performance.
+  onVideoFileChange(event: any) {
+    const file = event.target.files[0];
+    if (file) {
+      this.lesson.videoData = file;
+    }
+  }
+
+  onThumbnailFileChange(event: any) {
+    const file = event.target.files[0];
+    if (file) {
+      this.lesson.thumbnailFile = file;
+    }
+  }
+
   trackByIndex(index: number, item: any): any {
     return index;
   }

@@ -16,7 +16,8 @@ public interface CourseService {
     public void updateCourse(UpdateCourseDto updateCourseDto , int courseId);
     void deleteCourse(Integer id);
     void deactivateCourse(Integer id , boolean deactivate);
-    void addMoudelToCourse (int courseId , int moudelId , int order);
-    void removeMoudelFromCourse (int courseId , int moudelId);
+    void addModuleToCourse (int courseId , int moduleId , int order);
+    void removeModuleFromCourse (int courseId , int moduleId);
+    void updateModuleOrderInCourse(int courseId, int moduleId, int newOrder);
     List<TagDto> getAllTags();
 }

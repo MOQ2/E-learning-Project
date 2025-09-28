@@ -1,9 +1,6 @@
 package com.example.e_learning_system.Dto.ModuleDtos;
 
 
-import java.lang.module.ModuleDescriptor.Builder;
-
-import com.example.e_learning_system.Config.CourseStatus;
 import jakarta.validation.constraints.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -25,12 +22,8 @@ public class CreateModuleDto {
     @Size(min = 50 )
     private String moduleDescription;
     @NotNull
-    private boolean isAcitve = false;
+    private boolean isActive;
     @Min(1)
-    @NotBlank
-    @NotEmpty
     private int estimatedDuration;
-
-    private CourseStatus courseStatus = CourseStatus.DRAFT;
 
 }

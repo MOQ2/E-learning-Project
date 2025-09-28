@@ -23,7 +23,7 @@ public class AttachmentController {
     //TODO use securty context to add uploaded by
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<ApiResponse<Integer>> createAttachment(
-            @RequestParam("title") String title,
+            @RequestParam("name") String title,
             @RequestParam("file") MultipartFile file
             ) {
         System.out.println("Received file:");

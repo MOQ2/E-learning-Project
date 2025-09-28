@@ -1,5 +1,4 @@
-
-import { Component, OnInit, ViewChild } from '@angular/core';
+import { Component, OnInit, OnDestroy, ViewChild, Renderer2, Inject } from '@angular/core';
 import { FormGroup } from '@angular/forms';
 import {CourseoverviewCreationDto } from '../course-overview/enums/CourseOverviewCreationDto';
 import { CourseFormComponent } from '../course-overview/course-form/course-form';
@@ -7,13 +6,14 @@ import { SidebarComponent } from '../course-overview/sidebar/sidebar';
 import { NavBar } from '../../../nav-bar/nav-bar';
 import { ViewEncapsulation } from '@angular/core';
 import { CourseService } from '../../../../Services/Courses/course-service';
-import { Observable } from 'rxjs';
+import { Observable, forkJoin } from 'rxjs';
 import { ModuleFormComponent } from '../module-editor/module-form/module-form';
 import { LessonEditorComponent } from '../lesson-editor/lesson-from/lesson-from';
 import { ModulesListComponent } from '../module-editor/modules-list/modules-list';
 import { FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { Lesson } from '../lesson-editor/lesson-page/lesson.model';
+import { DOCUMENT } from '@angular/common';
 
 export interface Module {
   id?: number;
@@ -35,16 +35,17 @@ export interface Module {
   standalone: true,
   encapsulation: ViewEncapsulation.None
 })
-export class CourseEditorPageComponent implements OnInit {
+export class CourseEditorPageComponent implements OnInit, OnDestroy {
 
   @ViewChild(LessonEditorComponent) lessonEditor!: LessonEditorComponent;
 
   activePage: 'overview' | 'modules' | 'lesson' | 'publish' = 'overview';
 
   // Track if course has been created (has ID)
-  courseCreated: boolean = true;
+  courseCreated: boolean = false;
 
-  currentLesson: Lesson = {
+  currentLesson: Lesson  = {
+    id: undefined,
     order: 0,
     title: '',
     explanation: '',
@@ -56,30 +57,20 @@ export class CourseEditorPageComponent implements OnInit {
     state: 'new'
   };
 
-  currentModule: Module = {
+  currentModule: Module  = {
+    id: undefined,
     title: '',
     summary: '',
-    order: 1,
+    order: 0,
     estimatedTime: 0,
     isOptional: false,
-    status: 'Active',
-    lessons: [
-      { id: 1, order: 1, title: 'Lesson 1 • Welcome', explanation: '', whatWeWillLearn: [], duration: 0, status: 'Active', attachments: [], prerequisites: [] },
-      { id: 2, order: 2, title: 'Lesson 2 • Setting up your Environment', explanation: '', whatWeWillLearn: [], duration: 0, status: 'Active', attachments: [], prerequisites: [] },
-      { id: 3, order: 3, title: 'Lesson 3 • Basic Syntax', explanation: '', whatWeWillLearn: [], duration: 0, status: 'Active', attachments: [], prerequisites: [] },
-      { id: 4, order: 4, title: 'Lesson 4 • Your First Program', explanation: '', whatWeWillLearn: [], duration: 0, status: 'Active', attachments: [], prerequisites: [] }
-    ],
+    status: 'Inactive',
+    lessons: [],
     state: 'new'
   };
 
   // Sample modules to power the sidebar list
-  modules: Module[] = [
-    { id: 1, title: 'Introduction to Python', summary: '', order: 1, estimatedTime: 15, isOptional: false, status: 'Active', lessons: [{ id: 1, order: 1, title: 'Lesson 1', explanation: '', whatWeWillLearn: [], duration: 5, status: 'Active', attachments: [], prerequisites: [] }, { id: 2, order: 2, title: 'Lesson 2', explanation: '', whatWeWillLearn: [], duration: 10, status: 'Active', attachments: [], prerequisites: [] }], state: 'saved' },
-    { id: 2, title: 'Data Types & Variables', summary: '', order: 2, estimatedTime: 35, isOptional: false, status: 'Inactive', lessons: [{ id: 3, order: 1, title: 'Lesson 1', explanation: '', whatWeWillLearn: [], duration: 15, status: 'Active', attachments: [], prerequisites: [] }], state: 'saved' },
-    { id: 3, title: 'Control Flow', summary: '', order: 3, estimatedTime: 50, isOptional: false, status: 'Active', lessons: [{ id: 4, order: 1, title: 'Lesson 1', explanation: '', whatWeWillLearn: [], duration: 20, status: 'Active', attachments: [], prerequisites: [] }], state: 'saved' },
-    { id: 4, title: 'Functions', summary: '', order: 4, estimatedTime: 45, isOptional: false, status: 'Inactive', lessons: [], state: 'saved' },
-    { id: 5, title: 'Object-Oriented Programming', summary: '', order: 5, estimatedTime: 75, isOptional: false, status: 'Inactive', lessons: [], state: 'saved' }
-  ];
+  modules: Module[] = []
 
   onModuleSelected(module: Module) {
     this.currentModule = module;
@@ -88,13 +79,13 @@ export class CourseEditorPageComponent implements OnInit {
 
   onAddModule() {
     const nextOrder = this.modules.length + 1;
-    const newModule: Module = { id: nextOrder, title: `New module ${nextOrder}`, summary: '', order: nextOrder, estimatedTime: 0, isOptional: false, status: 'Inactive', lessons: [], state: 'new' };
+    const newModule: Module = { id: undefined, title: `New module ${nextOrder}`, summary: '', order: nextOrder, estimatedTime: 0, isOptional: false, status: 'Inactive', lessons: [], state: 'new' };
     this.modules = [...this.modules, newModule];
   }
 
 
   currentCourseOverview: CourseoverviewCreationDto | null = {
-    id: 2,
+    id: null,
     name: '',
     description: '',
     estimatedDurationInHours: 0,
@@ -118,11 +109,33 @@ export class CourseEditorPageComponent implements OnInit {
   // This will hold the latest state of the form from the child component
   private courseFormState!: FormGroup;
   selectedFile: File | null = null;
+  private quillLink: HTMLLinkElement | null = null;
+  private quillScript: HTMLScriptElement | null = null;
 
-  constructor(private courseService: CourseService) {}
+  constructor(private courseService: CourseService, private renderer: Renderer2, @Inject(DOCUMENT) private document: Document) {}
 
   ngOnInit(): void {
+    // Dynamically load Quill.js CSS and JS for this component
+    this.quillLink = this.renderer.createElement('link');
+    this.renderer.setAttribute(this.quillLink, 'rel', 'stylesheet');
+    this.renderer.setAttribute(this.quillLink, 'href', 'https://cdn.quilljs.com/1.3.6/quill.snow.css');
+    this.renderer.appendChild(this.document.head, this.quillLink);
+
+    this.quillScript = this.renderer.createElement('script');
+    this.renderer.setAttribute(this.quillScript, 'src', 'https://cdn.quilljs.com/1.3.6/quill.js');
+    this.renderer.appendChild(this.document.head, this.quillScript);
+
     // fetch set up the courses data here if needed
+  }
+
+  ngOnDestroy(): void {
+    // Clean up dynamically added Quill resources
+    if (this.quillLink && this.document.head.contains(this.quillLink)) {
+      this.renderer.removeChild(this.document.head, this.quillLink);
+    }
+    if (this.quillScript && this.document.head.contains(this.quillScript)) {
+      this.renderer.removeChild(this.document.head, this.quillScript);
+    }
   }
 
   onActiveLinkChange(link: 'overview' | 'modules' | 'lesson' | 'publish') {
@@ -150,25 +163,36 @@ export class CourseEditorPageComponent implements OnInit {
   }
 
   onContinue() {
-    console.log("Continuing to next step...");
-    console.log("file size is ", this.selectedFile?.size);
-    console.log("file metadata is ", this.selectedFile);
-    console.log("file", this.selectedFile);
+
 
     if (this.courseFormState && this.courseFormState.valid) {
       if (this.selectedFile) {
         this.uploadFile(this.selectedFile).subscribe(attachmentId => {
           const raw = this.courseFormState.getRawValue();
-          const { thumbnailName, thumbnail, ...courseData } = raw;
+          let courseData = { ...raw };
+          delete courseData.thumbnailName;
           courseData.thumbnail = attachmentId;
+          // Flatten pricing fields into root
+          if (courseData.pricing) {
+            courseData = { ...courseData, ...courseData.pricing };
+            delete courseData.pricing;
+          }
           console.log ("attachment id is ", attachmentId);
-          this.createCourse(courseData);
+          this.createOrUpdateCourse(courseData);
         });
       } else {
         const raw = this.courseFormState.getRawValue();
-        const { thumbnailName, ...courseData } = raw;
-        this.createCourse(courseData);
+        let courseData = { ...raw };
+        delete courseData.thumbnailName;
+        // Flatten pricing fields into root
+        if (courseData.pricing) {
+          courseData = { ...courseData, ...courseData.pricing };
+          delete courseData.pricing;
+        }
+        this.createOrUpdateCourse(courseData);
       }
+      console.log("Form is valid. Continuing to next step...");
+      console.log("response is ", this.currentCourseOverview)
     } else {
       console.log("Form is invalid. Cannot continue.");
       if (this.courseFormState) {
@@ -181,26 +205,242 @@ export class CourseEditorPageComponent implements OnInit {
     return this.courseService.uploadAttachment(file, this.currentCourseOverview?.thumbnailName ?? '');
   }
 
-  private createCourse(courseData: any) {
-    this.courseService.createCourse(courseData).subscribe((response: any) => {
-      console.log('Course created:', response);
-      // Update the course with the returned ID
-      if (this.currentCourseOverview) {
-        this.currentCourseOverview.id = response.id; // Assuming response has id
-        this.courseCreated = true;
-        this.activePage = 'modules'; // Navigate to modules after creation
-      }
-    });
+  private createOrUpdateCourse(courseData: any) {
+    console.log('createOrUpdateCourse called with courseData:', courseData);
+    console.log('currentCourseOverview.id:', this.currentCourseOverview?.id);
+
+    if (this.currentCourseOverview?.id) {
+      // Update existing course
+      console.log('Updating course with id:', this.currentCourseOverview.id);
+      this.courseService.updateCourse(this.currentCourseOverview.id, courseData).subscribe({
+        next: (response) => {
+          console.log('Course updated successfully:', response);
+          // Update the course with the returned data
+          const courseDetails = response;
+          this.currentCourseOverview = {
+            id: courseDetails.id,
+            name: courseDetails.name,
+            description: courseDetails.description,
+            estimatedDurationInHours: courseDetails.estimatedDurationInHours,
+            difficultyLevel: courseDetails.difficultyLevel,
+            status: courseDetails.status,
+            currency: courseDetails.currency,
+            category: courseDetails.category,
+            thumbnail: courseDetails.thumbnail,
+            thumbnailName: '',
+            tags: courseDetails.tags ? Array.from(courseDetails.tags).map((tag: any) => tag.name || tag) : [],
+            pricing: {
+              oneTimePrice: courseDetails.oneTimePrice,
+              allowsSubscription: courseDetails.allowsSubscription,
+              subscriptionPriceMonthly: courseDetails.subscriptionPriceMonthly,
+              subscriptionPrice3Months: courseDetails.subscriptionPrice3Months,
+              subscriptionPrice6Months: courseDetails.subscriptionPrice6Months,
+            },
+            isActive: courseDetails.isActive
+          };
+          this.courseCreated = true;
+          this.activePage = 'modules'; // Navigate to modules after update
+        },
+        error: (error) => {
+          console.error('Error updating course:', error);
+        }
+      });
+    } else {
+      // Create new course
+      console.log('Creating new course');
+      this.courseService.createCourse(courseData).subscribe({
+        next: (response) => {
+          console.log('Course created successfully, response:', response);
+          // Update the course with the returned data to preserve form values
+          if (this.currentCourseOverview) {
+            const courseDetails = response; // response is already the data from the service
+            console.log('courseDetails:', courseDetails);
+            console.log('courseDetails.id:', courseDetails.id);
+            this.currentCourseOverview = {
+              id: courseDetails.id,
+              name: courseDetails.name,
+              description: courseDetails.description,
+              estimatedDurationInHours: courseDetails.estimatedDurationInHours,
+              difficultyLevel: courseDetails.difficultyLevel,
+              status: courseDetails.status,
+              currency: courseDetails.currency,
+              category: courseDetails.category,
+              thumbnail: courseDetails.thumbnail,
+              thumbnailName: '',
+              tags: courseDetails.tags ? Array.from(courseDetails.tags).map((tag: any) => tag.name || tag) : [],
+              pricing: {
+                oneTimePrice: courseDetails.oneTimePrice,
+                allowsSubscription: courseDetails.allowsSubscription,
+                subscriptionPriceMonthly: courseDetails.subscriptionPriceMonthly,
+                subscriptionPrice3Months: courseDetails.subscriptionPrice3Months,
+                subscriptionPrice6Months: courseDetails.subscriptionPrice6Months,
+              },
+              isActive: courseDetails.isActive
+            };
+            console.log('Updated currentCourseOverview:', this.currentCourseOverview);
+            this.courseCreated = true;
+            this.activePage = 'modules'; // Navigate to modules after creation
+          }
+        },
+        error: (error) => {
+          console.error('Error creating course:', error);
+        }
+      });
+    }
   }
 
   onSaveLesson(lesson: Lesson) {
     console.log('Saving lesson:', lesson);
-    // Implement save logic
+    if (!this.currentModule.id) {
+      console.error('No module selected');
+      return;
+    }
+    this.saveLesson(lesson);
   }
 
   onSaveDraftLesson(lesson: Lesson) {
     console.log('Saving draft lesson:', lesson);
-    // Implement save draft logic
+    if (!this.currentModule.id) {
+      console.error('No module selected');
+      return;
+    }
+    this.saveLesson(lesson);
+  }
+
+  private saveLesson(lesson: Lesson) {
+    // First, handle attachments and thumbnail: upload new ones and collect IDs
+    const uploads: Observable<number>[] = [];
+    const attachmentIds: number[] = [];
+    let thumbnailId: number | undefined;
+
+    lesson.attachments.forEach(att => {
+      if (att.file) {
+        uploads.push(this.courseService.uploadAttachment(att.file, att.displayName));
+      } else if (att.id) {
+        // Existing attachment
+        attachmentIds.push(att.id);
+      }
+    });
+
+    if (lesson.thumbnailFile) {
+      uploads.push(this.courseService.uploadAttachment(lesson.thumbnailFile, 'thumbnail'));
+    }
+
+    if (uploads.length > 0) {
+      // Upload all new files
+      forkJoin(uploads).subscribe({
+        next: (uploadedIds: number[]) => {
+          // First ID is thumbnail if present
+          let index = 0;
+          if (lesson.thumbnailFile) {
+            thumbnailId = uploadedIds[index++];
+          }
+          // Remaining are attachments
+          for (let i = index; i < uploadedIds.length; i++) {
+            attachmentIds.push(uploadedIds[i]);
+          }
+          this.createOrUpdateLesson(lesson, attachmentIds, thumbnailId);
+        },
+        error: (error: any) => {
+          console.error('Error uploading files:', error);
+        }
+      });
+    } else {
+      this.createOrUpdateLesson(lesson, attachmentIds, thumbnailId);
+    }
+  }
+
+  private createOrUpdateLesson(lesson: Lesson, attachmentIds: number[], thumbnailId?: number) {
+    const lessonData = new FormData();
+    lessonData.append('title', lesson.title);
+    lessonData.append('explanation', lesson.explanation);
+    lessonData.append('order', lesson.order.toString());
+    lessonData.append('durationSeconds', lesson.duration.toString());
+    lessonData.append('status', lesson.status);
+
+    if (lesson.videoData) {
+      if (lesson.id) {
+        // update
+        lessonData.append('video', lesson.videoData);
+      } else {
+        // create
+        lessonData.append('file', lesson.videoData);
+      }
+    }
+    if (thumbnailId) {
+      lessonData.append('thumbnail', thumbnailId.toString());
+    }
+
+    lessonData.append('whatWeWillLearn', lesson.whatWeWillLearn.join(', '));
+    lessonData.append('prerequisites', lesson.prerequisites.join(', '));
+
+    if (lesson.id) {
+      // Update existing lesson
+      this.courseService.updateLesson(lesson.id, lessonData).subscribe({
+        next: (response) => {
+          console.log('Lesson updated:', response);
+          lesson.state = 'saved';
+          // Update attachments: add new ones to lesson
+          attachmentIds.forEach(attId => {
+            this.courseService.addAttachmentToLesson(lesson.id!, attId).subscribe({
+              next: () => console.log('Attachment added to lesson'),
+              error: (err) => console.error('Error adding attachment:', err)
+            });
+          });
+          // Update lesson in current module
+          this.updateLessonInModule(lesson);
+        },
+        error: (error) => {
+          console.error('Error updating lesson:', error);
+        }
+      });
+    } else {
+      // Create new lesson
+      this.courseService.createLesson(lessonData).subscribe({
+        next: (lessonId: number) => {
+          console.log('Lesson created with id:', lessonId);
+          lesson.id = lessonId;
+          lesson.state = 'saved';
+          // Add attachments to lesson
+          attachmentIds.forEach(attId => {
+            this.courseService.addAttachmentToLesson(lessonId, attId).subscribe({
+              next: () => console.log('Attachment added to lesson'),
+              error: (err) => console.error('Error adding attachment:', err)
+            });
+          });
+          // Add lesson to module
+          this.courseService.addLessonToModule(this.currentModule.id!, lessonId, lesson.order).subscribe({
+            next: () => {
+              console.log('Lesson added to module');
+              this.addLessonToModule(lesson);
+            },
+            error: (err) => console.error('Error adding lesson to module:', err)
+          });
+        },
+        error: (error) => {
+          console.error('Error creating lesson:', error);
+        }
+      });
+    }
+  }
+
+  private updateLessonInModule(lesson: Lesson) {
+    if (!this.currentModule.lessons) {
+      this.currentModule.lessons = [];
+    }
+    const index = this.currentModule.lessons.findIndex(l => l.id === lesson.id);
+    if (index !== -1) {
+      this.currentModule.lessons[index] = { ...lesson };
+    } else {
+      this.currentModule.lessons.push({ ...lesson });
+    }
+  }
+
+  private addLessonToModule(lesson: Lesson) {
+    if (!this.currentModule.lessons) {
+      this.currentModule.lessons = [];
+    }
+    this.currentModule.lessons.push({ ...lesson });
   }
 
   onPreviewLesson(lesson: Lesson) {
@@ -232,5 +472,95 @@ export class CourseEditorPageComponent implements OnInit {
     // Set the current lesson to the one being edited
     this.currentLesson = { ...lesson };
     this.activePage = 'lesson';
+  }
+
+  onDeleteLesson(lesson: Lesson) {
+    if (lesson.id) {
+      this.courseService.deleteLesson(lesson.id).subscribe({
+        next: () => {
+          console.log('Lesson deleted');
+          // Remove from current module
+          if (this.currentModule.lessons) {
+            this.currentModule.lessons = this.currentModule.lessons.filter(l => l.id !== lesson.id);
+          }
+        },
+        error: (error: any) => console.error('Error deleting lesson:', error)
+      });
+    } else {
+      // If no id, just remove from local array
+      if (this.currentModule.lessons) {
+        this.currentModule.lessons = this.currentModule.lessons.filter(l => l !== lesson);
+      }
+    }
+  }
+
+  onDeleteAttachment(data: {lessonId: number, attachmentId: number}) {
+    this.courseService.removeAttachmentFromLesson(data.lessonId, data.attachmentId).subscribe({
+      next: () => {
+        console.log('Attachment removed from lesson');
+        // Update the current lesson's attachments
+        if (this.currentLesson.attachments) {
+          this.currentLesson.attachments = this.currentLesson.attachments.filter(att => att.id !== data.attachmentId);
+        }
+      },
+      error: (error: any) => console.error('Error removing attachment:', error)
+    });
+  }
+
+  onSaveModuleDraft(module: Module) {
+    console.log('Saving module draft:', module);
+    if (!this.currentCourseOverview?.id) {
+      console.error('No course created yet');
+      return;
+    }
+
+    // Map frontend module to backend DTO
+    const moduleData = {
+      moduleName: module.title,
+      moduleDescription: module.summary,
+      isActive: module.status === 'Active',
+      estimatedDuration: module.estimatedTime
+    };
+
+    if (module.id) {
+      // Update existing module
+      this.courseService.updateModule(module.id, moduleData).subscribe({
+        next: (response) => {
+          console.log('Module updated:', response);
+          module.state = 'saved';
+          // Update the module in the modules array
+          const index = this.modules.findIndex(m => m.id === module.id);
+          if (index !== -1) {
+            this.modules[index] = { ...module };
+          }
+        },
+        error: (error) => {
+          console.error('Error updating module:', error);
+        }
+      });
+    } else {
+      // Create new module
+      this.courseService.createModule(moduleData).subscribe({
+        next: (moduleId: number) => {
+          console.log('Module created with id:', moduleId);
+          module.id = moduleId;
+          module.state = 'saved';
+          // Add to modules array
+          this.modules.push({ ...module });
+          // Now add to course
+          this.courseService.addModuleToCourse(this.currentCourseOverview!.id as number, module.id, module.order).subscribe({
+            next: (addResponse) => {
+              console.log('Module added to course:', addResponse);
+            },
+            error: (addError) => {
+              console.error('Error adding module to course:', addError);
+            }
+          });
+        },
+        error: (error) => {
+          console.error('Error creating module:', error);
+        }
+      });
+    }
   }
 }

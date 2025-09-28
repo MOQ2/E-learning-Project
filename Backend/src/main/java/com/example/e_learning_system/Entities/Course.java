@@ -1,7 +1,6 @@
 package com.example.e_learning_system.Entities;
 
 
-
 import com.example.e_learning_system.Config.Category;
 import com.example.e_learning_system.Config.CourseStatus;
 import com.example.e_learning_system.Config.Currency;
@@ -9,7 +8,6 @@ import com.example.e_learning_system.Config.DifficultyLevel;
 
 import jakarta.persistence.*;
 import lombok.*;
-import lombok.experimental.SuperBuilder;
 import org.hibernate.annotations.JdbcTypeCode;
 
 import org.hibernate.type.SqlTypes;
@@ -18,6 +16,7 @@ import java.math.BigDecimal;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.stream.Collectors;
+import lombok.experimental.SuperBuilder;
 
 @EqualsAndHashCode(callSuper = true)
 @Entity
@@ -97,6 +96,7 @@ public class Course extends BaseEntity {
     private UserEntity createdBy;
 
     @OneToMany(mappedBy = "course", fetch = FetchType.LAZY, cascade = CascadeType.ALL , orphanRemoval = true)
+    @EqualsAndHashCode.Exclude
     private Set<CourseModules> courseModules;
 
     // New relationships for simplified subscription system
@@ -120,7 +120,7 @@ public class Course extends BaseEntity {
             name = "course_tags",
             joinColumns = @JoinColumn(name = "course_id"),
             inverseJoinColumns = @JoinColumn(name = "tag_id")
-    )
+        )
     @Builder.Default
     private Set<TagsEntity> tags = new HashSet<>();
 

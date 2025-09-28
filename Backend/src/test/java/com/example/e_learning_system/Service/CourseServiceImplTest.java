@@ -334,7 +334,7 @@ class CourseServiceImplTest {
         when(course.isUniqOrder(order)).thenReturn(true);
 
         // Act
-        courseService.addMoudelToCourse(courseId, moduleId, order);
+        courseService.addModuleToCourse(courseId, moduleId, order);
 
         // Assert
         verify(courseRepository).findById(courseId);
@@ -356,7 +356,7 @@ class CourseServiceImplTest {
 
         // Act & Assert
         assertThrows(ResourceNotFound.class, () -> 
-            courseService.addMoudelToCourse(courseId, moduleId, order));
+            courseService.addModuleToCourse(courseId, moduleId, order));
         verify(courseRepository).findById(courseId);
         verify(moduleRepository, never()).findById(anyInt());
     }
@@ -373,7 +373,7 @@ class CourseServiceImplTest {
 
         // Act & Assert
         assertThrows(RuntimeException.class, () -> 
-            courseService.addMoudelToCourse(courseId, moduleId, order));
+            courseService.addModuleToCourse(courseId, moduleId, order));
         verify(courseRepository).findById(courseId);
         verify(moduleRepository).findById(moduleId);
     }
@@ -392,7 +392,7 @@ class CourseServiceImplTest {
 
         // Act & Assert
         assertThrows(RuntimeException.class, () -> 
-            courseService.addMoudelToCourse(courseId, moduleId, order));
+            courseService.addModuleToCourse(courseId, moduleId, order));
         verify(courseRepository).findById(courseId);
         verify(moduleRepository).findById(moduleId);
         verify(courseModulesRepository).findByCourseIdAndModuleId(courseId, moduleId);

@@ -135,10 +135,10 @@
         <div class="form-field">
           <label>Status</label>
           <div class="status-toggle">
-            <input type="radio" id="status-inactive" value="Inactive" formControlName="isActive">
+            <input type="radio" id="status-inactive" [value]="false" formControlName="isActive">
             <label for="status-inactive" class="btn tag">Inactive</label>
 
-            <input type="radio" id="status-active" value="Active" formControlName="isActive">
+            <input type="radio" id="status-active" [value]="true" formControlName="isActive">
             <label for="status-active" class="btn tag">Active</label>
           </div>
         </div>

@@ -57,7 +57,7 @@
           </header>
 
           <div class="editor-body">
-            <app-module-form [module]="currentModule" (addLesson)="onAddLesson()" (editLesson)="onEditLesson($event)"></app-module-form>
+            <app-module-form [module]="currentModule" (saveDraft)="onSaveModuleDraft($event)" (addLesson)="onAddLesson()" (editLesson)="onEditLesson($event)" (deleteLesson)="onDeleteLesson($event)"></app-module-form>
           </div>
 
           <footer class="editor-footer">
@@ -94,7 +94,7 @@
           </header>
 
           <div class="editor-body">
-            <app-lesson-editor [lesson]="currentLesson" (saveLesson)="onSaveLesson($event)" (saveDraft)="onSaveDraftLesson($event)" (preview)="onPreviewLesson($event)" (goBack)="onGoBackFromLesson()"></app-lesson-editor>
+            <app-lesson-editor [lesson]="currentLesson" (saveLesson)="onSaveLesson($event)" (saveDraft)="onSaveDraftLesson($event)" (preview)="onPreviewLesson($event)" (goBack)="onGoBackFromLesson()" (deleteAttachment)="onDeleteAttachment($event)"></app-lesson-editor>
           </div>
 
           <footer class="editor-footer">

@@ -23,4 +23,8 @@ public interface VideoService {
     void deleteVideo(Integer id);
 
     String getVideoUrl(Integer id, Integer durationMinutes);
+
+
+    void addAttachmentToVideo(Integer videoId, Integer attachmentId);
+    void removeAttachmentFromVideo(Integer videoId, Integer attachmentId);
 }

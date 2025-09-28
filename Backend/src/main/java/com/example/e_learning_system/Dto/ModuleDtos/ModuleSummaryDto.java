@@ -14,7 +14,7 @@ public class ModuleSummaryDto {
     private String moduleId;
     private String moduleName;
     private String moduleDescription;
-    private int estimateDuratoin;
+    private int estimatedDuration;
     private int numberOfvideos;
     private boolean active;
 

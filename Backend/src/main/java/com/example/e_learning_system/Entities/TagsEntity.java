@@ -27,6 +27,8 @@ public class TagsEntity extends BaseEntity {
     @Column(name = "color", nullable = false)
     private String color;
 
+    @ManyToMany(mappedBy = "tags")
+    private Set<Course> courses = new HashSet<>();
 
     public TagsEntity() {
     }
@@ -41,15 +43,19 @@ public class TagsEntity extends BaseEntity {
     public String getEntityType() {
         return "TagsEntity";
     }
+
+
     @Override
     public boolean equals (Object obj) {
         if (this == obj) return true;
         if (!(obj instanceof TagsEntity)) return false;
         TagsEntity other = (TagsEntity) obj;
-        return  this.getId() == other.getId() ;
+        return  this.name.equals(other.getName());
+    }
+    
+    @Override
+    public int hashCode() {
+        return name.hashCode();
     }
 
-
-    @ManyToMany(mappedBy = "tags")
-    private Set<Course> courses = new HashSet<>();
 }

@@ -14,13 +14,10 @@ public class ModuleMapper {
 
     public static Module fromCreateModuleDtoToModule(CreateModuleDto createModuleDto) {
         if (createModuleDto == null) return null;
-        Module module = new Module();
-
-        module.builder()
+        Module module = Module.builder()
                 .name(createModuleDto.getModuleName())
                 .description(createModuleDto.getModuleDescription())
-                .courseStatus(createModuleDto.getCourseStatus())
-                .isActive(createModuleDto.isAcitve())
+                .isActive(createModuleDto.isActive())
                 .estimatedDuration(createModuleDto.getEstimatedDuration())
                 .build();
         return module;
@@ -29,11 +26,9 @@ public class ModuleMapper {
     public static Module fromUpdateModuleDtoToModule(UpdateModuleDto updateModuleDto , Module existingModule ) {
         if (updateModuleDto == null) return null;
         if(existingModule == null) return null;
-
+        if (updateModuleDto.getModuleName() != null) existingModule.setName(updateModuleDto.getModuleName());
         if (updateModuleDto.getModuleDescription() != null) existingModule.setDescription(updateModuleDto.getModuleDescription());
-        if (updateModuleDto.getCourseStatus() != null) existingModule.setCourseStatus(updateModuleDto.getCourseStatus());
-        if(updateModuleDto.getModuleDescription()!= null) existingModule.setDescription( updateModuleDto.getModuleDescription());
-        if(updateModuleDto.getIsAcitve() != null )existingModule.setActive(updateModuleDto.getIsAcitve());
+        if(updateModuleDto.getIsActive() != null )existingModule.setActive(updateModuleDto.getIsActive());
         if(updateModuleDto.getEstimatedDuration() != null ) existingModule.setEstimatedDuration(updateModuleDto.getEstimatedDuration());
         return existingModule;
     }
@@ -45,8 +40,7 @@ public class ModuleMapper {
                 .moduleId(module.getId()+"")
                 .moduleName(module.getName())
                 .moduleDescription(module.getDescription())
-                .moduleDescription(module.getDescription())
-                .estimateDuratoin(module.getEstimatedDuration())
+                .estimatedDuration(module.getEstimatedDuration())
                 .numberOfvideos(module.getModuleVideos().size())
                 .build();
         return moduleSummaryDto;
@@ -57,13 +51,12 @@ public class ModuleMapper {
 
     public static DetailedModuleDto fromModuleToDetailedModuleDto(Module module) {
         if  (module == null) return null;
-        DetailedModuleDto detailedModule = (DetailedModuleDto) DetailedModuleDto.builder()
+        DetailedModuleDto detailedModule = DetailedModuleDto.builder()
                 .moduleId(module.getId())
                 .moduleName(module.getName())
                 .moduleDescription(module.getDescription())
                 .estimatedDuration(module.getEstimatedDuration())
-                .isAcitve(module.isActive())
-                .courseStatus(module.getCourseStatus())
+                .isActive(module.isActive())
                 .build();
 
         List <VideoDto> videosDto = module.getModuleVideos() == null ? null : VideoMapper.fromVideoEntitiesToVideoDtos(module.getVideos().stream().toList());

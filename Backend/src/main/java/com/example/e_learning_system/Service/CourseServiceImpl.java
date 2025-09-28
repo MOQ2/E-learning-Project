@@ -97,6 +97,7 @@ public class CourseServiceImpl implements CourseService {
     }
 
     @Override
+    @Transactional
     public CourseDetailsDto createCourse(CreateCourseDto request, Integer createdById) {
         log.info("Creating new course: {} for user: {}", request.getName(), createdById);
 
@@ -180,7 +181,7 @@ public class CourseServiceImpl implements CourseService {
         log.info("Course deactivated successfully: {}", id);
     }
 
-    public void addMoudelToCourse (int courseId , int moduleId , int order ){
+    public void addModuleToCourse (int courseId , int moduleId , int order ){
         log.info("adding module {} to course {}",moduleId,courseId);
 
 
@@ -195,6 +196,7 @@ public class CourseServiceImpl implements CourseService {
         }else {
             if (course.isUniqOrder(order)){
                 CourseModules newCourseModule = new CourseModules();
+                newCourseModule.setModuleOrder(order);
                 newCourseModule.setCourse(course);
                 newCourseModule.setModule(module.get());
                 course.addCourseModules(newCourseModule);
@@ -328,9 +330,24 @@ public class CourseServiceImpl implements CourseService {
         return tagDtos;
     }
 
+    @Override
+    public void updateModuleOrderInCourse(int courseId, int moduleId, int newOrder) {
+        Course course = courseRepository.findById(courseId)
+                .orElseThrow(() -> ResourceNotFound.courseNotFound(courseId + ""));
+        CourseModules courseModule = courseModulesRepository.findByCourseIdAndModuleId(courseId, moduleId)
+                .orElseThrow(() -> ResourceNotFound.moduleNotFoundInCourse(moduleId + "", courseId + ""));
+        if (!course.isUniqOrder(newOrder)) {
+            throw new RuntimeException("Module order already exists in the course select a unique order");
+        }
+        courseModule.setModuleOrder(newOrder);
+        courseModulesRepository.save(courseModule);
+    }
 
+    @Override
+    public void removeModuleFromCourse(int courseId, int moduleId) {
+        CourseModules courseModule = courseModulesRepository.findByCourseIdAndModuleId(courseId, moduleId)
+                .orElseThrow(() -> ResourceNotFound.moduleNotFoundInCourse(moduleId + "", courseId + ""));
+        courseModulesRepository.delete(courseModule);
 
-    
-
-
+    }
 }

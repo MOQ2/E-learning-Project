@@ -1,4 +1,5 @@
 export interface Attachment {
+  id?: number;
   file: File | null;
   displayName: string;
 }
@@ -10,7 +11,7 @@ export interface Lesson {
   explanation: string;
   whatWeWillLearn: string[];
   videoData?: File;
-  thumbnailData?: File;
+  thumbnailFile?: File;
   duration: number;
   status: 'Active' | 'Inactive';
   attachments: Attachment[];

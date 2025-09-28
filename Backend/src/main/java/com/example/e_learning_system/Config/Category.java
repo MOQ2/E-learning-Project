@@ -10,5 +10,6 @@ public enum Category {
     CYBER_SECURITY,
     DEVOPS,
     DATABASES,
-    SOFTWARE_ENGINEERING
+    SOFTWARE_ENGINEERING,
+    OTHER
 }

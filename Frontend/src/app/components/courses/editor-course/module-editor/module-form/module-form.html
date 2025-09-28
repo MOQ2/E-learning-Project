@@ -1,4 +1,4 @@
-            <!-- Bind form controls to the editableModule object -->
+<!-- Bind form controls to the editableModule object -->
 <div class="module-form-card" >
             <form class="module-details-form" [formGroup]="moduleForm">
                 <h3>Module details</h3>
@@ -49,6 +49,10 @@
                 </div>
             </form>
 
+            <div class="form-actions">
+                <button class="btn btn--primary" (click)="onSaveChanges()" [disabled]="moduleForm.invalid">Save Module</button>
+            </div>
+
             <div class="lesson-manager">
                 <header class="lesson-manager-header">
                     <h3>Lessons in this module</h3>
@@ -62,7 +66,7 @@
                         <p class="lesson-item__title">{{ lesson.title }}</p>
                         <div class="lesson-item__actions">
                             <button class="btn btn--secondary btn--small" (click)="onEditLessonClick(lesson)">Edit</button>
-                            <button class="btn btn--secondary btn--small">Remove</button>
+                            <button class="btn btn--secondary btn--small" (click)="onDeleteLessonClick(lesson)">Remove</button>
                         </div>
                     </li>
                 </ul>

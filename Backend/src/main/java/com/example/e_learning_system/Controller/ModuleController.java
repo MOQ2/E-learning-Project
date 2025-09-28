@@ -22,10 +22,10 @@ public class ModuleController {
     private final ModuleService moduleService;
 
     @PostMapping
-    public ResponseEntity<ApiResponse<Void>> createModule(@Valid @RequestBody CreateModuleDto createModuleDto) {
-        moduleService.createModule(createModuleDto);
+    public ResponseEntity<ApiResponse<Integer>> createModule(@Valid @RequestBody CreateModuleDto createModuleDto) {
+        int moduleId = moduleService.createModule(createModuleDto);
         return ResponseEntity.status(HttpStatus.CREATED)
-                .body(ApiResponse.success("Module created successfully", null));
+                .body(ApiResponse.success("Module created successfully", moduleId));
     }
 
     @PutMapping("/{moduleId}")
@@ -67,5 +67,22 @@ public class ModuleController {
             @PathVariable int videoId) {
         moduleService.removeVideoFromModule(moduleId, videoId);
         return ResponseEntity.ok(ApiResponse.success("Video removed from module successfully", null));
+    }
+
+    @PostMapping("/{moduleId}/lessons/{lessonId}")
+    public ResponseEntity<ApiResponse<Void>> addLessonToModule(
+            @PathVariable int moduleId,
+            @PathVariable int lessonId,
+            @RequestParam int order) {
+        moduleService.addVideoToModule(moduleId, lessonId, order);
+        return ResponseEntity.ok(ApiResponse.success("Lesson added to module successfully", null));
+    }
+
+    @DeleteMapping("/{moduleId}/lessons/{lessonId}")
+    public ResponseEntity<ApiResponse<Void>> removeLessonFromModule(
+            @PathVariable int moduleId,
+            @PathVariable int lessonId) {
+        moduleService.removeVideoFromModule(moduleId, lessonId);
+        return ResponseEntity.ok(ApiResponse.success("Lesson removed from module successfully", null));
     }
 }

@@ -66,6 +66,10 @@ public class ResourceNotFound extends BaseException{
         return new ResourceNotFound("Simple Payment", stripePaymentIntentId);
     }
 
+    public static ResourceNotFound moduleNotFoundInCourse(String moduleId, String courseId) {
+        return new ResourceNotFound("Module in Course", "moduleId: " + moduleId + ", courseId: " + courseId);
+    }
+
 
 
 }
