@@ -40,7 +40,8 @@
           [modules]="modules"
           [selectedModule]="currentModule"
           (moduleSelected)="onModuleSelected($event)"
-          (addModule)="onAddModule()">
+          (addModule)="onAddModule()"
+          (modulesReordered)="onModulesReordered($event)">
         </app-modules-list>
       </aside>
 
@@ -57,7 +58,7 @@
           </header>
 
           <div class="editor-body">
-            <app-module-form [module]="currentModule" (saveDraft)="onSaveModuleDraft($event)" (addLesson)="onAddLesson()" (editLesson)="onEditLesson($event)" (deleteLesson)="onDeleteLesson($event)"></app-module-form>
+            <app-module-form [module]="currentModule" (saveDraft)="onSaveModuleDraft($event)" (addLesson)="onAddLesson()" (editLesson)="onEditLesson($event)" (deleteLesson)="onDeleteLesson($event)" (lessonOrderChanged)="onLessonOrderChanged($event)"></app-module-form>
           </div>
 
           <footer class="editor-footer">

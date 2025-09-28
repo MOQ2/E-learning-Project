@@ -17,4 +17,8 @@ public interface ModuleService {
     void addVideoToModule(int moduleId, int videoId , int order);
 
     void removeVideoFromModule(int moduleId, int videoId);
+
+    void updateVideoOrderInModule(int moduleId, int videoId, int newOrder);
+
+    void updateVideoOrdersInModule(int moduleId, java.util.List<com.example.e_learning_system.Dto.OrderDtos.IdOrderDto> orders);
 }

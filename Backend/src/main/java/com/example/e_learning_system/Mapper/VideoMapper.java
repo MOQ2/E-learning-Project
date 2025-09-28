@@ -8,6 +8,7 @@ import com.example.e_learning_system.Entities.VideoEntity;
 import com.example.e_learning_system.Repository.AttachmentRepository;
 import com.example.e_learning_system.Entities.UserEntity;
 import com.example.e_learning_system.Entities.VideoAttachments;
+import com.example.e_learning_system.Entities.ModuleVideos;
 import java.time.LocalDateTime;
 import java.util.Collections;
 import java.util.List;
@@ -42,7 +43,6 @@ public class VideoMapper {
                 .whatWeWillLearn(videoEntity.getWhatWeWillLearn())
                 .status(videoEntity.getStatus())
                 .prerequisites(videoEntity.getPrerequisites())
-                .thumbnail(null)
                 .build();
     }
 
@@ -90,6 +90,23 @@ public class VideoMapper {
 
         return videoEntities.stream()
                 .map(VideoMapper::fromVideoEntityToVideoDto)
+                .collect(Collectors.toList());
+    }
+
+    /**
+     * Maps a list of ModuleVideos to a list of VideoDto with order
+     */
+    public static List<VideoDto> fromModuleVideosToVideoDtos(List<ModuleVideos> moduleVideos) {
+        if (moduleVideos == null) {
+            return Collections.emptyList();
+        }
+
+        return moduleVideos.stream()
+                .map(mv -> {
+                    VideoDto dto = fromVideoEntityToVideoDto(mv.getVideo());
+                    dto.setOrder(mv.getVideoOrder());
+                    return dto;
+                })
                 .collect(Collectors.toList());
     }
 

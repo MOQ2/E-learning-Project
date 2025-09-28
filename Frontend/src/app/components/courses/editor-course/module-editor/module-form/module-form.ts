@@ -39,6 +39,10 @@ export class ModuleFormComponent implements OnChanges {
    * OUTPUT: Emits the lesson to delete when 'Remove' button is clicked.
    */
   @Output() deleteLesson = new EventEmitter<Lesson>();
+  /**
+   * OUTPUT: Emits when lesson order inside module changed. Payload: { moduleId, lessons }
+   */
+  @Output() lessonOrderChanged = new EventEmitter<{ moduleId?: number, lessons: Lesson[] }>();
 
   moduleForm!: FormGroup;
   editableModule!: Module;
@@ -126,6 +130,8 @@ export class ModuleFormComponent implements OnChanges {
       this.editableModule.lessons.forEach((lesson, index) => {
         lesson.order = index + 1;
       });
+      // Notify parent that order changed
+      this.lessonOrderChanged.emit({ moduleId: this.editableModule.id, lessons: this.editableModule.lessons });
     }
   }
 }

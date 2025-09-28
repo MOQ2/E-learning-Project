@@ -93,6 +93,55 @@ public class ModuleServiceImpl implements ModuleService {
     }
 
     @Override
+    public void updateVideoOrderInModule(int moduleId, int videoId, int newOrder) {
+        if (newOrder < 0) return;
+        ModuleVideos moduleVideo = moduleVideosRepository.findByModuleIdAndVideoId(moduleId, videoId)
+                .orElseThrow(() -> new RuntimeException("Video not found in module"));
+
+        // Check uniqueness
+        Module module = moduleVideo.getModule();
+        boolean exists = module.getModuleVideos().stream()
+                .anyMatch(mv -> mv.getVideoOrder() == newOrder && mv.getVideo().getId() != videoId);
+        if (exists) {
+            throw new RuntimeException("video order already exist");
+        }
+
+        moduleVideo.setVideoOrder(newOrder);
+        moduleVideosRepository.save(moduleVideo);
+    }
+
+    @Override
+    public void updateVideoOrdersInModule(int moduleId, java.util.List<com.example.e_learning_system.Dto.OrderDtos.IdOrderDto> orders) {
+        if (orders == null || orders.isEmpty()) return;
+
+        Module module = moduleRepository.findById(moduleId).orElseThrow(() -> new RuntimeException("Module not found"));
+
+        // Validate provided orders and ensure no duplicates in payload
+        java.util.Set<Integer> seenOrders = new java.util.HashSet<>();
+        for (com.example.e_learning_system.Dto.OrderDtos.IdOrderDto od : orders) {
+            if (od.getOrder() == null || od.getOrder() < 0) throw new RuntimeException("Invalid order");
+            if (!seenOrders.add(od.getOrder())) throw new RuntimeException("Duplicate order in payload");
+        }
+
+        // Apply updates
+        for (com.example.e_learning_system.Dto.OrderDtos.IdOrderDto od : orders) {
+            int videoId = od.getId();
+            int newOrder = od.getOrder();
+            ModuleVideos moduleVideo = moduleVideosRepository.findByModuleIdAndVideoId(moduleId, videoId)
+                    .orElseThrow(() -> new RuntimeException("Video with id " + videoId + " not found in module"));
+
+            // Check uniqueness against other module videos (excluding the current video)
+            boolean exists = module.getModuleVideos().stream()
+                    .anyMatch(mv -> mv.getVideoOrder() == newOrder && mv.getVideo().getId() != videoId);
+            if (exists) {
+                throw new RuntimeException("video order already exist");
+            }
+            moduleVideo.setVideoOrder(newOrder);
+            moduleVideosRepository.save(moduleVideo);
+        }
+    }
+
+    @Override
     public void updateModule(UpdateModuleDto updateModuleDto, int moduleId) {
         Optional<Module> module = moduleRepository.findById(moduleId);        
         if(module.isPresent()){

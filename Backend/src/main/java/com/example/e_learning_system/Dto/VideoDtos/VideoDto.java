@@ -31,4 +31,8 @@ public class VideoDto {
     private String whatWeWillLearn;
     private String status;
     private String prerequisites;
+    private int numberOfViews;
+    private String videoUrl;
+    private int order;
+    
 }

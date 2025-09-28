@@ -19,5 +19,7 @@ public interface CourseService {
     void addModuleToCourse (int courseId , int moduleId , int order);
     void removeModuleFromCourse (int courseId , int moduleId);
     void updateModuleOrderInCourse(int courseId, int moduleId, int newOrder);
+
+    void updateModuleOrdersInCourse(int courseId, java.util.List<com.example.e_learning_system.Dto.OrderDtos.IdOrderDto> orders);
     List<TagDto> getAllTags();
 }

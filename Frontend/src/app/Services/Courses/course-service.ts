@@ -197,7 +197,10 @@ private api = `${environment.apiUrl}`
   }
 
   addLessonToModule(moduleId: number, lessonId: number, order: number): Observable<any> {
-    return this.http.post<ApiResponse<any>>(`${this.api}/api/modules/${moduleId}/videos/${lessonId}?order=${order}`, {}).pipe(
+    // backend expects order as request param 'order'
+    const url = `${this.api}/api/modules/${moduleId}/videos/${lessonId}`;
+    const params = { params: { order: order.toString() } } as any;
+    return this.http.post<ApiResponse<any>>(url + `?order=${order}`, {}).pipe(
       map(response => response.data)
     );
   }
@@ -234,6 +237,26 @@ private api = `${environment.apiUrl}`
 
   updateModuleOrderInCourse(courseId: number, moduleId: number, newOrder: number): Observable<any> {
     return this.http.put<ApiResponse<any>>(`${this.api}/api/courses/${courseId}/modules/${moduleId}/order/${newOrder}`, {}).pipe(
+      map(response => response.data)
+    );
+  }
+
+  // Batch update module orders in a course
+  updateModuleOrdersInCourse(courseId: number, orders: { id: number, order: number }[]): Observable<any> {
+    return this.http.put<ApiResponse<any>>(`${this.api}/api/courses/${courseId}/modules/order`, orders).pipe(
+      map(response => response.data)
+    );
+  }
+
+  updateLessonOrderInModule(moduleId: number, lessonId: number, newOrder: number): Observable<any> {
+    return this.http.put<ApiResponse<any>>(`${this.api}/api/modules/${moduleId}/videos/${lessonId}/order/${newOrder}`, {}).pipe(
+      map(response => response.data)
+    );
+  }
+
+  // Batch update lesson orders in a module
+  updateLessonOrdersInModule(moduleId: number, orders: { id: number, order: number }[]): Observable<any> {
+    return this.http.put<ApiResponse<any>>(`${this.api}/api/modules/${moduleId}/videos/order`, orders).pipe(
       map(response => response.data)
     );
   }
