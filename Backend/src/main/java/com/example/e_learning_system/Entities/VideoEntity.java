@@ -5,6 +5,8 @@ import lombok.*;
 import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.type.SqlTypes;
 
+import com.example.e_learning_system.Dto.VideoDtos.CreatVideoDto;
+
 import java.util.*;
 
 @Getter
@@ -100,8 +102,18 @@ public class VideoEntity extends BaseEntity {
             }
         }
     }
+    public CreatVideoDto findById(int id) {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'findById'");
+    }
 
-
-
+    public void setAttachments(List<Attachment> attachments) {
+        this.videoAttachments.clear();
+        if (attachments != null) {
+            for (Attachment attachment : attachments) {
+                this.videoAttachments.add(new VideoAttachments(this, attachment, isActive));
+            }
+        }
+    }
 
 }

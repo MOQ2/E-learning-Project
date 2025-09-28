@@ -17,6 +17,7 @@ import jakarta.validation.Valid;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 @RestController
 @RequestMapping("/api/videos")
@@ -33,23 +34,27 @@ public class VideoController {
             @RequestParam("file") MultipartFile file,
             @RequestParam("title") String title,
             @RequestParam("durationSeconds") int durationSeconds,
-            @RequestParam("uploadedBy") Integer uploadedByUserId,
             @RequestParam(value = "explanation", required = false) String explanation,
             @RequestParam(value = "whatWeWillLearn", required = false) String whatWeWillLearn,
             @RequestParam(value = "status", required = false) String status,
-            @RequestParam(value = "prerequisites", required = false) String prerequisites) {
+            @RequestParam(value = "prerequisites", required = false) String prerequisites,
+            @RequestParam(value = "thumbnail", required = false) Integer thumbnail,
+            @RequestParam(value = "attachments", required = false) Set<Integer> attachments
+            ) {
 
         CreatVideoDto createVideoDto = CreatVideoDto.builder()
                 .title(title)
                 .durationSeconds(durationSeconds)
-                .createdByUserId(uploadedByUserId)
+                .createdByUserId(1) // TODO: Replace with actual user ID from auth context
                 .explanation(explanation)
                 .whatWeWillLearn(whatWeWillLearn)
                 .status(status)
                 .prerequisites(prerequisites)
+                .thumbnail(thumbnail)
+                .attachments(attachments)
                 .build();
 
-        VideoDto videoDto = videoService.uploadVideo(file, createVideoDto, uploadedByUserId);
+        VideoDto videoDto = videoService.uploadVideo(file, createVideoDto, 1);
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(ApiResponse.success("Video uploaded successfully", videoDto));
     }    /**
@@ -86,8 +91,14 @@ public class VideoController {
     @PutMapping("/{id}")
     public ResponseEntity<ApiResponse<VideoDto>> updateVideo(
             @PathVariable Integer id,
-            @Valid @RequestBody CreatVideoDto updateVideoDto) {
+            @Valid @RequestBody CreatVideoDto updateVideoDto,
+            @RequestParam("video") MultipartFile videoFile
+            ) {
         VideoDto video = videoService.updateVideo(id, updateVideoDto);
+        if(videoFile != null && !videoFile.isEmpty()) {
+            videoService.deleteVideo(id);
+            video = videoService.uploadVideo(videoFile, updateVideoDto, 1);
+        }
         return ResponseEntity.ok(ApiResponse.success("Video updated successfully", video));
     }
 
@@ -118,7 +129,22 @@ public class VideoController {
         return ResponseEntity.ok(ApiResponse.success("Video URL generated successfully", response));
     }
 
+    @PostMapping("/{videoId}/attachments/{attachmentId}")
+    public ResponseEntity<ApiResponse<Void>> addAttachmentToVideo(
+            @PathVariable Integer videoId,
+            @PathVariable Integer attachmentId) {
+        videoService.addAttachmentToVideo(videoId, attachmentId);
+        return ResponseEntity.ok(ApiResponse.success("Attachment added to video successfully", null));
+    }
+
+    @DeleteMapping("/{videoId}/attachments/{attachmentId}")
+    public ResponseEntity<ApiResponse<Void>> removeAttachmentFromVideo(
+            @PathVariable Integer videoId,
+            @PathVariable Integer attachmentId) {
+        videoService.removeAttachmentFromVideo(videoId, attachmentId);
+        return ResponseEntity.ok(ApiResponse.success("Attachment removed from video successfully", null));
+    }
+
+
     
-
-
 }

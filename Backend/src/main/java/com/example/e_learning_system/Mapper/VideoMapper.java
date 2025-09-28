@@ -5,12 +5,14 @@ import com.example.e_learning_system.Dto.VideoDtos.CreatVideoDto;
 import com.example.e_learning_system.Dto.VideoDtos.VideoDto;
 import com.example.e_learning_system.Entities.Attachment;
 import com.example.e_learning_system.Entities.VideoEntity;
+import com.example.e_learning_system.Repository.AttachmentRepository;
 import com.example.e_learning_system.Entities.UserEntity;
 import com.example.e_learning_system.Entities.VideoAttachments;
 import java.time.LocalDateTime;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -40,15 +42,26 @@ public class VideoMapper {
                 .whatWeWillLearn(videoEntity.getWhatWeWillLearn())
                 .status(videoEntity.getStatus())
                 .prerequisites(videoEntity.getPrerequisites())
+                .thumbnail(null)
                 .build();
     }
 
     /**
      * Maps from CreatVideoDto to VideoEntity
      */
-    public static VideoEntity fromCreatVideoDtoToVideoEntity(CreatVideoDto createVideoDto, UserEntity uploadedBy) {
+    public static VideoEntity fromCreatVideoDtoToVideoEntity(CreatVideoDto createVideoDto, UserEntity uploadedBy, AttachmentRepository attachmentRepository) {
         if (createVideoDto == null) {
             return null;
+        }
+        if( uploadedBy == null) {
+            throw new RuntimeException("UploadedBy user not found");
+        }
+        if( createVideoDto.getThumbnail() == null ) {
+            throw new RuntimeException("Thumbnail is required");
+        }
+        Optional<Attachment> thumbnail = attachmentRepository.findById(createVideoDto.getThumbnail());
+        if (thumbnail.isEmpty()) {
+            throw new RuntimeException("Thumbnail attachment not found");
         }
 
         VideoEntity videoEntity = new VideoEntity();

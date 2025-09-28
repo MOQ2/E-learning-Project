@@ -4,6 +4,7 @@ import com.example.e_learning_system.Dto.VideoDtos.CreatVideoDto;
 import com.example.e_learning_system.Dto.VideoDtos.VideoDto;
 import com.example.e_learning_system.Entities.VideoEntity;
 import com.example.e_learning_system.Mapper.VideoMapper;
+import com.example.e_learning_system.Repository.AttachmentRepository;
 import com.example.e_learning_system.Repository.UserRepository;
 import com.example.e_learning_system.Repository.VideoEntityRepository;
 import com.example.e_learning_system.Service.Interfaces.VideoService;
@@ -24,6 +25,7 @@ public class VideoServiceImpl implements VideoService {
     private final VideoEntityRepository videoEntityRepository;
     private final UserRepository userRepository;
     private final S3Service s3Service;
+    private final AttachmentRepository attachmentRepository;
 
     @Override
     @Transactional
@@ -31,9 +33,35 @@ public class VideoServiceImpl implements VideoService {
         // Use S3Service to upload and create entity
         VideoEntity videoEntity = s3Service.uploadVideo(file, createVideoDto.getTitle(), uploadedById,
                 null, null); // Adjust metadata if needed
+        // Set additional fields from DTO
+        var uploadedBy = userRepository.findById(uploadedById)
+                .orElseThrow(() -> new RuntimeException("UploadedBy user not found"));
+        videoEntity.setUploadedBy(uploadedBy);
+        videoEntity.setIsActive(true);
+        videoEntity.setExplanation(createVideoDto.getExplanation());
+        videoEntity.setWhatWeWillLearn(createVideoDto.getWhatWeWillLearn());
+        videoEntity.setStatus(createVideoDto.getStatus());
+        videoEntity.setPrerequisites(createVideoDto.getPrerequisites());
+
+        if (createVideoDto.getThumbnail() != null) {
+            var thumbnail = attachmentRepository.findById(createVideoDto.getThumbnail());
+            if (thumbnail.isEmpty()) {
+                throw new RuntimeException("Thumbnail attachment not found");
+            }
+            videoEntity.setThumbnail(thumbnail.get());
+        } else {
+            throw new RuntimeException("Thumbnail is required");
+        }
+        // Handle attachments if provided
+        if (createVideoDto.getAttachments() != null && !createVideoDto.getAttachments().isEmpty()) {
+            var attachments = attachmentRepository.findAllById(createVideoDto.getAttachments());
+            if (attachments.size() != createVideoDto.getAttachments().size()) {
+                throw new RuntimeException("One or more attachments not found");
+            }
+            videoEntity.setAttachments(attachments);
+        }
 
         // Update additional fields from DTO
-        videoEntity.setDurationSeconds(createVideoDto.getDurationSeconds());
         videoEntity = videoEntityRepository.save(videoEntity);
 
         return VideoMapper.fromVideoEntityToVideoDto(videoEntity);
@@ -94,4 +122,18 @@ public class VideoServiceImpl implements VideoService {
 
         return s3Service.generatePresignedUrl(videoEntity.getVideoKey(), Duration.ofMinutes(durationMinutes));
     }
+
+
+    @Override
+    @Transactional
+    public void addAttachmentToVideo(Integer videoId, Integer attachmentId) {
+        s3Service.addAttachemntToVideo(videoId, attachmentId);
+    }
+
+    @Override
+    @Transactional
+    public void removeAttachmentFromVideo(Integer videoId, Integer attachmentId) {
+        s3Service.removeAttachemntFromVideo(videoId, attachmentId);
+    }
+
 }

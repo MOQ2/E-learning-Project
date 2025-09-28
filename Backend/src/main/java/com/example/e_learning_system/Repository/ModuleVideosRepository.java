@@ -44,4 +44,6 @@ public interface ModuleVideosRepository extends JpaRepository<ModuleVideos, Inte
 
     // Find by module and video
     Optional<ModuleVideos> findByModuleAndVideo(Module module, VideoEntity video);
+
+    Optional<ModuleVideos> findByModuleIdAndVideoId(int moduleId, int videoId);
 }

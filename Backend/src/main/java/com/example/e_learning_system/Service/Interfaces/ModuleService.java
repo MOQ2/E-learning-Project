@@ -6,7 +6,7 @@ import com.example.e_learning_system.Dto.ModuleDtos.UpdateModuleDto;
 
 public interface ModuleService {
 
-    void createModule(CreateModuleDto createModuleDto);
+    int createModule(CreateModuleDto createModuleDto);
 
     void updateModule(UpdateModuleDto updateModuleDto , int moduleId);
 
@@ -14,7 +14,7 @@ public interface ModuleService {
 
     DetailedModuleDto getModule(int moduleId);
 
-    void addVideoToModule(int videoId, int attachmentId , int order);
+    void addVideoToModule(int moduleId, int videoId , int order);
 
-    void removeVideoFromModule(int videoId, int attachmentId);
+    void removeVideoFromModule(int moduleId, int videoId);
 }

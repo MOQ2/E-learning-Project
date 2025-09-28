@@ -107,33 +107,36 @@ textarea.form-control {
     resize: vertical;
 }
 
+/* Quill Editor Specific Styles */
 .rich-text-editor {
     border: 1px solid var(--color-border);
     border-radius: 8px;
     overflow: hidden;
 }
-.rich-text-editor .toolbar {
-    display: flex;
-    gap: 8px;
-    padding: 8px;
+
+.rich-text-editor .ql-toolbar {
     background-color: #f9fafb;
+    border: none;
     border-bottom: 1px solid var(--color-border);
 }
-.rich-text-editor .toolbar button {
-    background: var(--color-white);
-    border: 1px solid var(--color-border);
-    padding: 6px 10px;
-    border-radius: 6px;
-    cursor: pointer;
-    font-size: 12px;
-    font-weight: 700;
-}
-.rich-text-editor textarea {
+
+.rich-text-editor .ql-container {
     border: none;
+    min-height: 250px;
+    font-size: 14px;
 }
-.rich-text-editor textarea:focus {
-    outline: none;
+
+.rich-text-editor .ql-editor {
+    padding: 12px 14px;
 }
+
+.rich-text-editor .ql-editor.ql-blank::before {
+    font-style: normal;
+    font-size: 14px;
+    color: #9ca3af;
+    left: 14px;
+}
+/* End Quill Styles */
 
 .scrollable-list {
   max-height: 200px;

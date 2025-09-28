@@ -4,6 +4,7 @@ package com.example.e_learning_system.Entities;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
@@ -17,6 +18,7 @@ import java.time.LocalDateTime;
                 columnNames = {"course_id", "module_order"}
         )
 })
+@EqualsAndHashCode(callSuper = false)
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
@@ -45,6 +47,7 @@ public class CourseModules extends BaseEntity {
     // relations
     @ManyToOne(fetch = FetchType.LAZY, optional = false )
     @JoinColumn(name = "course_id", nullable = false)
+    @EqualsAndHashCode.Exclude
     private Course course;
 
 

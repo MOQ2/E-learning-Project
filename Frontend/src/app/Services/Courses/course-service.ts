@@ -126,19 +126,133 @@ private api = `${environment.apiUrl}`
     const formData = new FormData();
     console.log("Uploading file:", file);
     formData.append('file', file);
-    formData.append('title', name);
+    formData.append('name', name);
     return this.http.post<ApiResponse<number>>(`${this.api}/api/attachments`, formData).pipe(
       map(response => response.data)
     );
   }
 
   createCourse(courseData: any): Observable<any> {
-    const headers = { 'Content-Type': 'application/json' };
-    return this.http.post<ApiResponse<any>>(`${this.api}/api/courses`, courseData, { headers }).pipe(
+    const formData = new FormData();
+    for (const key in courseData) {
+      if (courseData[key] != null) {
+        if (Array.isArray(courseData[key])) {
+          courseData[key].forEach((item: any) => formData.append(key, item));
+        } else {
+          formData.append(key, courseData[key].toString());
+        }
+      }
+    }
+    return this.http.post<ApiResponse<any>>(`${this.api}/api/courses`, formData).pipe(
       map(response => response.data)
     );
   }
 
+  createModule(moduleData: any): Observable<number> {
+    const headers = { 'Content-Type': 'application/json' };
+    return this.http.post<ApiResponse<number>>(`${this.api}/api/modules`, moduleData, { headers }).pipe(
+      map(response => response.data)
+    );
+  }
 
+  updateModule(moduleId: number, moduleData: any): Observable<any> {
+    const headers = { 'Content-Type': 'application/json' };
+    return this.http.put<ApiResponse<any>>(`${this.api}/api/modules/${moduleId}`, moduleData, { headers }).pipe(
+      map(response => response.data)
+    );
+  }
 
+  addModuleToCourse(courseId: number, moduleId: number, order: number): Observable<any> {
+    return this.http.post<ApiResponse<any>>(`${this.api}/api/courses/${courseId}/modules/${moduleId}/${order}`, {}, {}).pipe(
+      map(response => response.data)
+    );
+  }
+
+  updateCourse(courseId: number, courseData: any): Observable<any> {
+    const formData = new FormData();
+    for (const key in courseData) {
+      if (courseData[key] != null) {
+        if (Array.isArray(courseData[key])) {
+          courseData[key].forEach((item: any) => formData.append(key, item));
+        } else {
+          formData.append(key, courseData[key].toString());
+        }
+      }
+    }
+    return this.http.put<ApiResponse<any>>(`${this.api}/api/courses/${courseId}`, formData).pipe(
+      map(response => response.data)
+    );
+  }
+
+  createLesson(lessonData: FormData): Observable<number> {
+    return this.http.post<ApiResponse<any>>(`${this.api}/api/lessons/upload`, lessonData).pipe(
+      map(response => response.data.id)
+    );
+  }
+
+  updateLesson(lessonId: number, lessonData: FormData): Observable<any> {
+    return this.http.put<ApiResponse<any>>(`${this.api}/api/lessons/${lessonId}`, lessonData).pipe(
+      map(response => response.data)
+    );
+  }
+
+  addLessonToModule(moduleId: number, lessonId: number, order: number): Observable<any> {
+    return this.http.post<ApiResponse<any>>(`${this.api}/api/modules/${moduleId}/videos/${lessonId}?order=${order}`, {}).pipe(
+      map(response => response.data)
+    );
+  }
+
+  addAttachmentToLesson(lessonId: number, attachmentId: number): Observable<any> {
+    return this.http.post<ApiResponse<any>>(`${this.api}/api/lessons/${lessonId}/attachments/${attachmentId}`, {}).pipe(
+      map(response => response.data)
+    );
+  }
+
+  removeAttachmentFromLesson(lessonId: number, attachmentId: number): Observable<any> {
+    return this.http.delete<ApiResponse<any>>(`${this.api}/api/lessons/${lessonId}/attachments/${attachmentId}`).pipe(
+      map(response => response.data)
+    );
+  }
+
+  deleteLesson(lessonId: number): Observable<any> {
+    return this.http.delete<ApiResponse<any>>(`${this.api}/api/videos/${lessonId}`).pipe(
+      map(response => response.data)
+    );
+  }
+
+  deleteModule(moduleId: number): Observable<any> {
+    return this.http.delete<ApiResponse<any>>(`${this.api}/api/modules/${moduleId}`).pipe(
+      map(response => response.data)
+    );
+  }
+
+  removeModuleFromCourse(courseId: number, moduleId: number): Observable<any> {
+    return this.http.delete<ApiResponse<any>>(`${this.api}/api/courses/${courseId}/modules/${moduleId}/`).pipe(
+      map(response => response.data)
+    );
+  }
+
+  updateModuleOrderInCourse(courseId: number, moduleId: number, newOrder: number): Observable<any> {
+    return this.http.put<ApiResponse<any>>(`${this.api}/api/courses/${courseId}/modules/${moduleId}/order/${newOrder}`, {}).pipe(
+      map(response => response.data)
+    );
+  }
+
+  getLesson(lessonId: number): Observable<any> {
+    return this.http.get<ApiResponse<any>>(`${this.api}/api/lessons/${lessonId}`).pipe(
+      map(response => response.data)
+    );
+  }
+
+  getModule(moduleId: number): Observable<any> {
+    return this.http.get<ApiResponse<any>>(`${this.api}/api/modules/${moduleId}`).pipe(
+      map(response => response.data)
+    );
+  }
+
+  getLessons(): Observable<any> {
+    return this.http.get<ApiResponse<any>>(`${this.api}/api/lessons`).pipe(
+      map(response => response.data)
+    );
+  }
 }

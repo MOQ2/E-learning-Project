@@ -20,6 +20,14 @@ import java.time.LocalDateTime;
 public class VideoAttachments  extends  BaseEntity {
 
 
+    VideoAttachments(VideoEntity video, Attachment attachment, boolean isActive) {
+        this.video = video;
+        this.attachment = attachment;
+        this.isActive = isActive;
+    }
+
+
+
     @Column(name = "is_active")
     private boolean isActive = true;
 

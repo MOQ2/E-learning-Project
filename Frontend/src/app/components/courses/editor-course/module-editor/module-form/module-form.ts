@@ -35,6 +35,11 @@ export class ModuleFormComponent implements OnChanges {
    */
   @Output() editLesson = new EventEmitter<Lesson>();
 
+  /**
+   * OUTPUT: Emits the lesson to delete when 'Remove' button is clicked.
+   */
+  @Output() deleteLesson = new EventEmitter<Lesson>();
+
   moduleForm!: FormGroup;
   editableModule!: Module;
 
@@ -106,6 +111,13 @@ export class ModuleFormComponent implements OnChanges {
    */
   onEditLessonClick(lesson: Lesson): void {
     this.editLesson.emit(lesson);
+  }
+
+  /**
+   * Emits event when Remove button is clicked for a specific lesson.
+   */
+  onDeleteLessonClick(lesson: Lesson): void {
+    this.deleteLesson.emit(lesson);
   }
 
   drop(event: CdkDragDrop<string[]>) {

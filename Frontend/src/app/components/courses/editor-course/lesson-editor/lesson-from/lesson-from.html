@@ -1,3 +1,5 @@
+
+
 <div class="lesson-form" [formGroup]="lessonForm">
   <div class="form-sections-wrapper">
     <section class="card">
@@ -15,16 +17,13 @@
 
         <div class="form-group full-width">
           <label for="lesson-explanation">Explanation (rich text)</label>
+          <!-- Quill Rich Text Editor Container -->
           <div class="rich-text-editor">
-            <div class="toolbar">
-              <button type="button">H1</button>
-              <button type="button">H2</button>
-              <button type="button">Bold</button>
-              <button type="button">Italic</button>
-              <button type="button">Quote</button>
-            </div>
-            <textarea id="lesson-explanation" class="form-control" rows="5" formControlName="explanation"></textarea>
+            <div id="editor-container"></div>
           </div>
+          <!-- Hidden textarea to bind the form control -->
+          <textarea formControlName="explanation" style="display: none;"></textarea>
+
           <div *ngIf="lessonForm.get('explanation')?.invalid && lessonForm.get('explanation')?.touched" class="error-message">
             <span *ngIf="lessonForm.get('explanation')?.errors?.['required']">Explanation is required.</span>
             <span *ngIf="lessonForm.get('explanation')?.errors?.['minlength']">Explanation must be at least 10 characters.</span>
@@ -49,12 +48,12 @@
 
         <div class="form-group">
           <label for="video-data">Video Data (only one)</label>
-          <input type="file" id="video-data" class="form-control file-input" placeholder="Upload video file">
+          <input type="file" id="video-data" class="form-control file-input" placeholder="Upload video file" (change)="onVideoFileChange($event)">
         </div>
 
         <div class="form-group">
           <label for="thumbnail-data">Thumbnail Data (only one)</label>
-          <input type="file" id="thumbnail-data" class="form-control file-input" placeholder="Upload thumbnail image">
+          <input type="file" id="thumbnail-data" class="form-control file-input" placeholder="Upload thumbnail image" (change)="onThumbnailFileChange($event)">
         </div>
 
         <div class="form-group">

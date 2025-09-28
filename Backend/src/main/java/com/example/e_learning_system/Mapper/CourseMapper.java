@@ -14,6 +14,8 @@ import com.example.e_learning_system.Entities.TagsEntity;
 import com.example.e_learning_system.Entities.UserEntity;
 import com.example.e_learning_system.Repository.AttachmentRepository;
 import com.example.e_learning_system.Repository.TagsRepository;
+import com.example.e_learning_system.excpetions.BaseException;
+import com.fasterxml.jackson.databind.JsonSerializable.Base;
 import com.example.e_learning_system.Config.Category;
 import java.util.Collections;
 
@@ -21,6 +23,8 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
+
+import org.springframework.http.HttpStatus;
 
 public class CourseMapper {
     private CourseMapper() {
@@ -118,14 +122,30 @@ public class CourseMapper {
         if (createCourseDto == null) {
             return null;
         }
+
+        
         Set<TagsEntity> tags = createCourseDto.getTags().stream()
-                .map(tag -> tagsRepository.findByName(tag))
-                .filter(Objects::nonNull)
-                .collect(Collectors.toSet());
+            .filter(tagName -> tagName != null && !tagName.trim().isEmpty())
+            .map(tagName -> {
+                String trimmedName = tagName.trim();
+                TagsEntity existing = tagsRepository.findByName(trimmedName);
+                if (existing != null) {
+                    return existing;
+                } else {
+                TagsEntity newTag = new TagsEntity();
+                newTag.setName(trimmedName);
+                newTag.setColor("#cbdab8");
+                return newTag;
+                }
+            })
+            .collect(Collectors.toSet());
         Attachment thumbnail = null;
         if (createCourseDto.getThumbnail() != null) {
-            thumbnail = attachmentRepository.findById(createCourseDto.getThumbnail()).orElse(null);
+            thumbnail = attachmentRepository.findById(createCourseDto.getThumbnail()).orElseThrow(() -> new ResourceNotFoundException("Thumbnail not found for ID: " + createCourseDto.getThumbnail()));
         }
+
+        
+
         return Course.builder()
                 .name(createCourseDto.getName())
                 .description(createCourseDto.getDescription())

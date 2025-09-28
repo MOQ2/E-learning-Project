@@ -1,15 +1,13 @@
 package com.example.e_learning_system.Entities;
 
 
-import com.example.e_learning_system.Config.CourseStatus;
 import jakarta.persistence.*;
 import lombok.*;
+import lombok.experimental.SuperBuilder;
 import java.util.HashSet;
-
+import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
-
-import org.springframework.web.multipart.MultipartFile;
 
 @EqualsAndHashCode(callSuper = true)
 @Entity
@@ -17,7 +15,7 @@ import org.springframework.web.multipart.MultipartFile;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-@Builder
+@SuperBuilder
 public class Module extends BaseEntity{
 
 
@@ -35,9 +33,6 @@ public class Module extends BaseEntity{
     boolean isActive;
     @Column(name = "estimated_duration_minutes")
     int estimatedDuration;
-    @Column(name="status")
-    @Enumerated(EnumType.STRING)
-    CourseStatus  courseStatus = CourseStatus.DRAFT;
 
 
 
@@ -56,6 +51,7 @@ public class Module extends BaseEntity{
             fetch = FetchType.LAZY
     )
     @OrderBy("videoOrder ASC")
+    @Builder.Default
     private Set<ModuleVideos> moduleVideos = new HashSet<>();
 
 
@@ -82,6 +78,18 @@ public class Module extends BaseEntity{
                 return false;
         }
         return true;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof Module module)) return false;
+        return getId() == module.getId();
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(this.getId());
     }
 
 }

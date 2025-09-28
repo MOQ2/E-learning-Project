@@ -28,13 +28,7 @@ public interface VideoEntityRepository extends JpaRepository<VideoEntity, Intege
     // Find by duration range
     List<VideoEntity> findByDurationSecondsBetween(Integer minDuration, Integer maxDuration);
 
-    // Find videos with thumbnails
-    @Query("SELECT v FROM VideoEntity v WHERE v.thumbnailUrl IS NOT NULL AND v.thumbnailUrl != ''")
-    List<VideoEntity> findVideosWithThumbnails();
 
-    // Find videos without thumbnails
-    @Query("SELECT v FROM VideoEntity v WHERE v.thumbnailUrl IS NULL OR v.thumbnailUrl = ''")
-    List<VideoEntity> findVideosWithoutThumbnails();
 
     // Custom query to find videos by metadata key
     @Query("SELECT v FROM VideoEntity v WHERE JSON_EXTRACT(v.metadata, :key) IS NOT NULL")

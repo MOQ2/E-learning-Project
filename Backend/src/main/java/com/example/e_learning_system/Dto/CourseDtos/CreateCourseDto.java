@@ -8,6 +8,7 @@ import jakarta.validation.constraints.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import lombok.Builder.Default;
 import lombok.experimental.SuperBuilder;
 
 import java.math.BigDecimal;
@@ -31,16 +32,22 @@ public class CreateCourseDto {
     @DecimalMin(value = "0.0", inclusive = true, message = "Course price cannot be negative")
     private BigDecimal oneTimePrice;
 
+    @DecimalMin(value = "0.0", inclusive = true, message = "Subscription price cannot be negative")
     private BigDecimal subscriptionPriceMonthly;
+
+    @DecimalMin(value = "0.0", inclusive = true, message = "Subscription price cannot be negative")
     private BigDecimal subscriptionPrice3Months;
+    @DecimalMin(value = "0.0", inclusive = true, message = "Subscription price cannot be negative")
     private BigDecimal subscriptionPrice6Months;
+
     private Boolean allowsSubscription;
-
-    private Currency currency;
-
-    private Category category;
+    @Default
+    private Currency currency = Currency.USD;
+    @Default
+    private Category category = Category.OTHER;
 
     @NotNull(message = "Thumbnail is required")
+    @Min(value = 1, message = "Thumbnail must be a positive integer")
     private Integer thumbnail;
 
     @NotNull(message = "Estimated duration is required")
@@ -51,10 +58,10 @@ public class CreateCourseDto {
     private CourseStatus status;
 
     @NotNull(message = "Difficulty level is required")
-    private DifficultyLevel difficultyLevel;
+    @Default
+    private DifficultyLevel difficultyLevel = DifficultyLevel.BIGINNER;
     @NotNull(message = "Tags are required")
     private List<String> tags;
-
-
-    private boolean isActive;
+    @Default
+    private boolean isActive = true;
 }
