@@ -29,8 +29,8 @@ public class QuizSubmissionsController {
     @GetMapping("/{quizId}/attempts")
     public ResponseEntity<List<QuizSubmissionResponseDTO>> getQuizAttempts(
             @PathVariable Integer quizId,
-            @RequestParam(required = false) Integer userId) {
-        List<QuizSubmissionResponseDTO> attempts = quizSubmissions.getQuizAttempts(quizId, userId);
+            @RequestParam(required = false) String userName) {
+        List<QuizSubmissionResponseDTO> attempts = quizSubmissions.getQuizAttempts(quizId, userName);
         return ResponseEntity.ok(attempts);
     }
 

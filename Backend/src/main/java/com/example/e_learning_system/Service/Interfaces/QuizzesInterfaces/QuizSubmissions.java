@@ -10,6 +10,6 @@ import java.util.List;
 @Component
 public interface QuizSubmissions {
     QuizSubmissionResponseDTO submitQuiz(QuizSubmitDTO quizSubmitDTO);
-    List<QuizSubmissionResponseDTO> getQuizAttempts(Integer quizId ,  Integer userId);
+    List<QuizSubmissionResponseDTO> getQuizAttempts(Integer quizId , String userName);
      List<StudentAnswerResponseDTO> getSubmissionAnswers(Integer submissionId);
 }
