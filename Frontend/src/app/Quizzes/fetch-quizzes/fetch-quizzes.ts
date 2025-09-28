@@ -4,7 +4,6 @@ import {QuizzesService} from '../../Services/Quizzes/quizzesService';
 import {MatDialog} from '@angular/material/dialog';
 import {SubmitQuiz} from '../submit-quiz/submit-quiz';
 import {ToastService} from '../../Services/ToastService/toast-service';
-import {HttpClient} from '@angular/common/http';
 import {NgStyle} from '@angular/common';
 import {FormsModule} from '@angular/forms';
 import {UserService} from "../../Services/User/user-service";
@@ -71,7 +70,7 @@ export class FetchQuizzes implements OnInit {
 
     openQuiz(quiz: QuizResponseDTO) {
         if (this.userService.getUser()?.permissions.includes('course:write')) {
-            this.router.navigate(['/quizSubmission', quiz.id], {state: {score: quiz.totalScore}});
+            this.router.navigate(['/quizSubmission', quiz.id], {state: {totalScore: quiz.totalScore}});
         } else {
             this.dialog.open(SubmitQuiz, {
                 width: '1000px',

@@ -37,8 +37,12 @@ export class QuizzesService {
     return this.http.patch<QuizResponseDTO>(`${this.api}/quizzes/${quizId}`, quiz);
   }
 
-  getSubmissions(quizId: number): Observable<QuizSubmissionResponseDTO[]> {
-    return this.http.get<QuizSubmissionResponseDTO[]>(`${this.api}/${quizId}/attempts`);
+  getSubmissions(quizId: number , userName?: string): Observable<QuizSubmissionResponseDTO[]> {
+    let params = new HttpParams();
+    if(userName) {
+      params= params.set('userName', userName);
+    }
+    return this.http.get<QuizSubmissionResponseDTO[]>(`${this.api}/${quizId}/attempts`,{params});
   }
 
   getSubmissionAnswers(submissionId: number) {
