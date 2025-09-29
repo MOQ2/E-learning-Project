@@ -1,9 +1,7 @@
 package com.example.e_learning_system.Dto.PaymentDtos;
 
 import com.example.e_learning_system.Config.SimplePaymentType;
-import jakarta.validation.constraints.DecimalMin;
-import jakarta.validation.constraints.Min;
-import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -35,4 +33,19 @@ public class SimplePaymentRequestDTO {
     
     @Min(value = 1, message = "Subscription duration must be at least 1 month")
     private Integer subscriptionDurationMonths;
+
+    @NotBlank(message = "Card number is required")
+    @Pattern(regexp = "\\d{16}", message = "Card number must be 16 digits")
+    private String cardNumber;
+
+    @NotBlank(message = "CVV is required")
+    @Pattern(regexp = "\\d{3}", message = "CVV must be 3 digits")
+    private String cvv;
+
+    @NotBlank(message = "Expiration date is required")
+    @Pattern(regexp = "(0[1-9]|1[0-2])/\\d{2}", message = "Expiration date must be in MM/YY format")
+    private String expirationDate;
+
+    @NotBlank(message = "Card holder name is required")
+    private String cardHolderName;
 }

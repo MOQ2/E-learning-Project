@@ -1,4 +1,5 @@
 .course-card {
+  cursor: pointer;
   border: 1px solid #eee;
   border-radius: 16px;
   overflow: hidden;
