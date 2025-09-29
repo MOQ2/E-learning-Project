@@ -38,5 +38,9 @@ public class CourseDetailsDto {
     private List<CourseModuleDto> modules;
     private Set<TagDto> tags;
     private String instructor;
+    // runtime statistics
+    private Integer enrolledCount;
+    private Double averageRating;
+    private Integer reviewCount;
     
 }

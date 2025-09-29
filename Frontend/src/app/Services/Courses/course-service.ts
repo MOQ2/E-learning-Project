@@ -267,6 +267,19 @@ private api = `${environment.apiUrl}`
     );
   }
 
+  getCourse(courseId: number): Observable<ApiResponse<any>> {
+    return this.http.get<ApiResponse<any>>(`${this.api}/api/courses/${courseId}`);
+  }
+
+  getReviews(courseId: number, page: number = 0, size: number = 3) {
+    const params = new HttpParams().set('page', page.toString()).set('size', size.toString());
+    return this.http.get<ApiResponse<any>>(`${this.api}/api/courses/${courseId}/reviews`, { params });
+  }
+
+  postReview(courseId: number, payload: { userId: number; feedbackText: string; rating?: number; isAnonymous?: boolean }) {
+    return this.http.post<ApiResponse<any>>(`${this.api}/api/courses/${courseId}/reviews`, payload);
+  }
+
   /**
    * Request a presigned URL for playing the video (S3)
    * backend returns ApiResponse<{ videoId, presignedUrl, expiresInMinutes }>
