@@ -33,7 +33,7 @@ class QuizSubmissionServiceTest {
     private UserEntity mockUser;
     private QuizEntity mockQuiz;
 
-    private MockedStatic<UserUtil> userUtilMock; // 👈 نحتفظ فيه كـ field
+    private MockedStatic<UserUtil> userUtilMock;
 
     @BeforeEach
     void setUp() {
@@ -46,18 +46,16 @@ class QuizSubmissionServiceTest {
         mockQuiz = new QuizEntity();
         mockQuiz.setId(10);
 
-        // Mock static method once ويضل شغال
         userUtilMock = mockStatic(UserUtil.class);
         userUtilMock.when(UserUtil::getCurrentUserId).thenReturn(1L);
     }
 
     @AfterEach
     void tearDown() {
-        userUtilMock.close(); // 👈 نسكّره بعد كل تيست
+        userUtilMock.close();
     }
     @Test
     void testSubmitQuiz_success() {
-        // Arrange
         QuizSubmitDTO submitDTO = new QuizSubmitDTO();
         submitDTO.setQuizId(mockQuiz.getId());
         StudentAnswerDTO answerDTO = new StudentAnswerDTO();
@@ -96,17 +94,15 @@ class QuizSubmissionServiceTest {
         when(quizSubmissionRepository.save(any())).thenReturn(savedSubmission);
         when(mapper.toResponseDTO(savedSubmission)).thenReturn(responseDTO);
 
-        // Act
         QuizSubmissionResponseDTO result = quizSubmissionService.submitQuiz(submitDTO);
 
-        // Assert
         assertNotNull(result);
         assertEquals(50, result.getSubmissionId());
         assertEquals("testUser", result.getUserName());
         assertEquals(5f, result.getScore());
         assertNotNull(result.getSubmittedAt());
 
-        verify(quizSubmissionRepository, times(2)).save(any()); // save called twice
+        verify(quizSubmissionRepository, times(2)).save(any());
     }
 
     @Test
