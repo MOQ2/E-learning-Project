@@ -12,6 +12,8 @@ import java.security.Key;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.stream.Collectors;
+
 @Component
 public class JwtUtil {
 
@@ -27,6 +29,12 @@ public class JwtUtil {
         claims.put("name", user.getName());
         claims.put("role", user.getRole().getName().toString());
         claims.put("profilePictureUrl",user.getProfilePictureUrl());
+        claims.put("permissions", user.getRole()
+                .getPermissions()
+                .stream()
+                .map(p -> p.getName())
+                .collect(Collectors.toList()));
+
         return Jwts.builder()
                 .setClaims(claims)
                 .setSubject(user.getEmail())
