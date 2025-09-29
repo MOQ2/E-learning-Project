@@ -9,24 +9,23 @@
 @if (!loading && quizzes.length === 0) {
   <div>No quizzes available.</div>
 }
-
 @if (!loading && quizzes.length > 0) {
   <ul class="list-group">
     @for (quiz of quizzes ; track quiz.id) {
-      <li class="list-group-item" >
-       <span (click)="openQuiz(quiz)"> {{quiz.title}} </span>
-        <button (click)="openEditModal(quiz)">Edit</button>
+      <li class="list-group-item">
+        <span (click)="openQuiz(quiz)"> {{quiz.title}} </span>
+        <button class="btn btn-edit" (click)="openEditModal(quiz)">Edit</button>
       </li>
     }
   </ul>
 }
 
-<button class="btn btn-primary mt-3" (click)="openAddModal()">Add New Quiz</button>
+<button class="btn btn-add-quiz mt-3" (click)="openAddModal()">Add New Quiz</button>
 
 @if (openModal) {
   <div class="modal fade show d-block modal-lg">
     <div class="modal-dialog modal-dialog-centered">
-      <div class="modal-content p-4 shadow-lg border-0 rounded-4" style="background-color:#f8f9fa;">
+      <div class="modal-content p-4 shadow-lg border-0 rounded-4" (click)="$event.stopPropagation()">
 
         <div class="modal-header border-0">
           <h5 class="modal-title fw-bold text-primary">
@@ -35,10 +34,10 @@
           <button type="button" class="btn-close" (click)="openModal = false"></button>
         </div>
 
-        <div class="modal-body" style="max-height: 70vh; overflow-y: auto">
+        <div class="modal-body">
 
           @if (submitted && logicErrors.length > 0) {
-            <div class="mb-3 p-2 border rounded-3" style="background-color: #ffe6e6;">
+            <div class="mb-3 p-2 border rounded-3 errors">
               <span class="fw-semibold text-danger">Please fix the following errors:</span>
               <ul class="mb-0">
                 @for (err of logicErrors; let eIndex = $index; track eIndex) {
@@ -72,7 +71,7 @@
           <div class="mb-2"><span class="fw-semibold">Questions:</span></div>
 
           @for (question of quiz.questions; let qIndex = $index; track qIndex) {
-            <div class="my-3 p-3 border rounded-3" style="background-color:#ffffff;">
+            <div class="my-3 p-3 border rounded-3 question-box">
               <div class="row">
                 <div class="col-md-9">
                   <label class="form-label fw-semibold">Question {{ qIndex + 1 }}:</label>
@@ -98,13 +97,12 @@
                 <div class="my-3">
                   <div class="input-group">
                     <input type="text" class="form-control me-2" placeholder="Option {{ oIndex + 1 }}" [(ngModel)]="option.text">
-                    <button type="button" class="btn me-2 rounded-circle d-flex align-items-center justify-content-center"
-                            [ngStyle]="{'background-color': option.isCorrect ? 'rgb(0, 200, 0)' : 'rgb(200, 255, 200)'}"
+                    <button type="button" class="btn option-btn me-2 rounded-circle d-flex align-items-center justify-content-center"
+                            [ngClass]="option.isCorrect ? 'correct-option' : 'incorrect-option'"
                             (click)="markAsCorrect(qIndex, oIndex)">
                       <i class="bi bi-check-lg fs-5 text-white"></i>
                     </button>
-                    <button type="button" class="btn rounded-circle d-flex align-items-center justify-content-center"
-                            style="background-color: rgb(255, 200, 200); width: 40px; height: 40px;"
+                    <button type="button" class="btn remove-option-btn rounded-circle d-flex align-items-center justify-content-center"
                             (click)="removeOption(qIndex, oIndex)">
                       <i class="bi bi-trash"></i>
                     </button>
@@ -117,17 +115,17 @@
                 </div>
               }
 
-              <button type="button" class="btn btn-sm rounded-pill mt-2" style="background-color: rgb(255, 228, 181);" (click)="addOption(qIndex)">Add Option</button>
-              <button type="button" class="btn btn-sm rounded-pill mt-2 ms-2" style="background-color: rgb(255, 150, 150);" (click)="removeQuestion(qIndex)">Remove Question</button>
+              <button type="button" class="btn btn-sm add-option-btn mt-2" (click)="addOption(qIndex)">Add Option</button>
+              <button type="button" class="btn btn-sm remove-question-btn mt-2 ms-2" (click)="removeQuestion(qIndex)">Remove Question</button>
             </div>
           }
 
-          <button type="button" class="btn rounded-pill px-4 py-2" style="background-color: rgb(255, 228, 181);" (click)="addQuestion()">Add Question</button>
+          <button type="button" class="btn modal-add-question-btn rounded-pill px-4 py-2" (click)="addQuestion()">Add Question</button>
         </div>
 
         <div class="modal-footer border-0 d-flex justify-content-between">
-          <button type="button" class="btn rounded-pill px-4 py-2" style="background-color: rgb(255, 228, 181);" (click)="openModal = false">Close</button>
-          <button type="button" class="btn rounded-pill px-4 py-2" style="background-color:#7813ec; color: white" (click)="saveQuiz()">Save</button>
+          <button type="button" class="btn modal-close-btn rounded-pill px-4 py-2" (click)="openModal = false">Close</button>
+          <button type="button" class="btn modal-save-btn rounded-pill px-4 py-2" (click)="saveQuiz()">Save</button>
         </div>
 
       </div>

@@ -4,7 +4,7 @@ import {QuizzesService} from '../../Services/Quizzes/quizzesService';
 import {MatDialog} from '@angular/material/dialog';
 import {SubmitQuiz} from '../submit-quiz/submit-quiz';
 import {ToastService} from '../../Services/ToastService/toast-service';
-import {NgStyle} from '@angular/common';
+import {NgClass} from '@angular/common';
 import {FormsModule} from '@angular/forms';
 import {UserService} from "../../Services/User/user-service";
 import {Router} from "@angular/router";
@@ -12,10 +12,10 @@ import {Router} from "@angular/router";
 @Component({
     selector: 'app-fetch-quizzes',
     templateUrl: './fetch-quizzes.html',
-    imports: [
-        NgStyle,
-        FormsModule
-    ],
+  imports: [
+    FormsModule,
+    NgClass
+  ],
     styleUrls: ['./fetch-quizzes.css']
 })
 export class FetchQuizzes implements OnInit {
