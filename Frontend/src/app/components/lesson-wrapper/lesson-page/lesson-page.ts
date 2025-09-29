@@ -159,6 +159,8 @@ export class LessonPage implements OnInit {
         }
       } else {
         // non-HLS video (mp4 etc)
+        // Ensure crossorigin is set so browser performs CORS fetch without credentials
+        try { video.setAttribute('crossorigin', 'anonymous'); } catch (e) {}
         video.src = this.videoSrc as string;
         const player = new PlyrCtor(video as any, { controls: ['play', 'progress', 'current-time', 'mute', 'volume', 'fullscreen'] });
       }

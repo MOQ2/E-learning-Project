@@ -272,13 +272,14 @@ private api = `${environment.apiUrl}`
    * backend returns ApiResponse<{ videoId, presignedUrl, expiresInMinutes }>
    */
   getVideoUrl(videoId: number, durationMinutes: number = 5): Observable<string | null> {
-    const params = { params: { duration: durationMinutes.toString() } } as any;
-    return this.http.get<ApiResponse<{ videoId?: number; presignedUrl?: string }>>(`${this.api}/api/videos/${videoId}/url`, params).pipe(
-      map((response: any) => {
-        const payload = response?.data ?? null;
-        return (payload && (payload.presignedUrl || (payload as any).presigned_url)) || null;
-      })
-    );
+    // Instead of returning the S3 presigned URL (which may cause CORS issues),
+    // return the backend stream proxy endpoint that will forward Range requests.
+    // The backend will accept an optional `duration` query param; include it here.
+    const streamUrl = `${this.api}/api/videos/${videoId}/stream?duration=${durationMinutes}`;
+    return new Observable<string | null>((subscriber) => {
+      subscriber.next(streamUrl);
+      subscriber.complete();
+    });
   }
 
   getModule(moduleId: number): Observable<any> {
