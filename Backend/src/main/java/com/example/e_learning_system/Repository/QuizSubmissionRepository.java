@@ -7,5 +7,4 @@ import java.util.List;
 
 public interface QuizSubmissionRepository extends JpaRepository<QuizSubmissionEntity, Integer> {
     List<QuizSubmissionEntity> findByQuizId(Integer quizId);
-    List<QuizSubmissionEntity> findByQuizIdAndUserId(Integer quizId, Integer userId);
-}
+    List<QuizSubmissionEntity> findByQuizIdAndUser_NameContainingIgnoreCase(Integer quizId, String userName);}

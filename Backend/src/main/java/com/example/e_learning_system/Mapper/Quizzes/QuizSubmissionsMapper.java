@@ -50,6 +50,13 @@ public class QuizSubmissionsMapper {
 
         dto.setIsCorrect(entity.getIsCorrect() != null ? entity.getIsCorrect() : false);
 
+        String correctAnswer = entity.getQuestion().getOptions()
+                .stream()
+                .filter(QuizOptionEntity::getIsCorrect)
+                .map(QuizOptionEntity::getText)
+                .findFirst()
+                .orElse("No correct answer");
+        dto.setCorrectAnswer(correctAnswer);
         return dto;
     }
 

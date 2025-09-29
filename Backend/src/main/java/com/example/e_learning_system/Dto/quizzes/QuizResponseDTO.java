@@ -13,6 +13,6 @@ public class QuizResponseDTO {
     private String title;
     private Integer totalScore;
     private Boolean isActive;
-    private Integer courseId;
+    private Integer videoId;
     private List<QuizQuestionResponseDTO> questions;
 }

@@ -126,12 +126,12 @@ class QuizSubmissionServiceTest {
         dto.setScore(8.0f);
         dto.setSubmittedAt(LocalDateTime.now());
 
-        when(quizSubmissionRepository.findByQuizIdAndUserId(10, 1))
+        when(quizSubmissionRepository.findByQuizIdAndUser_NameContainingIgnoreCase(10, "testUser"))
                 .thenReturn(List.of(entity));
         when(mapper.toResponseDTO(entity)).thenReturn(dto);
 
         List<QuizSubmissionResponseDTO> result =
-                quizSubmissionService.getQuizAttempts(10, 1);
+                quizSubmissionService.getQuizAttempts(10, "testUser");
 
         assertEquals(1, result.size());
         assertEquals(1, result.get(0).getSubmissionId());

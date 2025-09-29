@@ -14,8 +14,8 @@ import java.util.List;
 public class QuizEntity extends BaseEntity {
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "course_id", nullable = false)
-    private Course course;
+    @JoinColumn(name = "video_id", nullable = false)
+    private VideoEntity video;
 
 
     @Column(name = "title", length = 500, nullable = false)

@@ -1,0 +1,21 @@
+.mat-mdc-snack-bar-container.snackbar-success {
+  background-color: #4caf50 !important;
+  color: #fff !important;
+  font-weight: 500;
+}
+
+.mat-mdc-snack-bar-container.snackbar-error {
+  background-color: #f44336 !important;
+  color: #fff !important;
+  font-weight: 500;
+}
+
+
+.mat-mdc-snack-bar-container .mdc-button {
+  color: #fff !important;
+  background-color: transparent !important;
+}
+
+.mat-mdc-snack-bar-container .mdc-button:hover {
+  background-color: transparent !important;
+}

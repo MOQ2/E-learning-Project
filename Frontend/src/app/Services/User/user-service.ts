@@ -8,6 +8,7 @@ interface JwtPayload {
   role: string;
   sub: string;
   profilePictureUrl: string;
+  permissions: string[];
   iat: number;
   exp: number;
 }
@@ -18,6 +19,7 @@ interface User {
   role: string;
   email: string;
   profile_picture: string;
+  permissions: string[];
 }
 
 @Injectable({
@@ -33,7 +35,8 @@ export class UserService {
       name: decoded.name,
       role: decoded.role,
       email: decoded.sub,
-      profile_picture:decoded.profilePictureUrl
+      profile_picture:decoded.profilePictureUrl,
+      permissions: decoded.permissions
     };
     this.userSubject.next(user);
   }
