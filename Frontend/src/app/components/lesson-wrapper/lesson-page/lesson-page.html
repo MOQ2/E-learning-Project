@@ -1,0 +1,62 @@
+<div class="lesson-page">
+  <aside class="lesson-list">
+    <h3>Lessons</h3>
+    <div *ngIf="loading">Loading...</div>
+    <div *ngIf="!loading && lessons.length === 0">No lessons</div>
+    <ul>
+      <li *ngFor="let l of lessons" (click)="selectLesson(l.id || l.videoId)" [class.active]="(lesson && (lesson.id || lesson.videoId) === (l.id || l.videoId))">
+        <div class="lesson-item">
+          <div class="title">{{ l.title || l.name || ('Lesson ' + (l.order || l.id)) }}</div>
+          <div class="meta">{{ l.durationSeconds ? (l.durationSeconds/60 | number:'1.0-0') + ' min' : '' }}</div>
+        </div>
+      </li>
+    </ul>
+  </aside>
+
+  <main class="lesson-main">
+    <div class="lesson-header">
+      <h2>{{ lesson?.title || lesson?.name || 'Lesson' }}</h2>
+      <div class="sub">{{ lesson?.uploadedByName || lesson?.uploadedBy || '' }}</div>
+    </div>
+
+    <div class="video-wrap">
+      <video id="player" controls crossorigin playsinline [attr.poster]="lesson?.thumbnail?.fileDownloadUrl || ''">
+        <source *ngIf="videoSrc" [src]="videoSrc" type="video/mp4" />
+        Your browser does not support HTML5 video.
+      </video>
+    </div>
+
+    <section class="lesson-details">
+      <div class="lesson-meta-grid">
+        <div class="learn">
+          <h4>What you'll learn</h4>
+          <ul *ngIf="whatYouWillLearnList && whatYouWillLearnList.length">
+            <li *ngFor="let item of whatYouWillLearnList">{{ item }}</li>
+          </ul>
+          <div *ngIf="!whatYouWillLearnList || whatYouWillLearnList.length === 0">No bullet points available.</div>
+        </div>
+
+        <div class="prereq">
+          <h4>Prerequisites</h4>
+          <ul *ngIf="prerequisitesList && prerequisitesList.length">
+            <li *ngFor="let p of prerequisitesList">{{ p }}</li>
+          </ul>
+          <div *ngIf="!prerequisitesList || prerequisitesList.length === 0">No prerequisites.</div>
+        </div>
+      </div>
+
+      <h4>Description</h4>
+      <div class="explanation" [innerHTML]="explanationHtml"></div>
+
+      <div class="attachments" *ngIf="attachments && attachments.length">
+        <h4>Attachments</h4>
+        <ul>
+          <li *ngFor="let a of attachments" class="attachment-item">
+            <span class="fname">{{ a.fileName }}</span>
+            <a class="btn-download" [href]="a.fileDownloadUrl" target="_blank" rel="noopener noreferrer">Download</a>
+          </li>
+        </ul>
+      </div>
+    </section>
+  </main>
+</div>

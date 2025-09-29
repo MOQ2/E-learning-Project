@@ -267,6 +267,20 @@ private api = `${environment.apiUrl}`
     );
   }
 
+  /**
+   * Request a presigned URL for playing the video (S3)
+   * backend returns ApiResponse<{ videoId, presignedUrl, expiresInMinutes }>
+   */
+  getVideoUrl(videoId: number, durationMinutes: number = 5): Observable<string | null> {
+    const params = { params: { duration: durationMinutes.toString() } } as any;
+    return this.http.get<ApiResponse<{ videoId?: number; presignedUrl?: string }>>(`${this.api}/api/videos/${videoId}/url`, params).pipe(
+      map((response: any) => {
+        const payload = response?.data ?? null;
+        return (payload && (payload.presignedUrl || (payload as any).presigned_url)) || null;
+      })
+    );
+  }
+
   getModule(moduleId: number): Observable<any> {
     return this.http.get<ApiResponse<any>>(`${this.api}/api/modules/${moduleId}`).pipe(
       map(response => response.data)
