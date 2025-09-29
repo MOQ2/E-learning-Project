@@ -1,18 +1,10 @@
-.container {
+.containers {
     width: 100%;
-    padding: 0 ;
-    box-sizing: border-box;
-    max-width: 1200px;
     margin: 0 auto;
 }
 
 .header {
-    width: 100vw;
-    position: relative;
-    left: 50%;
-    right: 50%;
-    margin-left: -50vw;
-    margin-right: -50vw;
+  width: 100%;
     display: flex;
     align-items: center;
     padding: 10px 0;
@@ -24,7 +16,6 @@
     align-items: center;
     gap: 20px;
     justify-content: space-between;
-    max-width: 1200px;
     width: 100%;
     margin: 0 auto;
     padding: 0 16px;
@@ -50,7 +41,7 @@
     gap: 12px;
 }
 
-.nav-links a {
+.nav-links a  , .logout-link {
     text-decoration: none;
     color: #000000;
     font-weight: 500;
@@ -148,3 +139,5 @@
 .header {
   border-bottom: 1px solid rgb(181, 160, 178);
 }
+
+

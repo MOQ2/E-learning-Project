@@ -12,7 +12,7 @@ import { CommonModule } from '@angular/common';
 
 @Component({
   selector: 'app-explore-courses',
-  imports: [SidebarComponent, NavBar, Footer, CourseGridComponent, CommonModule],
+  imports: [SidebarComponent, CourseGridComponent, CommonModule],
   templateUrl: './explore-courses.html',
   styleUrls: ['./explore-courses.css'],
   standalone: true
@@ -22,7 +22,7 @@ export class ExploreCoursesPage implements OnInit, OnDestroy {
   private loadCoursesSubject$ = new Subject<CourseFilterParams>();
   private filterChangeSubject$ = new Subject<void>();
 
-  // Loading states
+  // Loading states 
   isLoading = false;
   error: string | null = null;
 

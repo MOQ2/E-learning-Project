@@ -70,7 +70,7 @@ export class FetchQuizzes implements OnInit {
 
     openQuiz(quiz: QuizResponseDTO) {
         if (this.userService.getUser()?.permissions.includes('course:write')) {
-            this.router.navigate(['/quizSubmission', quiz.id], {state: {totalScore: quiz.totalScore}});
+            this.router.navigate(['/quizzes/quizSubmission', quiz.id], {state: {totalScore: quiz.totalScore}});
         } else {
             this.dialog.open(SubmitQuiz, {
                 width: '1000px',

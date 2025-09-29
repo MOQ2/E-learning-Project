@@ -10,7 +10,7 @@
   <div>No quizzes available.</div>
 }
 @if (!loading && quizzes.length > 0) {
-  <ul class="list-group">
+  <ul class="list-group" >
     @for (quiz of quizzes ; track quiz.id) {
       <li class="list-group-item">
         <span (click)="openQuiz(quiz)"> {{quiz.title}} </span>

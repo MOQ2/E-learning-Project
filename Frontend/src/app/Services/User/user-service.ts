@@ -27,6 +27,7 @@ interface User {
 })
 export class UserService {
   private userSubject = new BehaviorSubject<User | null>(null);
+  user$ = this.userSubject.asObservable();
 
   setUser(token: string) {
     const decoded = jwtDecode<JwtPayload>(token);
