@@ -1,0 +1,6 @@
+<app-nav-bar></app-nav-bar>
+<div class="page-wrapper">
+  <app-course-view [courseId]="courseId"
+                   (subscribe)="onSubscribe($event)"
+                   (previewLesson)="onPreview()"></app-course-view>
+</div>
