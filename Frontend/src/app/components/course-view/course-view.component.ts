@@ -1,12 +1,15 @@
 import { Component, Input, Output, EventEmitter, OnInit, OnChanges, SimpleChanges } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
 import { HttpClient } from '@angular/common/http';
 import { CourseService } from '../../Services/Courses/course-service';
+import { Router } from '@angular/router';
+import { StarRatingComponent } from '../star-rating/star-rating.component';
 
 @Component({
   selector: 'app-course-view',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, FormsModule, StarRatingComponent],
   templateUrl: './course-view.component.html',
   styleUrls: ['./course-view.component.css']
 })
@@ -19,6 +22,23 @@ export class CourseViewComponent implements OnInit, OnChanges {
 
   loading = false;
   error: string | null = null;
+  reviews: Array<any> = [];
+  // whether to show all reviews or only a short peek
+  showAllReviews = false;
+  // pagination tracking (public so template can read)
+  reviewsPage = 0;
+  reviewsPageSize = 3;
+  reviewsTotalPages = 0;
+  // total elements reported by server (used to decide whether to show "show all" toggle)
+  reviewsTotalElements = 0;
+  // UI state flags
+  isSubmitting = false;
+  isReloadingReviews = false;
+
+
+  reviewText = '';
+  reviewRating: number | null = null;
+  reviewAnonymous = false;
 
   // define a minimal type so Angular template type checker can resolve properties
   courseData: {
@@ -44,9 +64,12 @@ export class CourseViewComponent implements OnInit, OnChanges {
     instructorAvatar?: string | null;
     language?: string | null;
     subtitles?: string[] | null;
+    enrolledCount?: number;
+    averageRating?: number;
+    reviewCount?: number;
   } | null = null;
 
-  constructor(private http: HttpClient, private courseService: CourseService) {}
+  constructor(private http: HttpClient, private courseService: CourseService, private router: Router) {}
 
   ngOnInit(): void {
     if (!this.course && this.courseId) {
@@ -65,28 +88,191 @@ export class CourseViewComponent implements OnInit, OnChanges {
     }
   }
 
-  private loadCourse(id: number) {
+  public loadCourse(id: number) {
     this.loading = true;
     this.error = null;
-
-    // Prefer CourseService.getCourse if available, otherwise fallback to HttpClient
-    const svc: any = this.courseService as any;
-    const obs = (svc && typeof svc.getCourse === 'function')
-      ? svc.getCourse(id)
-      : this.http.get<any>(`http://localhost:5000/api/courses/${id}`);
-
-    obs.subscribe({
+    this.courseService.getCourse(id).subscribe({
       next: (res: any) => {
-        // backend might wrap response in { success, message, data }
         const payload = res && res.data ? res.data : res;
         this.courseData = this.normalize(payload);
+        // load reviews separately
+        this.loadReviews(id);
         this.loading = false;
       },
       error: (err: any) => {
-        this.error = err?.message || 'Failed to load course';
+        this.error = err?.error?.message || err?.message || 'Failed to load course';
         this.loading = false;
       }
     });
+  }
+
+  private loadReviews(courseId: number) {
+    this.reviewsPage = 0;
+    this.reviewsPageSize = 3;
+    this.reviewsTotalPages = 0;
+    this.reviews = [];
+    this.isReloadingReviews = true;
+    this.courseService.getReviews(courseId, this.reviewsPage, this.reviewsPageSize).subscribe({
+      next: (res: any) => {
+        const payload = res && res.data ? res.data : res;
+        // expected shape: { content: [...], page, size, totalElements, totalPages }
+        if (payload && payload.content) {
+          this.reviews = payload.content || [];
+          this.reviewsPage = payload.page || 0;
+          this.reviewsPageSize = payload.size || this.reviewsPageSize;
+          this.reviewsTotalPages = payload.totalPages || 0;
+          this.reviewsTotalElements = payload.totalElements || 0;
+        } else if (Array.isArray(payload)) {
+          this.reviews = payload;
+          this.reviewsTotalElements = this.reviews.length;
+          this.reviewsTotalPages = Math.ceil(this.reviewsTotalElements / this.reviewsPageSize);
+        }
+      },
+      error: () => {
+        // ignore reviews load errors for now
+        this.reviews = [];
+      },
+      complete: () => {
+        this.isReloadingReviews = false;
+      }
+    });
+  }
+
+  submitReview() {
+    if (!this.courseData || !this.courseData.id) return;
+    const payload: any = { userId: 1, feedbackText: this.reviewText, rating: this.reviewRating, isAnonymous: this.reviewAnonymous };
+    // optimistic update: show the review immediately and update counts
+    const tempReview = {
+      id: `temp-${Date.now()}`,
+      userId: payload.userId,
+      feedbackText: payload.feedbackText,
+      rating: payload.rating,
+      isAnonymous: payload.isAnonymous,
+      createdAt: new Date().toISOString(),
+      _optimistic: true
+    };
+    // prepend optimistic review and update totals locally
+    this.reviews.unshift(tempReview);
+    this.reviewsTotalElements = (this.reviewsTotalElements || 0) + 1;
+    this.courseData!.reviewCount = (this.courseData!.reviewCount || 0) + 1;
+    // show expanded view when user posts
+    this.showAllReviews = true;
+
+    this.isSubmitting = true;
+    // fire POST, then reload authoritative data in background
+    this.courseService.postReview(this.courseData.id, payload).subscribe({
+      next: (res: any) => {
+        // we don't rely on the response to update UI — reload will reconcile
+        // trigger a background reload of reviews to reconcile optimistic state
+        if (this.courseData && this.courseData.id) {
+          // keep isReloadingReviews true until reload completes
+          this.isReloadingReviews = true;
+          this.courseService.getReviews(this.courseData.id, 0, this.reviewsPageSize).subscribe({
+            next: (r: any) => {
+              const payload = r && r.data ? r.data : r;
+              if (payload && payload.content) {
+                this.reviews = payload.content || [];
+                this.reviewsPage = payload.page || 0;
+                this.reviewsPageSize = payload.size || this.reviewsPageSize;
+                this.reviewsTotalPages = payload.totalPages || 0;
+                this.reviewsTotalElements = payload.totalElements || 0;
+              }
+            },
+            error: () => {},
+            complete: () => {
+              this.isReloadingReviews = false;
+            }
+          });
+        }
+      },
+      error: (err: any) => {
+        console.error('Failed to submit review', err);
+        // remove the optimistic review on error and decrement counts
+        const idx = this.reviews.findIndex(r => r && r.id === tempReview.id);
+        if (idx >= 0) this.reviews.splice(idx, 1);
+        this.reviewsTotalElements = Math.max(0, (this.reviewsTotalElements || 1) - 1);
+        this.courseData!.reviewCount = Math.max(0, (this.courseData!.reviewCount || 1) - 1);
+      },
+      complete: () => {
+        this.isSubmitting = false;
+      }
+    });
+    // clear form inputs immediately (UX decision)
+    this.reviewText = '';
+    this.reviewRating = null;
+    this.reviewAnonymous = false;
+  }
+
+  // load just the next page and append (used by "Load more")
+  loadMoreReviews() {
+    if (!this.courseData || !this.courseData.id) return;
+    // if already loading, ignore
+    if (this.isReloadingReviews) return;
+    const nextPage = this.reviewsPage + 1;
+    if (nextPage >= this.reviewsTotalPages) return;
+    this.isReloadingReviews = true;
+    this.courseService.getReviews(this.courseData.id, nextPage, this.reviewsPageSize).subscribe({
+      next: (res: any) => {
+        const payload = res && res.data ? res.data : res;
+        if (payload && payload.content) {
+          this.reviews = this.reviews.concat(payload.content || []);
+          this.reviewsPage = payload.page || nextPage;
+          this.reviewsTotalPages = payload.totalPages || this.reviewsTotalPages;
+          this.reviewsTotalElements = payload.totalElements || this.reviewsTotalElements;
+          // after loading more, mark expanded
+          this.showAllReviews = true;
+        }
+      },
+      error: () => {},
+      complete: () => {
+        this.isReloadingReviews = false;
+      }
+    });
+  }
+
+  collapseReviews() {
+    this.showAllReviews = false;
+  }
+
+  // number of reviews that will be loaded on next "Load more" click
+  get nextLoadCount(): number {
+    const remaining = Math.max(0, (this.reviewsTotalElements || 0) - (this.reviews?.length || 0));
+    return Math.min(this.reviewsPageSize || 0, remaining);
+  }
+
+  // helper to toggle between peek and full list
+  toggleReviews() {
+    this.showAllReviews = !this.showAllReviews;
+    if (this.showAllReviews) {
+      // if we already loaded all pages, nothing to do
+      if (this.reviewsPage + 1 >= this.reviewsTotalPages) return;
+      // fetch remaining pages sequentially (small number expected)
+      const toFetch: Array<Promise<any>> = [];
+      for (let p = this.reviewsPage + 1; p < this.reviewsTotalPages; p++) {
+        toFetch.push(this.courseService.getReviews(this.courseData!.id!, p, this.reviewsPageSize).toPromise());
+      }
+      // perform sequential append
+      (async () => {
+        for (let p = this.reviewsPage + 1; p < this.reviewsTotalPages; p++) {
+          try {
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            const r: any = await this.courseService.getReviews(this.courseData!.id!, p, this.reviewsPageSize).toPromise();
+            const payload = r && r.data ? r.data : r;
+            if (payload && payload.content) {
+              this.reviews = this.reviews.concat(payload.content || []);
+            }
+          } catch (e) {
+            // ignore errors on subsequent pages
+          }
+        }
+      })();
+    }
+  }
+
+  // getter used by template to render either a peek or full set
+  get displayedReviews() {
+    if (!this.reviews) return [];
+    return this.showAllReviews ? this.reviews : this.reviews.slice(0, 3);
   }
 
   private normalize(raw: any) {
@@ -117,6 +303,18 @@ export class CourseViewComponent implements OnInit, OnChanges {
       instructor: raw.instructor || raw.createdByName || null,
       lastUpdated: raw.updatedAt || raw.lastUpdated || null,
       thumbnailUrl: this.buildThumbnailUrl(raw.thumbnail)
+      ,
+      // map subscription plans/pricing from backend DTO names (and fallbacks)
+      plans: raw.plans || raw.pricing || raw.subscription || {
+        monthly: raw.subscriptionPriceMonthly ?? raw.monthlyPrice ?? raw.monthly ?? null,
+        threeMonths: raw.subscriptionPrice3Months ?? raw.threeMonthsPrice ?? raw['3months'] ?? null,
+        sixMonths: raw.subscriptionPrice6Months ?? raw.sixMonthsPrice ?? raw.sixMonths ?? null,
+        annual: raw.annualPrice ?? raw.yearly ?? null
+      },
+      allowsSubscription: raw.allowsSubscription ?? raw.allows_subscriptions ?? true,
+      enrolledCount: raw.enrolledCount ?? raw.enrollmentsCount ?? 0,
+      averageRating: raw.averageRating ?? raw.avgRating ?? 0,
+      reviewCount: raw.reviewCount ?? raw.reviewsCount ?? 0
     };
   }
 
@@ -129,11 +327,14 @@ export class CourseViewComponent implements OnInit, OnChanges {
 
   onSubscribeOneTime() {
     if (!this.courseData) return;
+    // emit for backward compatibility and navigate to payment page
     this.subscribe.emit({ plan: 'one-time', price: this.courseData.oneTimePrice });
+    this.router.navigate(['/payment'], { queryParams: { courseId: this.courseData.id, plan: 'one-time', price: this.courseData.oneTimePrice } });
   }
 
   onSelectPlan(plan: string, price?: number) {
     this.subscribe.emit({ plan, price });
+    this.router.navigate(['/payment'], { queryParams: { courseId: this.courseData?.id, plan, price } });
   }
 
   onPreview() {

@@ -32,8 +32,8 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
-// ...existing imports... (removed unused imports)
-
+import com.example.e_learning_system.Repository.UserCourseAccessRepository;
+import com.example.e_learning_system.Repository.UserFeedbackRepository;
 @Service
 @RequiredArgsConstructor
 @Transactional
@@ -47,6 +47,8 @@ public class CourseServiceImpl implements CourseService {
     private final CourseModulesRepository courseModulesRepository;
     private final TagsRepository tagsRepository;
     private final AttachmentRepository attachmentRepository;
+    private final UserCourseAccessRepository userCourseAccessRepository;
+    private final UserFeedbackRepository userFeedbackRepository;
     @Override
     @Transactional(readOnly = true)
     public List<CourseSummaryDto> getCourses() {
@@ -121,7 +123,32 @@ public class CourseServiceImpl implements CourseService {
         Course course = courseRepository.findById(id)
                 .orElseThrow(() -> ResourceNotFound.courseNotFound(id.toString()));
 
-        return CourseMapper.fromCourseEntityToCourseDetailsDto(course);
+        CourseDetailsDto details = CourseMapper.fromCourseEntityToCourseDetailsDto(course);
+        
+        try {
+            long enrolled = userCourseAccessRepository.countByCourseIdAndIsActiveTrue(id);
+            details.setEnrolledCount((int) enrolled);
+        } catch (Exception e) {
+            log.warn("Failed to compute enrolled count for course {}: {}", id, e.getMessage());
+            details.setEnrolledCount(0);
+        }
+
+        try {
+            Double avg = userFeedbackRepository.findAverageRatingByCourseId(id);
+            details.setAverageRating(avg == null ? 0.0 : avg);
+        } catch (Exception e) {
+            log.warn("Failed to compute average rating for course {}: {}", id, e.getMessage());
+            details.setAverageRating(0.0);
+        }
+        try {
+            Integer count = userFeedbackRepository.findReviewCountByCourseId(id);
+            details.setReviewCount(count == null ? 0 : count);
+        } catch (Exception e) {
+            log.warn("Failed to compute review count for course {}: {}", id, e.getMessage());
+            details.setReviewCount(0);
+        }
+
+        return details;
     }
 
     @Override

@@ -17,6 +17,7 @@ public interface UserCourseAccessRepository extends JpaRepository<UserCourseAcce
     List<UserCourseAccess> findByUserIdAndIsActiveTrue(Integer userId);
 
     List<UserCourseAccess> findByCourseIdAndIsActiveTrue(Integer courseId);
+       long countByCourseIdAndIsActiveTrue(Integer courseId);
 
     @Query("SELECT uca FROM UserCourseAccess uca WHERE uca.user.id = :userId AND uca.course.id = :courseId AND uca.isActive = true")
     Optional<UserCourseAccess> findActiveAccessByUserAndCourse(@Param("userId") Integer userId, @Param("courseId") Integer courseId);

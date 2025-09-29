@@ -20,6 +20,11 @@
               <img [src]="courseData?.thumbnailUrl" class="node-48" alt="Course Image" />
             </div>
             <div class="container-49">
+              <div class="meta-row">
+                <app-star-rating [rating]="courseData?.averageRating"></app-star-rating>
+                <span class="rating-text">{{ courseData?.averageRating | number:'1.1-2' }} · {{ courseData?.reviewCount || 0 }} reviews</span>
+                <span class="enrolled">{{ courseData?.enrolledCount || 0 }} learners</span>
+              </div>
               <div class="container-50">
                 <div class="background-51">
                   <p class="text-57">{{ courseData?.estimatedDurationInHours }}h content</p>
@@ -93,6 +98,44 @@
               </div>
             </div>
           </div>
+
+          <div class="background-border-260">
+            <div class="container-261">
+              <p class="text-262">Reviews</p>
+            </div>
+            <div class="container-263">
+              <div class="reviews-list" [class.expanded]="showAllReviews">
+                <div *ngIf="reviews?.length === 0" class="text-85">No reviews yet.</div>
+                <div class="review-item" *ngFor="let rev of displayedReviews" [class.optimistic]="rev && rev._optimistic">
+                <div class="review-header">
+                  <strong>{{ rev.isAnonymous ? 'Anonymous' : (rev.userId || 'User') }}</strong>
+                  <span class="review-rating">{{ rev.rating || '—' }}</span>
+                  <span class="review-date">{{ rev.createdAt | date:'mediumDate' }}</span>
+                </div>
+                <div class="review-body">{{ rev.feedbackText }}</div>
+                </div>
+              </div>
+
+              <div class="reviews-toggle">
+                <!-- Load more (paginated) -->
+                <button *ngIf="reviewsPage + 1 < reviewsTotalPages" (click)="loadMoreReviews()" [disabled]="isReloadingReviews">{{ isReloadingReviews ? 'Loading...' : ('Load next ' + nextLoadCount) }}</button>
+                <!-- Collapse to peek -->
+                <button *ngIf="showAllReviews && reviewsPage + 1 >= reviewsTotalPages" (click)="collapseReviews()">Show less</button>
+              </div>
+
+              <div class="review-form">
+                <label>Rate</label>
+                <app-star-rating [editable]="true" [rating]="reviewRating" (ratingChange)="reviewRating = $event"></app-star-rating>
+                <label>Your review</label>
+                <textarea [(ngModel)]="reviewText" rows="3" placeholder="Share your experience"></textarea>
+                <label><input type="checkbox" [(ngModel)]="reviewAnonymous" /> Post anonymously</label>
+                <button class="background-216" (click)="submitReview()" [disabled]="isSubmitting">
+                  <span *ngIf="!isSubmitting">Submit review</span>
+                  <span *ngIf="isSubmitting" class="btn-spinner">Submitting…</span>
+                </button>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     </div>
@@ -119,9 +162,15 @@
           <div class="container-208">
             <p class="text-209">Or choose a plan</p>
           </div>
-          <div class="container-210">
+            <div class="container-210">
             <div class="background-border-211" *ngIf="courseData?.plans?.monthly">
               <button class="text-212" (click)="onSelectPlan('monthly', courseData?.plans?.monthly)">Monthly • {{ courseData?.currency }}{{ courseData?.plans?.monthly }}</button>
+            </div>
+            <div class="background-border-213" *ngIf="courseData?.plans?.threeMonths">
+              <button class="text-214" (click)="onSelectPlan('3-months', courseData?.plans?.threeMonths)">3 months • {{ courseData?.currency }}{{ courseData?.plans?.threeMonths }}</button>
+            </div>
+            <div class="background-border-213" *ngIf="courseData?.plans?.sixMonths">
+              <button class="text-214" (click)="onSelectPlan('6-months', courseData?.plans?.sixMonths)">6 months • {{ courseData?.currency }}{{ courseData?.plans?.sixMonths }}</button>
             </div>
             <div class="background-border-213" *ngIf="courseData?.plans?.annual">
               <button class="text-214" (click)="onSelectPlan('annual', courseData?.plans?.annual)">Annual • {{ courseData?.currency }}{{ courseData?.plans?.annual }}</button>
@@ -169,8 +218,13 @@
       </div>
     </div>
   </div>
-
-  <div *ngIf="error" class="error">{{ error }}</div>
+  <div *ngIf="error" class="error">
+    <p>{{ error }}</p>
+    <button (click)="courseId && loadCourse(courseId)">Retry</button>
+  </div>
 </div>
 
-<div *ngIf="loading" style="padding:20px">Loading course...</div>
+<div *ngIf="loading" class="spinner-container">
+  <div class="spinner"></div>
+  <div class="loading-text">Loading course...</div>
+</div>
