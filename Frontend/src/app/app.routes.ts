@@ -7,6 +7,7 @@ import {Payment} from './payment/payment';
 import { CourseEditorPageComponent } from './components/courses/editor-course/course-editor-page-component/course-editor-page-component';
 import { ExploreCoursesPage } from './components/courses/explore-courses/explore-courses';
 import { CoursePage } from './components/course-page/course-page';
+import { LessonWrapper } from './components/lesson-wrapper/lesson-wrapper';
 
 export const routes: Routes = [
   // make the course page the home page; it accepts optional id via /course/:id or ?courseId=
@@ -15,6 +16,11 @@ export const routes: Routes = [
   {path: 'login',  component:Login},
   {path: 'signUp',  component:Signup},
   {path: 'payment',  component:Payment},
-  {path: 'courses', component:ExploreCoursesPage}
+  {path: 'courses', component:ExploreCoursesPage},
+  {path: 'course-editor', component: CourseEditorPageComponent},
+  // module lessons: /module/:moduleId/lesson/:lessonId
+  { path: 'module/:moduleId/lesson/:lessonId', component: LessonWrapper },
+  { path: 'module/:moduleId', component: LessonWrapper },
+  { path: 'lesson/:lessonId', component: LessonWrapper }
 ];
 

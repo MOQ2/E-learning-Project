@@ -6,6 +6,7 @@ package com.example.e_learning_system.Controller;
 import com.example.e_learning_system.Dto.ApiResponse;
 import com.example.e_learning_system.Dto.ModuleDtos.CreateModuleDto;
 import com.example.e_learning_system.Dto.ModuleDtos.DetailedModuleDto;
+import com.example.e_learning_system.Dto.VideoDtos.VideoDto;
 import com.example.e_learning_system.Dto.ModuleDtos.UpdateModuleDto;
 import com.example.e_learning_system.Service.Interfaces.ModuleService;
 import jakarta.validation.Valid;
@@ -61,6 +62,19 @@ public class ModuleController {
         }
         return ResponseEntity.status(HttpStatus.NOT_FOUND)
                 .body(ApiResponse.error("Module not found"));
+    }
+
+    /**
+     * Get lessons (videos) within a module - simplified list endpoint
+     */
+    @GetMapping("/{moduleId}/lessons")
+    public ResponseEntity<ApiResponse<java.util.List<VideoDto>>> getModuleLessons(@PathVariable int moduleId) {
+        DetailedModuleDto module = moduleService.getModule(moduleId);
+        if (module != null) {
+            java.util.List<VideoDto> videos = module.getVideos();
+            return ResponseEntity.ok(ApiResponse.success("Module lessons retrieved successfully", videos));
+        }
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ApiResponse.error("Module not found"));
     }
 
     @PostMapping("/{moduleId}/videos/{videoId}")
