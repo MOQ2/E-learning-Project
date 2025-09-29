@@ -18,7 +18,7 @@ public class QuizSubmissionsController {
 
     private final QuizSubmissions quizSubmissions;
 
-    @PreAuthorize("hasAuthority('course:write')")
+    @PreAuthorize("hasAuthority('course:read')")
     @PostMapping("submitQuiz")
     public ResponseEntity<QuizSubmissionResponseDTO> submitQuiz(@Valid @RequestBody QuizSubmitDTO quizSubmitDTO) {
         QuizSubmissionResponseDTO response = quizSubmissions.submitQuiz(quizSubmitDTO);
@@ -29,8 +29,8 @@ public class QuizSubmissionsController {
     @GetMapping("/{quizId}/attempts")
     public ResponseEntity<List<QuizSubmissionResponseDTO>> getQuizAttempts(
             @PathVariable Integer quizId,
-            @RequestParam(required = false) Integer userId) {
-        List<QuizSubmissionResponseDTO> attempts = quizSubmissions.getQuizAttempts(quizId, userId);
+            @RequestParam(required = false) String userName) {
+        List<QuizSubmissionResponseDTO> attempts = quizSubmissions.getQuizAttempts(quizId, userName);
         return ResponseEntity.ok(attempts);
     }
 

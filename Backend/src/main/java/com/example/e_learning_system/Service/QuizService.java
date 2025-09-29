@@ -4,9 +4,11 @@ import com.example.e_learning_system.Dto.quizzes.*;
 import com.example.e_learning_system.Entities.Course;
 import com.example.e_learning_system.Entities.QuizEntity;
 import com.example.e_learning_system.Entities.QuizQuestionEntity;
+import com.example.e_learning_system.Entities.VideoEntity;
 import com.example.e_learning_system.Mapper.Quizzes.QuizMapper;
 import com.example.e_learning_system.Repository.CourseRepository;
 import com.example.e_learning_system.Repository.QuizRepository;
+import com.example.e_learning_system.Repository.VideoRepository;
 import com.example.e_learning_system.Service.Interfaces.QuizzesInterfaces.QuizInterface;
 import com.example.e_learning_system.excpetions.ClientException;
 import com.example.e_learning_system.excpetions.InvalidQuizException;
@@ -24,29 +26,48 @@ public class QuizService implements QuizInterface {
     private final QuizRepository quizRepository;
     private final QuizMapper quizMapper;
     private final CourseRepository courseRepository;
+    private final VideoRepository videoRepository;
 
     @Override
     @Transactional
-    public QuizResponseDTO createQuiz(Integer courseId, CreateQuizDTO createQuizDTO) {
+    public QuizResponseDTO createQuiz(Integer videoId, CreateQuizDTO createQuizDTO) {
         float totalQuestionsMark = createQuizDTO.getQuestions()
                 .stream()
                 .map(QuizQuestionCreateDTO::getQuestionMark)
                 .reduce(0f, Float::sum);
 
-        if (totalQuestionsMark > createQuizDTO.getTotalScore()) {
+        if (totalQuestionsMark != createQuizDTO.getTotalScore()) {
             throw new InvalidQuizException(
-                    "Total of question marks (" + totalQuestionsMark + ") exceeds quiz total score (" + createQuizDTO.getTotalScore() + ")"
+                    "Invalid quiz: sum of question marks (" + totalQuestionsMark +
+                            ") does not match total quiz score (" + createQuizDTO.getTotalScore() + ")."
             );
         }
 
-        Course course = courseRepository.findById(courseId)
+        for (QuizQuestionCreateDTO question : createQuizDTO.getQuestions()) {
+            if (question.getOptions() == null || question.getOptions().size() < 2) {
+                throw new InvalidQuizException(
+                        "Question '" + question.getText() + "' must have at least two options."
+                );
+            }
+
+            boolean hasCorrectAnswer = question.getOptions().stream().anyMatch(QuizOptionCreateDTO::getIsCorrect);
+            if (!hasCorrectAnswer) {
+                throw new InvalidQuizException(
+                        "Question '" + question.getText() + "' must have at least one correct option."
+                );
+            }
+        }
+
+
+        VideoEntity video = videoRepository.findById(videoId)
                 .orElseThrow(() -> new ClientException(
-                        "Course not found",
-                        "COURSE_NOT_FOUND",
+                        "Video not found",
+                        "VIDEO_NOT_FOUND",
                         HttpStatus.NOT_FOUND
                 ));
 
-        QuizEntity quiz = quizMapper.dtoToEntity(createQuizDTO, course);
+
+        QuizEntity quiz = quizMapper.dtoToEntity(createQuizDTO, video);
         QuizEntity savedQuiz = quizRepository.save(quiz);
 
         return quizMapper.entityToDto(savedQuiz);
@@ -95,7 +116,7 @@ public class QuizService implements QuizInterface {
 
     @Override
     @Transactional
-    public List<QuizResponseDTO> getQuizzes(Integer courseId, Integer quizId, String title, Boolean isActive) {
+    public List<QuizResponseDTO> getQuizzes(Integer videoId, Integer quizId, String title, Boolean isActive) {
         List<QuizEntity> quizzes;
 
         if (quizId != null) {
@@ -106,7 +127,7 @@ public class QuizService implements QuizInterface {
             quizzes = List.of(quiz);
         } else {
             quizzes = quizRepository.findAll().stream()
-                    .filter(q -> courseId == null || Objects.equals(q.getCourse().getId(), courseId))
+                    .filter(q -> videoId == null || (q.getVideo() != null && Objects.equals(q.getVideo().getId(), videoId)))
                     .filter(q -> title == null || (q.getTitle() != null && q.getTitle().toLowerCase().contains(title.toLowerCase())))
                     .filter(q -> isActive == null || q.getIsActive().equals(isActive))
                     .toList();
@@ -116,4 +137,5 @@ public class QuizService implements QuizInterface {
                 .map(quizMapper::entityToDto)
                 .toList();
     }
+
 }

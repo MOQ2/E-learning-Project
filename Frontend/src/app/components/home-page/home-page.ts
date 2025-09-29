@@ -5,7 +5,7 @@ import { SidebarComponent } from '../courses/sidebare/sidebar';
 @Component({
   selector: 'app-home-page',
   standalone: true,
-  imports: [NavBar, Footer ],
+  imports: [],
   templateUrl: './home-page.html',
   styleUrls: ['./home-page.css']
 })

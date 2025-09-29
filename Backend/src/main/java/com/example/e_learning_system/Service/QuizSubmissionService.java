@@ -75,11 +75,11 @@ public class QuizSubmissionService implements QuizSubmissions {
     }
 
     @Override
-    public List<QuizSubmissionResponseDTO> getQuizAttempts(Integer quizId, Integer userId) {
+    public List<QuizSubmissionResponseDTO> getQuizAttempts(Integer quizId, String userName) {
         List<QuizSubmissionEntity> submissions;
 
-        if (userId != null) {
-            submissions = quizSubmissionRepository.findByQuizIdAndUserId(quizId, userId);
+        if (userName != null) {
+            submissions = quizSubmissionRepository.findByQuizIdAndUser_NameContainingIgnoreCase(quizId, userName);
         } else {
             submissions = quizSubmissionRepository.findByQuizId(quizId);
         }

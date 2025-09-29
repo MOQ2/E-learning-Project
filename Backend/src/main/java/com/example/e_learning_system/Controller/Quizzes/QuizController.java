@@ -22,12 +22,12 @@ public class QuizController {
     }
 
     @PreAuthorize("hasAuthority('course:write')")
-    @PostMapping("/{courseId}")
+    @PostMapping("/{videoId}")
     public ResponseEntity<QuizResponseDTO> createQuiz(
-            @PathVariable Integer courseId,
+            @PathVariable Integer videoId,
             @Valid @RequestBody CreateQuizDTO createQuizDTO) {
 
-        QuizResponseDTO createdQuiz = quizInterface.createQuiz(courseId, createQuizDTO);
+        QuizResponseDTO createdQuiz = quizInterface.createQuiz(videoId, createQuizDTO);
         return ResponseEntity.status(HttpStatus.CREATED).body(createdQuiz);
     }
 
@@ -45,11 +45,12 @@ public class QuizController {
 
     @GetMapping("/getQuizzes")
     public ResponseEntity<List<QuizResponseDTO>> getQuizzes(
-            @RequestParam(required = false) Integer courseId,
+            @RequestParam(required = false) Integer videoId,
             @RequestParam(required = false) Integer quizId,
             @RequestParam(required = false) String title,
             @RequestParam(required = false) Boolean isActive
     ) {
-        return ResponseEntity.ok(quizInterface.getQuizzes(courseId, quizId, title, isActive));
+        return ResponseEntity.ok(quizInterface.getQuizzes(videoId, quizId, title, isActive));
     }
+
 }

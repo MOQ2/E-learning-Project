@@ -1,0 +1,39 @@
+<div class="card shadow-lg rounded-4 p-0">
+
+  <div class=" mx-3 my-3 d-flex justify-content-between align-items-center">
+    <span class="fw-bold text-primary">{{ quiz.title }}</span>
+    <button class="btn-close" (click)="dialogRef.close()"></button>
+  </div>
+
+  <div class="card-body" style="max-height: 70vh; overflow-y: auto">
+
+    @for (q of quiz.questions; track q.id; let i = $index) {
+      <div class="mb-3 p-3 shadow-sm rounded-3" style="background-color:#f8f9fa;">
+        <div class="d-flex justify-content-between mb-2">
+          <span class="fw-bold">Question {{ i + 1 }}</span>
+          <span class="badge bg-primary">{{ q.questionMark }} marks</span>
+        </div>
+        <p>{{ q.text }}</p>
+
+        @for (o of q.options; track o.id) {
+          <div class="form-check mb-1">
+            <input class="form-check-input" type="radio"
+                   name="q{{q.id}}"
+                   id="q{{q.id}}o{{o.id}}"
+                   [value]="o.id"
+                   (change)="studentAnswers[q.id] = o.id"
+                   [checked]="studentAnswers[q.id] === o.id">
+            <label class="form-check-label" for="q{{q.id}}o{{o.id}}">
+              {{ o.text }}
+            </label>
+          </div>
+        }
+      </div>
+    }
+
+  <div class="text-end mb-3">
+    <button class="btn btn-primary" (click)="submitQuiz()">Submit Quiz</button>
+  </div>
+  </div>
+
+</div>
