@@ -1,15 +1,15 @@
 import { Injectable } from '@angular/core';
-import {HttpClient} from '@angular/common/http';
-import {environment} from '../../../environments/environment';
-import {map, Observable} from 'rxjs';
-// import {Courses} from '../../courses/courses';
+import { HttpClient, HttpParams } from '@angular/common/http';
+import { environment } from '../../../environments/environment';
+import { map, Observable, switchMap } from 'rxjs';
+
+import { PaymentToDto, PaymentFromDto } from '../../models/payment_model';
+import { UserCourseAccessFromDto, UserCourseAccessToDto } from '../../models/userCourseAccessModel';
 import { CourseDto } from '../../Dtos/CourseDto';
-import { HttpParams } from '@angular/common/http';
 import { CourseFilterParams } from '../../Dtos/CourseFilterParams';
 import { ApiResponse } from '../../Dtos/ApiResponse';
 import { PageResponse } from '../../Dtos/PageResponse';
 import { TagDto } from '../../Dtos/TagDto';
-
 
 export interface CourseInterface {
   id: number;
@@ -116,12 +116,40 @@ private api = `${environment.apiUrl}`
     return this.http.get<ApiResponse<PageResponse<CourseDto>>>(`${this.api}/api/courses`, { params });
   }
 
+createPayment(payment: PaymentToDto): Observable<PaymentFromDto> {
+  return this.http.post<PaymentFromDto>(this.api + '/api/payments', payment);
+}
 
+grantAccess(grantDto: UserCourseAccessToDto): Observable<UserCourseAccessFromDto> {
+  const params = new URLSearchParams();
+  params.set('userId', grantDto.userId.toString());
+  params.set('courseId', grantDto.courseId.toString());
+  params.set('accessType', grantDto.accessType);
+  if (grantDto.paymentId) params.set('paymentId', grantDto.paymentId.toString());
 
-  getCategories(): Observable<ApiResponse<TagDto[]>> {
-    return this.http.get<ApiResponse<TagDto[]>>(`${this.api}/api/courses/categories`);
-  }
+  return this.http.post<UserCourseAccessFromDto>(
+    `${this.api}/api/user-course-access/grant-course-access?${params.toString()}`,
+    null
+  );
+}
 
+payAndGrantAccess(payment: PaymentToDto, accessType: 'PURCHASED'): Observable<UserCourseAccessFromDto> {
+  return this.createPayment(payment).pipe(
+    switchMap(paymentRes => {
+      const grantDto: UserCourseAccessToDto = {
+        userId: payment.userId,
+        courseId: payment.courseId!,
+        accessType: accessType,
+        paymentId: paymentRes.id
+      };
+      return this.grantAccess(grantDto);
+    })
+  );
+}
+
+getCategories(): Observable<ApiResponse<TagDto[]>> {
+  return this.http.get<ApiResponse<TagDto[]>>(`${this.api}/api/courses/categories`);
+}
 
 
 }

@@ -52,7 +52,9 @@ export class Login implements OnDestroy{
           localStorage.setItem('token', res.token);
           this.userService.setUser(res.token);
           this.toast.success('Login successful!');
+
           this.router.navigate(['/quizzes']);
+
         },
         error: (err) => {
           this.toast.error(err.error.message);
