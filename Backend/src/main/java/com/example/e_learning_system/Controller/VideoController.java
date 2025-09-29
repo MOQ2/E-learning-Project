@@ -12,13 +12,18 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.core.io.InputStreamResource;
+import org.springframework.http.HttpHeaders;
+import org.springframework.web.bind.annotation.RequestHeader;
 
 import jakarta.validation.Valid;
+import java.io.InputStream;
+import java.net.HttpURLConnection;
+import java.net.URL;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-
 @RestController
 @RequestMapping("/api/videos")
 @RequiredArgsConstructor
@@ -127,6 +132,55 @@ public class VideoController {
         response.put("expiresInMinutes", durationMinutes);
 
         return ResponseEntity.ok(ApiResponse.success("Video URL generated successfully", response));
+    }
+
+    /**
+     * Stream video through backend as a proxy so browser doesn't need direct CORS access to S3.
+     * This forwards optional Range header to S3 presigned URL and returns the response stream and headers.
+     */
+    @GetMapping(path = "/{id}/stream")
+    public ResponseEntity<InputStreamResource> streamVideo(
+            @PathVariable Integer id,
+            @RequestParam(value = "duration", defaultValue = "5") Integer durationMinutes,
+            @RequestHeader(value = "Range", required = false) String rangeHeader
+    ) {
+        try {
+            String presignedUrl = videoService.getVideoUrl(id, durationMinutes);
+            if (presignedUrl == null) {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+            }
+
+            URL url = new URL(presignedUrl);
+            HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+            conn.setDoInput(true);
+            // Forward Range header if present to support seeking
+            if (rangeHeader != null && !rangeHeader.isEmpty()) {
+                conn.setRequestProperty("Range", rangeHeader);
+            }
+            conn.connect();
+
+            int statusCode = conn.getResponseCode();
+            InputStream inputStream = (statusCode >= 400) ? conn.getErrorStream() : conn.getInputStream();
+
+            InputStreamResource resource = new InputStreamResource(inputStream);
+
+            HttpHeaders headers = new HttpHeaders();
+            // Copy relevant headers from S3 response
+            String contentType = conn.getHeaderField("Content-Type");
+            String contentLength = conn.getHeaderField("Content-Length");
+            String acceptRanges = conn.getHeaderField("Accept-Ranges");
+            String contentRange = conn.getHeaderField("Content-Range");
+
+            if (contentType != null) headers.add(HttpHeaders.CONTENT_TYPE, contentType);
+            if (contentLength != null) headers.add(HttpHeaders.CONTENT_LENGTH, contentLength);
+            if (acceptRanges != null) headers.add("Accept-Ranges", acceptRanges);
+            if (contentRange != null) headers.add("Content-Range", contentRange);
+
+            // Let frontend cache or reuse; browser will request Range again if needed
+            return ResponseEntity.status(statusCode).headers(headers).body(resource);
+        } catch (Exception ex) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
     }
 
     @PostMapping("/{videoId}/attachments/{attachmentId}")
