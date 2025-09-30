@@ -122,7 +122,7 @@ textarea.form-control {
 
 .rich-text-editor .ql-container {
     border: none;
-    min-height: 250px;
+  min-height: clamp(180px, 28vh, 360px);
     font-size: 14px;
 }
 
@@ -139,7 +139,7 @@ textarea.form-control {
 /* End Quill Styles */
 
 .scrollable-list {
-  max-height: 200px;
+  max-height: clamp(140px, 30vh, 320px);
   overflow-y: auto;
   border: 1px solid var(--color-border);
   border-radius: 8px;

@@ -8,6 +8,11 @@
     gap: 12px;
 }
 
+.module-list-card{
+    min-width: 220px;
+    width:100%;
+}
+
 .module-list-header {
     display: flex;
     justify-content: space-between;
@@ -29,7 +34,8 @@
     display: flex;
     flex-direction: column;
     gap: 8px;
-    max-height: 280px;
+    /* responsive bounded height for the modules list */
+    max-height: clamp(180px, 36vh, 420px);
     overflow-y: auto;
     padding-right: 8px;
 }

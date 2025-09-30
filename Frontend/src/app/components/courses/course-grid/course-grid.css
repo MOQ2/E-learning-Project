@@ -8,15 +8,17 @@
   padding: 32px;
   margin-bottom: 24px;
   display: flex;
-  justify-content: space-between;
+  gap: 20px;
   align-items: center;
   position: relative;
   overflow: hidden;
 }
 
 .hero-content {
-  flex: 1;
-  max-width: 50%;
+  /* flexible content column: grow to fill available space but maintain a comfortable
+     basis so the hero image doesn't squeeze it on small viewports */
+   flex: 1 1 clamp(300px, 38vw, 640px);
+   min-width: 240px;
 }
 
 .hero-title {
@@ -68,9 +70,18 @@
 }
 
 .hero-image {
-  flex: 1;
-  height: 200px;
+  flex: 1 1 clamp(220px, 28vw, 420px);
+  min-width: 200px;
   position: relative;
+}
+
+.hero-image img, .hero-image .graphic {
+  width: 100%;
+  height: auto;
+  aspect-ratio: 16/9;
+  object-fit: cover;
+  display: block;
+  border-radius: 12px;
 }
 
 .gradient-bg {
@@ -109,6 +120,14 @@
   color: #6b7280;
   cursor: pointer;
   transition: all 0.2s;
+}
+
+.filter-icon{
+  width:1em;
+  height:1em;
+  vertical-align:middle;
+  margin-right:0.35em;
+  display:inline-block;
 }
 
 .top-filter:hover {
@@ -166,7 +185,7 @@
 
 .courses-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
   gap: 24px;
   margin-bottom: 32px;
 }

@@ -1,10 +1,16 @@
 .sidebar {
-    background-color: var(--color-sidebar-bg);
-    border: 1px solid var(--color-border);
-    border-radius: var(--border-radius-md);
-    padding: 16px;
-    align-self: flex-start;
-    flex: 0 0 260px;
+        background-color: var(--color-sidebar-bg);
+        border: 1px solid var(--color-border);
+        border-radius: var(--border-radius-md);
+        padding: 16px;
+        align-self: flex-start;
+        /* responsive sidebar width */
+        flex: 0 0 clamp(200px, 20vw, 320px);
+        min-width: 180px;
+}
+
+@media (max-width: 900px){
+    .sidebar{flex: 0 0 auto; width:100%;}
 }
 
 .sidebar__title {

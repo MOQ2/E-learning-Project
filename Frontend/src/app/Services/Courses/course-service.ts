@@ -301,6 +301,19 @@ private api = `${environment.apiUrl}`
     );
   }
 
+  /**
+   * Fetch quizzes. Backend has an endpoint: GET /quizzes/getQuizzes
+   * Accepts optional courseId to filter quizzes for a course.
+   */
+  getQuizzes(courseId?: number): Observable<any[]> {
+    const params: any = {};
+    if (courseId != null) params.courseId = courseId.toString();
+    // The backend controller is mapped to /quizzes/getQuizzes
+    return this.http.get<ApiResponse<any>>(`${this.api}/quizzes/getQuizzes`, { params }).pipe(
+      map((response: any) => response.data || response)
+    );
+  }
+
   getLessons(): Observable<any> {
     return this.http.get<ApiResponse<any>>(`${this.api}/api/lessons`).pipe(
       map(response => response.data)

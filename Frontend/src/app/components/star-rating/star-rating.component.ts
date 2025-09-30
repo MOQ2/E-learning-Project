@@ -22,13 +22,14 @@ import { CommonModule } from '@angular/common';
   `,
   styles: [
     `
-    .star-rating { display:inline-block; vertical-align:middle; }
-    .stars-outer{ position:relative; display:inline-block; width:110px; height:20px; overflow:hidden }
-    .stars-inner{ position:absolute; top:0; left:0; white-space:nowrap; overflow:hidden; width:0; height:100%; background:linear-gradient(90deg,#FFC107 0 100%); -webkit-background-clip:text; }
+  .star-rating { display:inline-block; vertical-align:middle; }
+  :host{ --star-size:20px }
+  .stars-outer{ position:relative; display:inline-block; width:calc(var(--star-size) * 5); height:var(--star-size); overflow:hidden }
+  .stars-inner{ position:absolute; top:0; left:0; white-space:nowrap; overflow:hidden; width:0; height:100%; background:linear-gradient(90deg,#FFC107 0 100%); -webkit-background-clip:text; }
     /* draw five stars using background SVG for crisp rendering */
     .stars-outer, .stars-inner{
       background-repeat:repeat-x;
-      background-size:20px 20px;
+      background-size:var(--star-size) var(--star-size);
       background-image: url("data:image/svg+xml;utf8,\x3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 51 48'%3e%3cpath fill='%23E0E0E0' d='m25,1 7,17 18,2-13,12 4,18-16-9-16,9 4-18L0,20l18-2z'/%3e%3c/svg%3e");
     }
     .stars-inner{ background-image: url("data:image/svg+xml;utf8,\x3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 51 48'%3e%3cpath fill='%23FFC107' d='m25,1 7,17 18,2-13,12 4,18-16-9-16,9 4-18L0,20l18-2z'/%3e%3c/svg%3e"); }

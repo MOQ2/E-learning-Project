@@ -13,6 +13,7 @@ import { LessonPage } from './lesson-page/lesson-page';
       <app-lesson-page></app-lesson-page>
     </div>
   `,
-  styles: [`.lesson-wrapper { padding: 16px; }`]
+  styles: [`.lesson-wrapper { background: var(--color-background); }`]
 })
 export class LessonWrapper {}
+
