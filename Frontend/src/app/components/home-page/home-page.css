@@ -116,7 +116,7 @@ header {
 .hero {
   padding: 42px 0 18px 0;
   margin: 36px auto 0 auto;
-  max-width: 1200px;
+  max-width: clamp(920px, 90vw, 1200px);
   position: relative;
 }
 
@@ -130,16 +130,16 @@ header {
 }
 
 .hero-left {
-  flex: 1;
+  flex: 1 1 clamp(320px, 40vw, 520px);
+  min-width: 220px;
   border-radius: 14px;
   padding: 20px;
-  background-color:rgb(255, 228, 181) ;
-  width : 50%;
+  background-color: rgb(255, 228, 181);
 }
 .hero-right {
-  flex: 1;
+  flex: 1 1 clamp(220px, 28vw, 380px);
+  min-width: 180px;
   text-align: right;
-  width: 50%;
 }
 .accessibility-label {
   background: var(--accent);
@@ -175,9 +175,11 @@ header {
 
 .hero-img {
   width: 100%;
-  height: 60%;
+  height: auto;
   border-radius: 18px;
   background: var(--border);
+  aspect-ratio: 16/9;
+  object-fit: cover;
 }
 
 .quick-info {
@@ -230,14 +232,14 @@ header {
   background: var(--card-bg);
   border: 2px solid var(--border);
   border-radius: 28px;
-  padding: 28px 28px 28px 28px;
+  padding: 28px;
   box-shadow: 0 8px 18px rgba(130,87,230,0.04);
   display: flex;
   flex-direction: column;
   align-items: flex-start;
   text-align: left;
   gap: 12px;
-  min-height: 140px;
+  min-height: 120px; /* reduce strictness but maintain a minimum visual weight */
   transition: transform 0.18s ease, box-shadow 0.18s ease, background-color 0.18s ease;
 }
 
@@ -313,9 +315,11 @@ header {
 
 .category-card img {
   width: 100%;
-  height: 140px;
+  aspect-ratio: 16 / 9;
+  min-height: 110px;
   object-fit: cover;
   background: #e8e8ec;
+  display: block;
 }
 
 .category-label {

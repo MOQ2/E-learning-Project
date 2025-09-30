@@ -14,16 +14,23 @@
 *{box-sizing:border-box;margin:0;padding:0}
 .course_view_page-1{display:flex;flex-direction:column;align-items:flex-start;padding:12px 20px;width:100%;min-height:100vh;margin:10px auto;max-width:1400px;background-color:var(--bg)}
 .container-26{display:flex;gap:24px;padding:18px;width:100%;align-items:flex-start}
-.background-border-27{width:70%;background:var(--card-bg);border:1px solid var(--border);border-radius:14px;padding:16px}
-.background-border-192{width:30%;background:var(--card-bg);border:1px solid var(--border);border-radius:14px;padding:16px;position:sticky;top:24px;height:fit-content}
+.background-border-27{ /* main content should be flexible but not collapse */
+  flex: 1 1 clamp(420px, 45vw, 900px);
+  min-width:280px;
+  background:var(--card-bg);border:1px solid var(--border);border-radius:14px;padding:20px;transition:transform .14s ease,box-shadow .14s ease,border-color .14s ease
+}
+.background-border-192{ /* sidebar: fixed-ish but responsive */
+  flex: 0 0 clamp(240px, 22vw, 420px);
+  max-width:420px;min-width:200px;background:var(--card-bg);border:1px solid var(--border);border-radius:14px;padding:18px;position:sticky;top:24px;height:fit-content;transition:transform .14s ease,box-shadow .14s ease
+}
 .horizontalborder-28,.horizontalborder-193{display:flex;align-items:center;gap:12px;padding:16px;border-bottom:1px solid var(--border)}
 .text-35{font-size:18px;font-weight:700;color:var(--text-rgb-15-23-36)}
 .text-82,.text-94{font-size:16px;font-weight:700;color:var(--text-rgb-15-23-36)}
 .container-44{padding:16px;display:flex;flex-direction:column;gap:16px}
 .background-border-45{display:flex;flex-direction:column;gap:12px;padding:13px;background:var(--card-bg);border:1px solid var(--border);border-radius:14px}
 .container-46{display:flex;gap:12px;align-items:center}
-.background-border-47{width:28%;background:rgba(248,250,252,1);border:1px solid var(--border);border-radius:14px;padding:8px;display:flex;align-items:center;justify-content:center}
-.node-48{width:100%;height:140px;border-radius:8px;object-fit:cover}
+.background-border-47{flex:0 0 clamp(140px, 16vw, 240px);flex-basis:clamp(140px, 16vw, 240px);min-width:120px;max-width:260px;background:rgba(248,250,252,1);border:1px solid var(--border);border-radius:14px;padding:8px;display:flex;align-items:center;justify-content:center}
+.node-48{width:100%;height:auto;aspect-ratio:16/9;max-height:240px;border-radius:8px;object-fit:cover}
 .container-49{display:flex;flex-direction:column;gap:10px;flex:1;min-width:0}
 .meta-row{display:flex;gap:12px;align-items:center}
 .rating{font-weight:700;color:var(--text-rgb-15-23-36)}
@@ -36,9 +43,16 @@ app-star-rating{display:inline-block;vertical-align:middle}
 
 /* Layout polish */
 .container-26{gap:24px;padding:24px}
-.background-border-27{padding:16px}
-.background-border-192{padding:16px}
+.background-border-27{padding:20px}
+.background-border-192{padding:18px}
 .text-35{font-size:24px;font-weight:800}
+
+/* subtle card lift on hover for better hierarchy */
+.background-border-27:hover, .background-border-96:hover, .background-border-211:hover, .background-border-213:hover {
+  transform: translateY(-6px);
+  box-shadow: 0 12px 28px rgba(16,24,40,0.06);
+  border-color: rgba(124,58,237,0.06);
+}
 
 @media (max-width:1024px){
   .container-26{padding:16px}
@@ -46,13 +60,13 @@ app-star-rating{display:inline-block;vertical-align:middle}
 }
 
 .background-border-260{margin-top:16px;padding:12px;border:1px solid var(--border);border-radius:8px}
-.review-item{padding:8px 0;border-bottom:1px dashed rgba(0,0,0,0.04)}
+.review-item{padding:8px 0;border-bottom:1px dashed rgba(0,0,0,0.04);opacity:0;transform:translateY(6px);animation:cv-fadeInUp .28s ease forwards}
 .review-header{display:flex;gap:12px;align-items:center;margin-bottom:6px}
 .review-rating{background:rgba(255,193,7,0.12);padding:2px 6px;border-radius:4px}
 .review-body{color:var(--text-rgb-11-18-32)}
 .review-form{display:flex;flex-direction:column;gap:8px;margin-top:12px}
 .review-form select,.review-form textarea{padding:8px;border:1px solid var(--border);border-radius:6px}
-.review-form button.background-216{width:140px}
+.review-form button.background-216{min-width:120px;padding:8px 12px}
 .container-50{display:flex;gap:8px}
 .background-51,.background-58,.background-66{display:flex;align-items:center;gap:6px;padding:6px 8px;border-radius:48px;background:rgba(248,250,252,1)}
 .background-border-73{padding:12px 14px;background:var(--card-bg);border:1px solid var(--border);border-radius:8px}
@@ -89,7 +103,7 @@ app-star-rating{display:inline-block;vertical-align:middle}
 .border-207{border:1px solid var(--border);border-radius:8px;padding:12px}
 .container-210{display:flex;gap:8px}
 .container-210{display:flex;gap:12px;align-items:center;flex-wrap:wrap}
-.container-210 .plan-card{flex:1 1 140px;min-width:120px;max-width:260px}
+.container-210 .plan-card{flex:1 1 clamp(140px, 18vw, 240px);min-width:120px;max-width:320px}
 .container-210 .plan-card button{width:100%;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .background-border-211 button,.background-border-213 button{background:transparent;border:none;padding:8px 12px;font-weight:700;cursor:pointer}
 
@@ -135,15 +149,15 @@ app-star-rating{display:inline-block;vertical-align:middle}
 .text-white{color:var(--text-white)}
 
 .horizontal-divider-230{height:1px;background:var(--border);width:100%;margin:12px 0}
-.border-232{border:1px solid var(--border);border-radius:20px;width:40px;height:40px;overflow:hidden}
-.avatar2-jpg-233{width:100%;height:100%;object-fit:cover}
+.border-232{border:1px solid var(--border);border-radius:20px;min-width:36px;min-height:36px;max-width:56px;max-height:56px;overflow:hidden;display:inline-block}
+.avatar2-jpg-233{width:100%;height:100%;object-fit:cover;display:block}
 
 .background-border-239,.background-border-241,.background-border-243{padding:11px 13px;border:1px solid var(--border);border-radius:8px}
 
 .error{color:red;padding:12px}
 
 /* collapsible reviews list */
-.reviews-list{overflow:hidden;max-height:360px;transition: max-height 300ms ease}
+.reviews-list{overflow:hidden;max-height:clamp(200px, 40vh, 600px);transition: max-height 300ms ease}
 .reviews-list.expanded{max-height:2000px}
 .reviews-toggle{margin:8px 0;display:flex;justify-content:center}
 .reviews-toggle button{background:transparent;border:1px solid var(--border);padding:6px 10px;border-radius:6px;cursor:pointer}
@@ -166,9 +180,22 @@ app-star-rating{display:inline-block;vertical-align:middle}
 
 .spinner-container{display:flex;flex-direction:column;align-items:center;padding:24px}
 .spinner{width:48px;height:48px;border-radius:50%;border:6px solid rgba(0,0,0,0.08);border-top-color:var(--accent);animation:spin 1s linear infinite}
+@media (max-width: 420px){
+  .spinner{width:36px;height:36px;border-width:5px}
+}
 .loading-text{margin-top:8px;color:var(--text-rgb-107-114-128)}
 
 @keyframes spin{to{transform:rotate(360deg)}}
+
+@keyframes cv-fadeInUp{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+
+/* small delays for first few reviews to stagger entrance */
+.review-item:nth-child(1){animation-delay:0.02s}
+.review-item:nth-child(2){animation-delay:0.06s}
+.review-item:nth-child(3){animation-delay:0.10s}
+
+/* accessible focus outlines for interactive elements */
+button:focus, [role="button"]:focus, a:focus{outline:3px solid rgba(124,58,237,0.12);outline-offset:2px}
 
 @media (max-width:1024px){.container-26{flex-direction:column}.background-border-27,.background-border-192{width:100%}}
 @media (max-width:768px){.container-46{flex-direction:column;align-items:flex-start}.background-border-47{width:100%}.course_view_page-1{padding:12px}}

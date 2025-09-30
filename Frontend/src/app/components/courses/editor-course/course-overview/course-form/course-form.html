@@ -164,7 +164,7 @@
           <div class="form-field">
             <label for="preview-thumb">Thumbnail</label>
             <div *ngIf="isThumbnailFile(); else textThumb">
-              <img [src]="getThumbnailUrl()" alt="Thumbnail preview" style="max-width: 100px; max-height: 100px;">
+              <img [src]="getThumbnailUrl()" alt="Thumbnail preview" class="thumbnail-preview">
             </div>
             <ng-template #textThumb>
               <input type="text" id="preview-thumb" readonly [value]="courseForm.get('thumbnail')?.value">

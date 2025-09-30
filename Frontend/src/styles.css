@@ -19,6 +19,14 @@
   --text: #222;
   --muted: #696969;
   --accent: #00cba9;
+  /* spacing and motion tokens */
+  --space-xs: 6px;
+  --space-sm: 12px;
+  --space-md: 20px;
+  --space-lg: 32px;
+  --radius-sm: 8px;
+  --radius-md: 14px;
+  --shadow-soft: 0 6px 20px rgba(16,24,40,0.06);
 }
 
 /* Apply global page background using the custom property */
@@ -57,6 +65,8 @@ html, body {
     background-color: var(--color-background);
     color: var(--color-text-dark);
     line-height: 1.5;
+    -webkit-font-smoothing:antialiased;
+    -moz-osx-font-smoothing:grayscale;
   }
 
   ul {
@@ -73,6 +83,50 @@ html, body {
     max-width: 1400px;
     margin: 0 auto;
     padding: 0 24px;
+    width: calc(100% - 48px);
+  }
+
+  /* Global layout helpers */
+  .layout-row { display:flex; gap:var(--space-md); align-items:flex-start; flex-wrap:wrap }
+  .layout-center { display:flex; align-items:center; justify-content:center }
+
+  /* Columns with sensible min-widths so components don't collapse below half screen */
+  .layout-main { flex: 1 1 clamp(420px, 45vw, 900px); min-width: 280px }
+  .layout-side { flex: 0 0 clamp(240px, 22vw, 420px); min-width: 200px; max-width: 420px }
+
+  /* Generic card utility used across many components */
+  .card { background: var(--card-bg); border: 1px solid var(--border); border-radius: var(--border-radius-md); padding: var(--space-md); }
+
+  /* Try to neutralize hard-coded percentage widths inside common page containers
+     so they become flexible and respect available space */
+  .container-26 { display:flex; gap:var(--space-md); align-items:flex-start; }
+  .container-26 > .background-border-27 { flex: 1 1 clamp(420px, 45vw, 900px); min-width:280px; width: auto }
+  .container-26 > .background-border-192 { flex: 0 0 clamp(240px, 22vw, 420px); min-width:200px; max-width:420px; width: auto }
+
+  /* Fallback: apply to any child background-border-* entries inside a main container */
+  .container-26 > [class*="background-border-"] { box-sizing: border-box }
+
+  /* Motion utilities and global timing variables */
+  :root { --motion-fast: 120ms; --motion-medium: 240ms; --motion-slow: 360ms }
+
+  .animate-fade { animation: fadeIn var(--motion-medium) ease both }
+  .animate-up { animation: fadeInUp var(--motion-medium) cubic-bezier(.2,.9,.2,1) both }
+
+  @keyframes fadeInUp { from { opacity:0; transform: translateY(8px) } to { opacity:1; transform: translateY(0) } }
+
+  /* Ensure images inside cards don't force overflow or odd aspect ratio */
+  .card img, .background-border-47 img, .node-48 { width:100%; height:auto; object-fit:cover }
+
+  /* Small utility for order summary thumbnails used in payment and carts */
+  /* responsive order thumbnail: scales between 60px and 120px depending on viewport */
+  .order-thumb { width: clamp(60px, 8vw, 120px); height: auto; max-height: 90px; object-fit: cover; display: block }
+
+  /* Utility: central content container with consistent padding */
+  .container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: var(--space-md);
+    box-sizing: border-box;
   }
 
   /* --- Buttons & Tags --- */
@@ -89,6 +143,28 @@ html, body {
     gap: 8px;
     transition: opacity 0.2s ease;
   }
+
+  /* Motion utilities */
+  .fade-in {
+    animation: fadeIn .36s ease both;
+  }
+
+  .fade-in-up {
+    animation: fadeInUp .36s cubic-bezier(.2,.9,.2,1) both;
+  }
+
+  @keyframes fadeIn {
+    from { opacity: 0 }
+    to { opacity: 1 }
+  }
+
+  @keyframes fadeInUp {
+    from { opacity: 0; transform: translateY(8px) }
+    to { opacity: 1; transform: translateY(0) }
+  }
+
+  /* Make images predictable and accessible */
+  img { max-width:100%; display:block; height:auto }
 
   .btn:hover {
     opacity: 0.9;
@@ -256,6 +332,8 @@ html, body {
     display: flex;
     flex-direction: column;
     gap: 12px;
+    transition: transform .14s ease, box-shadow .14s ease;
+    will-change: transform;
   }
 
   .module-list-header {
@@ -339,6 +417,7 @@ html, body {
     /* FIX: Ensure card acts as a flex container for the footer */
     display: flex;
     flex-direction: column;
+    box-shadow: var(--shadow-soft);
   }
 
   .editor-header {
