@@ -361,4 +361,29 @@ private api = `${environment.apiUrl}`
       map(response => response.data)
     );
   }
+
+
+
+
+  /// @nourtomeh
+
+  /**
+   * Check if user has access to a course
+   * @param userId User ID
+   * @param courseId Course ID
+   */
+  checkUserCourseAccess(userId: number, courseId: number): Observable<any> {
+    return this.http.get<ApiResponse<boolean>>(`${this.api}/api/user-course-access/check-access/${userId}/${courseId}`).pipe(
+      map(response => response.data)
+    );
+  }
+
+  /**
+   * Get user course access details
+   * @param userId User ID
+   * @param courseId Course ID
+   */
+  getUserCourseAccessDetails(userId: number, courseId: number): Observable<any> {
+    return this.http.get<ApiResponse<any>>(`${this.api}/api/user-course-access/get-access/${userId}/${courseId}`);
+  }
 }

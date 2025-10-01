@@ -41,6 +41,10 @@ export class NotificationService {
     return this.show(message, 'info', duration);
   }
 
+  warning(message: string, duration: number = 3500) {
+    return this.show(message, 'info', duration);
+  }
+
   loading(message: string) {
     return this.show(message, 'loading', 0);
   }

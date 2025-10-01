@@ -1,0 +1,380 @@
+<div class="enrolled-course-page" *ngIf="!loading && course">
+  <!-- Hero Section with Progress -->
+  <div class="hero-section">
+    <div class="hero-content">
+      <div class="breadcrumb">
+        <a routerLink="/courses" class="breadcrumb-link">My Courses</a>
+        <span class="breadcrumb-separator">›</span>
+        <span class="breadcrumb-current">{{ course?.name }}</span>
+      </div>
+
+      <h1 class="course-title">{{ course?.name }}</h1>
+      <p class="course-instructor" *ngIf="course?.instructor">
+        <span class="instructor-icon">👨‍🏫</span>
+        {{ course?.instructor }}
+      </p>
+
+      <!-- Progress Bar -->
+      <div class="progress-section">
+        <div class="progress-header">
+          <span class="progress-label">Your Progress</span>
+          <span class="progress-percentage">{{ courseProgress.percentage | number:'1.0-0' }}%</span>
+        </div>
+        <div class="progress-bar">
+          <div class="progress-fill" [style.width.%]="courseProgress.percentage"></div>
+        </div>
+        <div class="progress-stats">
+          <span class="stat-item">
+            <span class="stat-icon">✓</span>
+            {{ courseProgress.completedLessons }}/{{ courseProgress.totalLessons }} lessons
+          </span>
+          <span class="stat-item">
+            <span class="stat-icon">⏱️</span>
+            {{ formatDuration(courseProgress.timeSpent) }} spent
+          </span>
+          <span class="stat-item" *ngIf="courseProgress.certificateEligible">
+            <span class="stat-icon">🎓</span>
+            Certificate eligible
+          </span>
+        </div>
+      </div>
+
+      <!-- Action Buttons -->
+      <div class="action-buttons">
+        <button class="btn-primary" (click)="startLearning()">
+          <span class="btn-icon">▶</span>
+          {{ courseProgress.percentage > 0 ? 'Continue Learning' : 'Start Learning' }}
+        </button>
+        <button class="btn-secondary" (click)="downloadCertificate()"
+                [disabled]="!courseProgress.certificateEligible">
+          <span class="btn-icon">🎓</span>
+          Get Certificate
+        </button>
+      </div>
+
+      <!-- Access Info -->
+      <div class="access-info" *ngIf="accessType">
+        <div class="access-badge" [class.expiring-soon]="getDaysUntilExpiry() && getDaysUntilExpiry()! < 7">
+          <span class="badge-icon">🔑</span>
+          <span class="badge-text">
+            {{ accessType === 'SUBSCRIPTION_ACCESS' ? 'Subscription' : 'Full Access' }}
+            <span *ngIf="accessExpiresAt"> · Expires {{ formatDate(accessExpiresAt) }}</span>
+          </span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Tab Navigation -->
+  <div class="tabs-container">
+    <div class="tabs">
+      <button class="tab" [class.active]="activeTab === 'overview'" (click)="setActiveTab('overview')">
+        <span class="tab-icon">📋</span>
+        Overview
+      </button>
+      <button class="tab" [class.active]="activeTab === 'curriculum'" (click)="setActiveTab('curriculum')">
+        <span class="tab-icon">📚</span>
+        Curriculum
+      </button>
+      <button class="tab" [class.active]="activeTab === 'resources'" (click)="setActiveTab('resources')">
+        <span class="tab-icon">📁</span>
+        Resources
+      </button>
+      <button class="tab" [class.active]="activeTab === 'discussion'" (click)="setActiveTab('discussion')">
+        <span class="tab-icon">💬</span>
+        Discussion
+      </button>
+    </div>
+  </div>
+
+  <!-- Content Area -->
+  <div class="content-area">
+
+    <!-- Overview Tab -->
+    <div class="tab-content" *ngIf="activeTab === 'overview'">
+      <div class="layout-grid">
+        <!-- Main Column -->
+        <div class="main-column">
+
+          <!-- Course Description -->
+          <div class="content-card">
+            <h2 class="card-title">
+              <span class="title-icon">📖</span>
+              About This Course
+            </h2>
+            <p class="course-description">{{ course?.description }}</p>
+
+            <!-- What You'll Learn -->
+            <div class="learning-outcomes" *ngIf="course?.whatYouWillLearn?.length > 0">
+              <h3 class="section-subtitle">What you'll learn</h3>
+              <ul class="outcomes-list">
+                <li *ngFor="let item of course.whatYouWillLearn" class="outcome-item">
+                  <span class="check-icon">✓</span>
+                  {{ item }}
+                </li>
+              </ul>
+            </div>
+          </div>
+
+          <!-- Announcements -->
+          <div class="content-card" *ngIf="announcements.length > 0">
+            <h2 class="card-title">
+              <span class="title-icon">📢</span>
+              Announcements
+            </h2>
+            <div class="announcements-list">
+              <div class="announcement-item" *ngFor="let announcement of announcements">
+                <div class="announcement-header">
+                  <span class="announcement-type" [class]="announcement.type">{{ announcement.type }}</span>
+                  <span class="announcement-date">{{ formatDate(announcement.date) }}</span>
+                </div>
+                <h3 class="announcement-title">{{ announcement.title }}</h3>
+                <p class="announcement-content">{{ announcement.content }}</p>
+              </div>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- Sidebar -->
+        <div class="sidebar-column">
+
+          <!-- Quick Stats -->
+          <div class="stat-card">
+            <h3 class="stat-card-title">Course Stats</h3>
+            <div class="stat-list">
+              <div class="stat-row">
+                <span class="stat-label">
+                  <span class="stat-icon">📚</span>
+                  Modules
+                </span>
+                <span class="stat-value">{{ modules.length }}</span>
+              </div>
+              <div class="stat-row">
+                <span class="stat-label">
+                  <span class="stat-icon">🎬</span>
+                  Lessons
+                </span>
+                <span class="stat-value">{{ courseProgress.totalLessons }}</span>
+              </div>
+              <div class="stat-row">
+                <span class="stat-label">
+                  <span class="stat-icon">⏱️</span>
+                  Duration
+                </span>
+                <span class="stat-value">{{ course?.estimatedDurationInHours }}h</span>
+              </div>
+              <div class="stat-row" *ngIf="availableQuizzes.length > 0">
+                <span class="stat-label">
+                  <span class="stat-icon">📝</span>
+                  Quizzes
+                </span>
+                <span class="stat-value">{{ availableQuizzes.length }}</span>
+              </div>
+              <div class="stat-row">
+                <span class="stat-label">
+                  <span class="stat-icon">⭐</span>
+                  Rating
+                </span>
+                <span class="stat-value">{{ course?.averageRating | number:'1.1' }}</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Quizzes & Assessments -->
+          <div class="stat-card" *ngIf="availableQuizzes.length > 0">
+            <h3 class="stat-card-title">
+              <span class="title-icon">📝</span>
+              Quizzes
+            </h3>
+            <div class="quiz-list">
+              <div class="quiz-item" *ngFor="let quiz of availableQuizzes" (click)="openQuiz(quiz)">
+                <div class="quiz-info">
+                  <h4 class="quiz-title">{{ quiz.title }}</h4>
+                  <p class="quiz-meta">
+                    {{ quiz.questions?.length || 0 }} questions
+                  </p>
+                </div>
+                <div class="quiz-action">
+                  <span class="quiz-score" *ngIf="quizScores.has(quiz.id)">
+                    {{ quizScores.get(quiz.id) }}%
+                  </span>
+                  <button class="btn-icon-small">→</button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Certificate Card -->
+          <div class="stat-card certificate-card" *ngIf="courseProgress.certificateEligible">
+            <div class="certificate-icon">🏆</div>
+            <h3 class="certificate-title">Certificate Ready!</h3>
+            <p class="certificate-text">You've completed enough to earn your certificate</p>
+            <button class="btn-certificate" (click)="downloadCertificate()">
+              Download Certificate
+            </button>
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+    <!-- Curriculum Tab -->
+    <div class="tab-content" *ngIf="activeTab === 'curriculum'">
+      <div class="curriculum-container">
+        <div class="curriculum-header">
+          <h2 class="curriculum-title">Course Curriculum</h2>
+          <p class="curriculum-subtitle">{{ modules.length }} modules · {{ courseProgress.totalLessons }} lessons</p>
+        </div>
+
+        <!-- Modules List -->
+        <div class="modules-list">
+          <div class="module-item" *ngFor="let module of modules; trackBy: trackByModuleId">
+            <div class="module-header" (click)="toggleModule(module.id)">
+              <div class="module-info">
+                <button class="module-toggle" [class.expanded]="isModuleExpanded(module.id)">
+                  <span class="toggle-icon">{{ isModuleExpanded(module.id) ? '▼' : '▶' }}</span>
+                </button>
+                <div class="module-title-section">
+                  <h3 class="module-title">{{ module.moduleName || module.name || module.title }}</h3>
+                  <p class="module-meta">
+                    <span class="meta-item">
+                      <span class="meta-icon">🎬</span>
+                      {{ (module.videos || module.lessons || []).length }} lessons
+                    </span>
+                    <span class="meta-item" *ngIf="module.estimatedDuration">
+                      <span class="meta-icon">⏱️</span>
+                      {{ module.estimatedDuration }}m
+                    </span>
+                  </p>
+                </div>
+              </div>
+              <div class="module-progress">
+                <div class="progress-circle"
+                     [class.completed]="getModuleProgress(module.id)?.completed"
+                     *ngIf="getModuleProgress(module.id) as progress">
+                  <svg class="progress-ring" width="40" height="40">
+                    <circle class="progress-ring-circle" stroke="#e5e7eb" stroke-width="3" fill="transparent" r="16" cx="20" cy="20"/>
+                    <circle class="progress-ring-circle progress-ring-fill"
+                            stroke="var(--accent)" stroke-width="3" fill="transparent" r="16" cx="20" cy="20"
+                            [style.stroke-dasharray]="100.53"
+                            [style.stroke-dashoffset]="100.53 - (progress.percentage * 100.53 / 100)"/>
+                  </svg>
+                  <span class="progress-text">{{ progress.percentage | number:'1.0-0' }}%</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Lessons List -->
+            <div class="lessons-list" *ngIf="isModuleExpanded(module.id)">
+              <div class="lesson-item"
+                   *ngFor="let lesson of (module.videos || module.lessons || []); trackBy: trackByLessonId"
+                   (click)="goToLesson(lesson.id || lesson.videoId)"
+                   [class.completed]="lesson.completed">
+                <div class="lesson-icon">
+                  <span *ngIf="!lesson.completed">🎬</span>
+                  <span *ngIf="lesson.completed" class="completed-check">✓</span>
+                </div>
+                <div class="lesson-info">
+                  <h4 class="lesson-title">{{ lesson.videoName || lesson.title || lesson.name }}</h4>
+                  <p class="lesson-meta" *ngIf="lesson.duration">
+                    <span class="meta-icon">⏱️</span>
+                    {{ lesson.duration }}m
+                  </p>
+                </div>
+                <button class="btn-play">
+                  <span>{{ lesson.completed ? 'Rewatch' : 'Play' }}</span>
+                  <span class="play-icon">▶</span>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Resources Tab -->
+    <div class="tab-content" *ngIf="activeTab === 'resources'">
+      <div class="resources-container">
+        <h2 class="section-title">Course Resources</h2>
+
+        <!-- Downloadable Resources -->
+        <div class="content-card">
+          <h3 class="card-subtitle">
+            <span class="subtitle-icon">📥</span>
+            Course Materials & Attachments
+          </h3>
+          <div class="resources-list" *ngIf="courseResources && courseResources.length > 0; else noResources">
+            <div class="resource-item" *ngFor="let resource of courseResources">
+              <div class="resource-icon">📄</div>
+              <div class="resource-info">
+                <h4 class="resource-title">{{ resource.name || resource.title || resource.fileName }}</h4>
+                <p class="resource-meta">
+                  <span *ngIf="resource.moduleName">{{ resource.moduleName }}</span>
+                  <span *ngIf="resource.lessonName"> › {{ resource.lessonName }}</span>
+                  <span *ngIf="resource.fileType"> · {{ resource.fileType }}</span>
+                  <span *ngIf="resource.fileSize"> · {{ resource.fileSize }}</span>
+                </p>
+              </div>
+              <button class="btn-download" (click)="downloadResource(resource)">
+                <span class="download-icon">⬇</span>
+                Download
+              </button>
+            </div>
+          </div>
+          <ng-template #noResources>
+            <div class="empty-state">
+              <span class="empty-icon">📁</span>
+              <p class="empty-text">No downloadable resources available for this course</p>
+            </div>
+          </ng-template>
+        </div>
+
+        <!-- Course Description (if not shown in overview) -->
+        <div class="content-card" *ngIf="course?.description">
+          <h3 class="card-subtitle">
+            <span class="subtitle-icon">�</span>
+            Course Description
+          </h3>
+          <p class="resource-description">{{ course.description }}</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Discussion Tab -->
+    <div class="tab-content" *ngIf="activeTab === 'discussion'">
+      <div class="discussion-container">
+        <h2 class="section-title">Course Discussion</h2>
+
+        <div class="content-card">
+          <div class="coming-soon">
+            <span class="coming-soon-icon">💬</span>
+            <h3 class="coming-soon-title">Discussion Board Coming Soon</h3>
+            <p class="coming-soon-text">
+              Connect with fellow learners, ask questions, and share insights. This feature is under development.
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- Loading State -->
+<div class="loading-container" *ngIf="loading">
+  <div class="loader">
+    <div class="spinner"></div>
+    <p class="loading-text">Loading course...</p>
+  </div>
+</div>
+
+<!-- Error State -->
+<div class="error-container" *ngIf="error && !loading">
+  <div class="error-content">
+    <span class="error-icon">⚠️</span>
+    <h2 class="error-title">Something went wrong</h2>
+    <p class="error-message">{{ error }}</p>
+    <button class="btn-retry" (click)="loadCourseData()">Try Again</button>
+  </div>
+</div>
