@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import {HttpClient} from '@angular/common/http';
 import {environment} from '../../../environments/environment';
-import {map, Observable} from 'rxjs';
+import {map, Observable, tap} from 'rxjs';
 // import {Courses} from '../../courses/courses';
 import { CourseDto } from '../../Dtos/CourseDto';
 import { HttpParams } from '@angular/common/http';
@@ -263,12 +263,25 @@ private api = `${environment.apiUrl}`
 
   getLesson(lessonId: number): Observable<any> {
     return this.http.get<ApiResponse<any>>(`${this.api}/api/lessons/${lessonId}`).pipe(
+      tap((raw) => console.debug('[CourseService] getLesson raw response for', lessonId, raw)),
+      map(response => response.data)
+    );
+  }
+
+  /**
+   * Get a lesson within a module context (includes order from ModuleVideos join table)
+   */
+  getLessonInModule(moduleId: number, lessonId: number): Observable<any> {
+    return this.http.get<ApiResponse<any>>(`${this.api}/api/modules/${moduleId}/lessons/${lessonId}`).pipe(
+      tap((raw) => console.debug('[CourseService] getLessonInModule raw response for module', moduleId, 'lesson', lessonId, raw)),
       map(response => response.data)
     );
   }
 
   getCourse(courseId: number): Observable<ApiResponse<any>> {
-    return this.http.get<ApiResponse<any>>(`${this.api}/api/courses/${courseId}`);
+    return this.http.get<ApiResponse<any>>(`${this.api}/api/courses/${courseId}`).pipe(
+      tap((raw) => console.debug('[CourseService] getCourse raw response for', courseId, raw))
+    );
   }
 
   getReviews(courseId: number, page: number = 0, size: number = 3) {
@@ -297,6 +310,18 @@ private api = `${environment.apiUrl}`
 
   getModule(moduleId: number): Observable<any> {
     return this.http.get<ApiResponse<any>>(`${this.api}/api/modules/${moduleId}`).pipe(
+      tap((raw) => console.debug('[CourseService] getModule raw response for', moduleId, raw)),
+      map(response => response.data)
+    );
+  }
+
+  /**
+   * Fetch a module's lessons via the dedicated endpoint: GET /api/modules/{moduleId}/lessons
+   * Backend returns ApiResponse<List<VideoDto>>
+   */
+  getModuleLessons(moduleId: number): Observable<any[]> {
+    return this.http.get<ApiResponse<any[]>>(`${this.api}/api/modules/${moduleId}/lessons`).pipe(
+      tap((raw) => console.debug('[CourseService] getModuleLessons raw response for', moduleId, raw)),
       map(response => response.data)
     );
   }

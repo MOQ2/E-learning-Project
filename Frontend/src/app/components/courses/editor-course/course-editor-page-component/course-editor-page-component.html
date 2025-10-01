@@ -13,7 +13,11 @@
           </h1>
         </header>
 
-        <app-course-form
+        <div *ngIf="isLoadingCourse" class="loading-overlay">
+          <p>Loading course...</p>
+        </div>
+
+        <app-course-form *ngIf="!isLoadingCourse"
           [course]="currentCourseOverview"
           (formChange)="handleFormChange($event)"
           (fileSelected)="onFileSelected($event)">
@@ -21,8 +25,10 @@
 
         <footer class="content-footer">
           <div class="content-footer__actions">
-            <button type="button" class="button button--primary" (click)="onContinue()">
-              Continue
+            <button type="button" class="button button--primary" (click)="onContinue()" [disabled]="isSavingCourse || isUploadingFile">
+              <span *ngIf="isUploadingFile">Uploading...</span>
+              <span *ngIf="!isUploadingFile && isSavingCourse">Saving...</span>
+              <span *ngIf="!isUploadingFile && !isSavingCourse">Continue</span>
             </button>
           </div>
         </footer>
@@ -58,7 +64,10 @@
           </header>
 
           <div class="editor-body">
-            <app-module-form [module]="currentModule" (saveDraft)="onSaveModuleDraft($event)" (addLesson)="onAddLesson()" (editLesson)="onEditLesson($event)" (deleteLesson)="onDeleteLesson($event)" (lessonOrderChanged)="onLessonOrderChanged($event)"></app-module-form>
+            <div *ngIf="isLoadingModule" class="loading-overlay">
+              <p>Loading module details...</p>
+            </div>
+            <app-module-form *ngIf="!isLoadingModule" [module]="currentModule" (saveDraft)="onSaveModuleDraft($event)" (addLesson)="onAddLesson()" (editLesson)="onEditLesson($event)" (deleteLesson)="onDeleteLesson($event)" (lessonOrderChanged)="onLessonOrderChanged($event)"></app-module-form>
           </div>
 
           <footer class="editor-footer">
@@ -95,12 +104,19 @@
           </header>
 
           <div class="editor-body">
+            <div *ngIf="isUploadingFile || isSavingLesson" class="loading-overlay">
+              <p *ngIf="isUploadingFile">Uploading files...</p>
+              <p *ngIf="isSavingLesson">Saving lesson...</p>
+            </div>
             <app-lesson-editor [lesson]="currentLesson" (saveLesson)="onSaveLesson($event)" (saveDraft)="onSaveDraftLesson($event)" (preview)="onPreviewLesson($event)" (goBack)="onGoBackFromLesson()" (deleteAttachment)="onDeleteAttachment($event)"></app-lesson-editor>
           </div>
 
           <footer class="editor-footer">
-            <button class="btn btn--secondary" (click)="onGoBackFromLesson()">Back to Modules</button>
-            <button class="btn btn--primary" (click)="lessonEditor.onFormSubmit()">Save & Continue</button>
+            <button class="btn btn--secondary" (click)="onGoBackFromLesson()" [disabled]="isSavingLesson || isUploadingFile">Back to Modules</button>
+            <button class="btn btn--primary" (click)="lessonEditor.onFormSubmit()" [disabled]="isSavingLesson || isUploadingFile">
+              <span *ngIf="isSavingLesson || isUploadingFile">Saving...</span>
+              <span *ngIf="!isSavingLesson && !isUploadingFile">Save & Continue</span>
+            </button>
           </footer>
         </section>
       </div>

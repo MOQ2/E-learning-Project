@@ -1,6 +1,7 @@
 package com.example.e_learning_system.Service.Interfaces;
 
 import com.example.e_learning_system.Dto.CourseDtos.*;
+import com.example.e_learning_system.Dto.OrderDtos.IdOrderDto;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -20,6 +21,6 @@ public interface CourseService {
     void removeModuleFromCourse (int courseId , int moduleId);
     void updateModuleOrderInCourse(int courseId, int moduleId, int newOrder);
 
-    void updateModuleOrdersInCourse(int courseId, java.util.List<com.example.e_learning_system.Dto.OrderDtos.IdOrderDto> orders);
+    void updateModuleOrdersInCourse(int courseId, java.util.List<IdOrderDto> orders);
     List<TagDto> getAllTags();
 }

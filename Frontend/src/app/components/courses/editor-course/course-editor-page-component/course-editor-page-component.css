@@ -199,6 +199,33 @@
 }
 
 
+/* --- Loading Overlay --- */
+.loading-overlay {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 40px;
+  background-color: rgba(255, 255, 255, 0.9);
+  border-radius: var(--border-radius-sm);
+  min-height: 200px;
+}
+
+.loading-overlay p {
+  color: var(--color-primary);
+  font-size: 16px;
+  font-weight: 500;
+  animation: pulse 1.5s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
+}
+
 /* --- Responsive Design --- */
 @media (max-width: 768px) {
   .course-editor, .course-creation-page {

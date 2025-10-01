@@ -111,6 +111,18 @@ public class VideoMapper {
     }
 
     /**
+     * Maps a single ModuleVideo to VideoDto with order from join table
+     */
+    public static VideoDto fromModuleVideoToVideoDto(ModuleVideos moduleVideo) {
+        if (moduleVideo == null) {
+            return null;
+        }
+        VideoDto dto = fromVideoEntityToVideoDto(moduleVideo.getVideo());
+        dto.setOrder(moduleVideo.getVideoOrder());
+        return dto;
+    }
+
+    /**
      * Updates an existing VideoEntity with data from CreatVideoDto
      */
     public static void updateVideoEntityFromCreatVideoDto(VideoEntity existingVideoEntity, CreatVideoDto createVideoDto) {

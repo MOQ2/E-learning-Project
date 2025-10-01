@@ -38,15 +38,37 @@ export class CourseFormComponent implements OnInit, OnChanges, OnDestroy {
   }
 
   ngOnChanges(changes: SimpleChanges): void {
+    console.debug('[CourseForm] ngOnChanges', changes);
     if (changes['course'] && this.courseForm) {
       this.populateForm();
     }
   }
 
   private populateForm(): void {
-    if (this.course) {
-      this.courseForm.patchValue(this.course as any, { emitEvent: false });
-    }
+    if (!this.course) return;
+    console.debug('[CourseForm] populateForm with', this.course);
+    // Map course object into the flat form controls. The backend sends `pricing` as a nested object,
+    // but the form keeps pricing fields at the root for simplicity.
+    const patch: any = {
+      name: this.course.name || '',
+      description: this.course.description || '',
+      estimatedDurationInHours: this.course.estimatedDurationInHours || null,
+      difficultyLevel: this.course.difficultyLevel || '',
+      status: this.course.status || 'DRAFT',
+      currency: this.course.currency || 'USD',
+      category: this.course.category || '',
+      thumbnail: this.course.thumbnail || '',
+      thumbnailName: this.course.thumbnailName || '',
+      tags: this.course.tags || [],
+      oneTimePrice: this.course.pricing?.oneTimePrice ?? null,
+      allowsSubscription: this.course.pricing?.allowsSubscription ?? false,
+      subscriptionPriceMonthly: this.course.pricing?.subscriptionPriceMonthly ?? null,
+      subscriptionPrice3Months: this.course.pricing?.subscriptionPrice3Months ?? null,
+      subscriptionPrice6Months: this.course.pricing?.subscriptionPrice6Months ?? null,
+      isActive: this.course.isActive ?? false
+    };
+
+    this.courseForm.patchValue(patch, { emitEvent: false });
   }
 
   private initForm(): void {
