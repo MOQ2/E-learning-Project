@@ -8,13 +8,14 @@ import { CourseEditorPageComponent } from './components/courses/editor-course/co
 import { ExploreCoursesPage } from './components/courses/explore-courses/explore-courses';
 import { CoursePage } from './components/course-page/course-page';
 import { LessonWrapper } from './components/lesson-wrapper/lesson-wrapper';
+import { EnrolledCoursePageComponent } from './components/enrolled-course-page/enrolled-course-page.component';
 
 export const routes: Routes = [
   // make the course page the home page; it accepts optional id via /course/:id or ?courseId=
   { path: '', component: CoursePage },
-  // direct learning view for a course: loads LessonWrapper and (by default) selects the first module
-  // and first lesson when no module/lesson are specified. Component reads `courseId` route param.
   { path: 'course/:courseId/learn', component: LessonWrapper },
+  { path: 'course/:courseId/enrolled', component: EnrolledCoursePageComponent },
+  { path: 'my-course/:courseId', component: EnrolledCoursePageComponent },
   { path: 'course/:id', component: CoursePage },
   {path: 'login',  component:Login},
   {path: 'signUp',  component:Signup},
@@ -23,7 +24,7 @@ export const routes: Routes = [
   {path: 'course-editor', component: CourseEditorPageComponent},
   {path: 'course-editor/:courseId', component: CourseEditorPageComponent},
   {path: 'homepage', component: HomePage},
-  // module lessons: /module/:moduleId/lesson/:lessonId
+
   { path: 'module/:moduleId/lesson/:lessonId', component: LessonWrapper },
   { path: 'module/:moduleId', component: LessonWrapper },
   { path: 'lesson/:lessonId', component: LessonWrapper }
