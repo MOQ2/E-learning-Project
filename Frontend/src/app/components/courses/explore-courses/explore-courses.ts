@@ -9,6 +9,7 @@ import { CourseDto } from '../../../Dtos/CourseDto';
 import { TagDto } from '../../../Dtos/TagDto';
 import { Subject, takeUntil, debounceTime, distinctUntilChanged, switchMap, of, catchError, tap } from 'rxjs';
 import { CommonModule } from '@angular/common';
+import { NotificationService } from '../../../Services/notification.service';
 
 @Component({
   selector: 'app-explore-courses',
@@ -36,6 +37,20 @@ export class ExploreCoursesPage implements OnInit, OnDestroy {
   // Filter data
   categories: TagDto[] = [];
 
+  // Fixed categories from backend enum
+  fixedCategories = [
+    { name: 'PROGRAMMING', displayName: 'Programming', selected: false },
+    { name: 'DATA_SCIENCE', displayName: 'Data Science', selected: false },
+    { name: 'MACHINE_LEARNING', displayName: 'Machine Learning', selected: false },
+    { name: 'WEB_DEVELOPMENT', displayName: 'Web Development', selected: false },
+    { name: 'MOBILE_DEVELOPMENT', displayName: 'Mobile Development', selected: false },
+    { name: 'CLOUD_COMPUTING', displayName: 'Cloud Computing', selected: false },
+    { name: 'CYBER_SECURITY', displayName: 'Cyber Security', selected: false },
+    { name: 'DEVOPS', displayName: 'DevOps', selected: false },
+    { name: 'DATABASES', displayName: 'Databases', selected: false },
+    { name: 'SOFTWARE_ENGINEERING', displayName: 'Software Engineering', selected: false },
+    { name: 'OTHER', displayName: 'Other', selected: false }
+  ];
 
   currentFilters: CourseFilterParams = {
     page: 0,
@@ -70,7 +85,12 @@ export class ExploreCoursesPage implements OnInit, OnDestroy {
   features: any[] = [];
   onlyDiscounted = false;
 
-  constructor(private courseService: CourseService) {}
+  private loadingNotificationId: string | null = null;
+
+  constructor(
+    private courseService: CourseService,
+    private notificationService: NotificationService
+  ) {}
 
   ngOnInit() {
     this.setupCourseLoading();
@@ -97,6 +117,9 @@ export class ExploreCoursesPage implements OnInit, OnDestroy {
         this.isLoading = true;
         this.error = null;
 
+        // Show loading notification
+        this.loadingNotificationId = this.notificationService.loading('Loading courses...');
+
         return this.courseService.getCourses(filters).pipe(
           catchError(error => {
             console.error('Error loading courses:', error);
@@ -111,22 +134,47 @@ export class ExploreCoursesPage implements OnInit, OnDestroy {
     ).subscribe({
       next: (response: any) => {
         this.isLoading = false;
+
+        // Remove loading notification
+        if (this.loadingNotificationId) {
+          this.notificationService.remove(this.loadingNotificationId);
+          this.loadingNotificationId = null;
+        }
+
         if (response.success && response.data) {
           this.courses = response.data.content || [];
           this.totalPages = response.data.totalPages || 0;
           this.totalResults = response.data.totalElements || 0;
           this.currentPage = (response.data.number || 0) + 1; // Convert to 1-based for UI
           this.error = null;
+
+          // Show success notification
+          this.notificationService.success(`Loaded ${this.courses.length} courses successfully!`, 2000);
         } else {
           this.error = response.message || 'Failed to load courses. Please try again.';
           this.courses = [];
           this.totalPages = 0;
           this.totalResults = 0;
+
+          // Show error notification
+          if (this.error) {
+            this.notificationService.error(this.error);
+          }
         }
       },
       error: (error) => {
         this.isLoading = false;
+
+        // Remove loading notification
+        if (this.loadingNotificationId) {
+          this.notificationService.remove(this.loadingNotificationId);
+          this.loadingNotificationId = null;
+        }
+
         this.error = 'An unexpected error occurred. Please try again.';
+        if (this.error) {
+          this.notificationService.error(this.error);
+        }
         console.error('Unexpected error in course loading stream:', error);
       }
     });
@@ -152,22 +200,22 @@ export class ExploreCoursesPage implements OnInit, OnDestroy {
    * Load initial data (categories and tags)
    */
   private loadInitialData() {
-    // Load categories
+    // Use fixed categories from backend enum instead of fetching tags
+    // The categories are already initialized in the fixedCategories array
+    // We can still load tags for other purposes if needed
     this.courseService.getCategories()
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: (response) => {
           if (response.success && response.data) {
+            // Store tags separately if needed for features/tags filtering
             this.categories = response.data.map(cat => ({ ...cat, selected: false }));
           }
         },
         error: (error) => {
-          console.error('Error loading categories:', error);
+          console.error('Error loading tags:', error);
         }
       });
-
-
-
   }
 
   /**
@@ -312,6 +360,7 @@ export class ExploreCoursesPage implements OnInit, OnDestroy {
    */
   clearAllFilters() {
     // Reset filter objects
+    this.fixedCategories = this.fixedCategories.map(cat => ({ ...cat, selected: false }));
     this.categories = this.categories.map(cat => ({ ...cat, selected: false }));
     this.levels = this.levels.map(level => ({ ...level, selected: false }));
     this.durations = this.durations.map(duration => ({ ...duration, selected: false }));
