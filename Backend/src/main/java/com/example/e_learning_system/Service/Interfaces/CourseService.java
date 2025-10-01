@@ -23,4 +23,5 @@ public interface CourseService {
 
     void updateModuleOrdersInCourse(int courseId, java.util.List<IdOrderDto> orders);
     List<TagDto> getAllTags();
+    List<CourseSearchResultDto> searchCourses(String query);
 }

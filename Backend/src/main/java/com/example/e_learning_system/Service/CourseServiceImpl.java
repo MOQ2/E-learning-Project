@@ -2,6 +2,7 @@ package com.example.e_learning_system.Service;
 
 import com.example.e_learning_system.Config.CourseStatus;
 import com.example.e_learning_system.Dto.CourseDtos.*;
+import com.example.e_learning_system.Entities.Attachment;
 import com.example.e_learning_system.Entities.CourseModules;
 import com.example.e_learning_system.Entities.Course;
 import com.example.e_learning_system.Entities.Module;
@@ -20,13 +21,19 @@ import com.example.e_learning_system.excpetions.ResourceNotFound;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.criteria.CriteriaBuilder;
 import jakarta.persistence.criteria.CriteriaQuery;
+import jakarta.persistence.criteria.Join;
+import jakarta.persistence.criteria.JoinType;
+import jakarta.persistence.criteria.Order;
+import jakarta.persistence.criteria.Path;
 import jakarta.persistence.criteria.Predicate;
 import jakarta.persistence.criteria.Root;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -56,13 +63,17 @@ public class CourseServiceImpl implements CourseService {
     private final AttachmentRepository attachmentRepository;
     private final UserCourseAccessRepository userCourseAccessRepository;
     private final UserFeedbackRepository userFeedbackRepository;
+    @Value("${app.public-base-url:http://localhost:5000}")
+    private String publicBaseUrl;
     @Override
     @Transactional(readOnly = true)
     public List<CourseSummaryDto> getCourses() {
         log.debug("Fetching all courses");
 
         List<Course> courses = courseRepository.findAll();
-        return CourseMapper.fromCourseEntitiesToCourseSummaryDtos(courses);
+        List<CourseSummaryDto> summaries = CourseMapper.fromCourseEntitiesToCourseSummaryDtos(courses);
+        enrichCourseSummaries(courses, summaries);
+        return summaries;
     }
 
     @Override
@@ -76,15 +87,39 @@ public class CourseServiceImpl implements CourseService {
         Root<Course> root = query.from(Course.class);
 
         List<Predicate> predicates = buildPredicates(cb, root, filterDto);
+        boolean filterByTags = filterDto != null && filterDto.getTags() != null && !filterDto.getTags().isEmpty();
+
+        if (filterByTags) {
+            query.distinct(true);
+        }
 
         if (!predicates.isEmpty()) {
             query.where(cb.and(predicates.toArray(new Predicate[0])));
         }
 
+        if (pageable.getSort().isSorted()) {
+            List<Order> orders = new ArrayList<>();
+            for (Sort.Order sortOrder : pageable.getSort()) {
+                try {
+                    Path<?> path = root.get(sortOrder.getProperty());
+                    orders.add(sortOrder.isAscending() ? cb.asc(path) : cb.desc(path));
+                } catch (IllegalArgumentException ex) {
+                    log.warn("Ignoring unsupported sort property: {}", sortOrder.getProperty());
+                }
+            }
+            if (!orders.isEmpty()) {
+                query.orderBy(orders);
+            }
+        }
+
         // Get total count for pagination
         CriteriaQuery<Long> countQuery = cb.createQuery(Long.class);
         Root<Course> countRoot = countQuery.from(Course.class);
-        countQuery.select(cb.count(countRoot));
+        if (filterByTags) {
+            countQuery.select(cb.countDistinct(countRoot));
+        } else {
+            countQuery.select(cb.count(countRoot));
+        }
 
         List<Predicate> countPredicates = buildPredicates(cb, countRoot, filterDto);
         if (!countPredicates.isEmpty()) {
@@ -99,9 +134,10 @@ public class CourseServiceImpl implements CourseService {
                 .setMaxResults(pageable.getPageSize())
                 .getResultList();
 
-        List<CourseSummaryDto> courseDtos = CourseMapper.fromCourseEntitiesToCourseSummaryDtos(courses);
+    List<CourseSummaryDto> courseDtos = CourseMapper.fromCourseEntitiesToCourseSummaryDtos(courses);
+    enrichCourseSummaries(courses, courseDtos);
 
-        return new PageImpl<>(courseDtos, pageable, total);
+    return new PageImpl<>(courseDtos, pageable, total);
     }
 
     @Override
@@ -131,29 +167,10 @@ public class CourseServiceImpl implements CourseService {
                 .orElseThrow(() -> ResourceNotFound.courseNotFound(id.toString()));
 
         CourseDetailsDto details = CourseMapper.fromCourseEntityToCourseDetailsDto(course);
-        
-        try {
-            long enrolled = userCourseAccessRepository.countByCourseIdAndIsActiveTrue(id);
-            details.setEnrolledCount((int) enrolled);
-        } catch (Exception e) {
-            log.warn("Failed to compute enrolled count for course {}: {}", id, e.getMessage());
-            details.setEnrolledCount(0);
-        }
-
-        try {
-            Double avg = userFeedbackRepository.findAverageRatingByCourseId(id);
-            details.setAverageRating(avg == null ? 0.0 : avg);
-        } catch (Exception e) {
-            log.warn("Failed to compute average rating for course {}: {}", id, e.getMessage());
-            details.setAverageRating(0.0);
-        }
-        try {
-            Integer count = userFeedbackRepository.findReviewCountByCourseId(id);
-            details.setReviewCount(count == null ? 0 : count);
-        } catch (Exception e) {
-            log.warn("Failed to compute review count for course {}: {}", id, e.getMessage());
-            details.setReviewCount(0);
-        }
+        details.setEnrolledCount(resolveEnrolledCount(id));
+        details.setAverageRating(resolveAverageRating(id));
+        details.setReviewCount(resolveReviewCount(id));
+        details.setThumbnailUrl(buildAttachmentUrl(course.getThumbnail()));
 
         return details;
     }
@@ -256,6 +273,81 @@ public class CourseServiceImpl implements CourseService {
 
 
 
+    private void enrichCourseSummaries(List<Course> courses, List<CourseSummaryDto> summaries) {
+        if (courses == null || summaries == null || summaries.isEmpty()) {
+            return;
+        }
+
+        int limit = Math.min(courses.size(), summaries.size());
+        for (int i = 0; i < limit; i++) {
+            Course course = courses.get(i);
+            CourseSummaryDto dto = summaries.get(i);
+            if (course == null || dto == null) {
+                continue;
+            }
+
+            dto.setThumbnailUrl(buildAttachmentUrl(course.getThumbnail()));
+            dto.setCategory(course.getCategory());
+            dto.setEnrolledCount(resolveEnrolledCount(course.getId()));
+            dto.setAverageRating(resolveAverageRating(course.getId()));
+            dto.setReviewCount(resolveReviewCount(course.getId()));
+        }
+    }
+
+    private int resolveEnrolledCount(Integer courseId) {
+        if (courseId == null) {
+            return 0;
+        }
+        try {
+            long enrolled = userCourseAccessRepository.countByCourseIdAndIsActiveTrue(courseId);
+            return (int) enrolled;
+        } catch (Exception e) {
+            log.warn("Failed to compute enrolled count for course {}: {}", courseId, e.getMessage());
+            return 0;
+        }
+    }
+
+    private double resolveAverageRating(Integer courseId) {
+        if (courseId == null) {
+            return 0.0;
+        }
+        try {
+            Double avg = userFeedbackRepository.findAverageRatingByCourseId(courseId);
+            return avg == null ? 0.0 : avg;
+        } catch (Exception e) {
+            log.warn("Failed to compute average rating for course {}: {}", courseId, e.getMessage());
+            return 0.0;
+        }
+    }
+
+    private int resolveReviewCount(Integer courseId) {
+        if (courseId == null) {
+            return 0;
+        }
+        try {
+            Integer count = userFeedbackRepository.findReviewCountByCourseId(courseId);
+            return count == null ? 0 : count;
+        } catch (Exception e) {
+            log.warn("Failed to compute review count for course {}: {}", courseId, e.getMessage());
+            return 0;
+        }
+    }
+
+    private String buildAttachmentUrl(Attachment attachment) {
+        if (attachment == null) {
+            return null;
+        }
+        int attachmentId = attachment.getId();
+        if (attachmentId <= 0) {
+            return null;
+        }
+        String base = (publicBaseUrl == null) ? "" : publicBaseUrl.trim();
+        if (base.endsWith("/")) {
+            base = base.substring(0, base.length() - 1);
+        }
+        return base + "/api/attachments/" + attachmentId + "/download";
+    }
+
     // Private helper methods
 
     private List<Predicate> buildPredicates(CriteriaBuilder cb, Root<Course> root, CourseFilterDto filterDto) {
@@ -327,9 +419,8 @@ public class CourseServiceImpl implements CourseService {
 
         // Tags filter
         if (filterDto.getTags() != null && !filterDto.getTags().isEmpty()) {
-            for (String tagName : filterDto.getTags()) {
-                predicates.add(cb.equal(root.join("tags").get("name"), tagName));
-            }
+            Join<Course, TagsEntity> tagJoin = root.join("tags", JoinType.LEFT);
+            predicates.add(tagJoin.get("name").in(filterDto.getTags()));
         }
 
         // Category filter
@@ -421,5 +512,95 @@ public class CourseServiceImpl implements CourseService {
                 .orElseThrow(() -> ResourceNotFound.moduleNotFoundInCourse(moduleId + "", courseId + ""));
         courseModulesRepository.delete(courseModule);
 
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<CourseSearchResultDto> searchCourses(String query) {
+        log.debug("Searching courses with query: {}", query);
+
+        if (query == null || query.trim().isEmpty()) {
+            return Collections.emptyList();
+        }
+
+        String trimmedQuery = query.trim();
+        List<Course> courses = courseRepository.searchCourses(trimmedQuery);
+
+        return courses.stream().map(course -> {
+            // Determine match type
+            String matchType = determineMatchType(course, trimmedQuery);
+
+            // Count lessons/videos
+            Integer lessonCount = course.getCourseModules() != null
+                    ? course.getCourseModules().stream()
+                    .mapToInt(cm -> cm.getModule().getModuleVideos() != null ? cm.getModule().getModuleVideos().size() : 0)
+                    .sum()
+                    : 0;
+
+            // Build tags set
+            Set<TagDto> tagDtos = new HashSet<>();
+            if (course.getTags() != null) {
+                for (TagsEntity tag : course.getTags()) {
+                    TagDto tagDto = new TagDto();
+                    tagDto.setName(tag.getName());
+                    tagDto.setColor(tag.getColor());
+                    tagDto.setDescription(tag.getDescription());
+                    tagDtos.add(tagDto);
+                }
+            }
+
+            return CourseSearchResultDto.builder()
+                    .id(course.getId())
+                    .name(course.getName())
+                    .description(course.getDescription())
+                    .thumbnailUrl(course.getThumbnail() != null
+                            ? publicBaseUrl + "/api/attachments/" + course.getThumbnail().getId() + "/download"
+                            : null)
+                    .instructor(course.getCreatedBy() != null
+                            ? course.getCreatedBy().getName()
+                            : "Unknown")
+                    .estimatedDurationInHours(course.getEstimatedDrationInHours())
+                    .lessonCount(lessonCount)
+                    .oneTimePrice(course.getOneTimePrice())
+                    .currency(course.getCurrency() != null ? course.getCurrency().name() : null)
+                    .category(course.getCategory())
+                    .tags(tagDtos)
+                    .matchType(matchType)
+                    .build();
+        }).collect(Collectors.toList());
+    }
+
+    private String determineMatchType(Course course, String query) {
+        String lowerQuery = query.toLowerCase();
+
+        // Check for exact match in title
+        if (course.getName().toLowerCase().equals(lowerQuery)) {
+            return "title_exact";
+        }
+
+        // Check for match in title
+        if (course.getName().toLowerCase().contains(lowerQuery)) {
+            return "title";
+        }
+
+        // Check for match in tags
+        if (course.getTags() != null && course.getTags().stream()
+                .anyMatch(tag -> tag.getName().toLowerCase().contains(lowerQuery))) {
+            return "tag";
+        }
+
+        // Check for match in category
+        if (course.getCategory() != null &&
+                course.getCategory().name().toLowerCase().contains(lowerQuery)) {
+            return "category";
+        }
+
+        // Check for match in description
+        if (course.getDescription() != null &&
+                course.getDescription().toLowerCase().contains(lowerQuery)) {
+            return "description";
+        }
+
+        return "other";
     }
 }

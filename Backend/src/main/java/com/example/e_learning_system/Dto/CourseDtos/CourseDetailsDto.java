@@ -42,5 +42,5 @@ public class CourseDetailsDto {
     private Integer enrolledCount;
     private Double averageRating;
     private Integer reviewCount;
-    
+    private String thumbnailUrl;
 }

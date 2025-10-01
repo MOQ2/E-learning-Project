@@ -93,87 +93,175 @@
 
     <!-- Right sidebar: progress, lesson details, instructor -->
     <aside class="side-col">
-      <!-- persistent attachments toggle (always visible) -->
-      <div class="attachments-toggle persistent">
-        <button class="link small" (click)="toggleAttachmentsHide()">{{ attachmentsHidden ? 'Show attachments' : 'Hide attachments' }}</button>
-      </div>
-      <div class="progress-card">
-        <div class="progress-title">Your progress</div>
-        <div class="progress-bar"><div class="progress-fill" [style.width]="(lesson?.progress || 0) + '%'">&nbsp;</div></div>
-        <div class="progress-pct">{{ (lesson?.progress || 0) }}% complete</div>
-      </div>
-      <div class="details-card">
-        <h4>Lesson details</h4>
-        <ul>
-          <li><strong>Level:</strong> {{ lesson?.level || 'Beginner' }}</li>
-          <li><strong>Language:</strong> {{ lesson?.language || 'English' }}</li>
-          <li><strong>Category:</strong> {{ lesson?.category || 'General' }}</li>
-          <li><strong>Resources:</strong> {{ attachments.length || 0 }} files</li>
-        </ul>
-      </div>
-
-      <div class="instructor-card">
-        <div class="instructor-avatar"> <img [src]="lesson?.instructor?.avatarUrl || '/assets/default-avatar.png'" alt="Instructor"/> </div>
-        <div class="instructor-meta">
-          <div class="name">{{ lesson?.instructor?.name || 'Instructor' }}</div>
-          <div class="role">{{ lesson?.instructor?.title || '' }}</div>
-        </div>
-      </div>
-
-      <div *ngIf="!attachmentsHidden" class="attachments-panel">
-        <div class="tabs">
-          <div class="left-tabs">
-            <button (click)="setAttachmentsTab('attachments')" [class.active]="attachmentsTab==='attachments'">Attachments</button>
-            <button (click)="setAttachmentsTab('quizzes')" [class.active]="attachmentsTab==='quizzes'">Quizzes</button>
+      <!-- Progress Card -->
+      <div class="sidebar-card">
+        <div class="progress-section">
+          <div class="progress-header">
+            <span class="progress-icon">📊</span>
+            <span class="progress-title">Your progress</span>
           </div>
-          <div class="spacer"></div>
+          <div class="progress-bar-wrapper">
+            <div class="progress-bar">
+              <div class="progress-fill" [style.width]="(lesson?.progress || 0) + '%'"></div>
+            </div>
+            <span class="progress-text">{{ (lesson?.progress || 0) }}% complete</span>
+          </div>
         </div>
 
-        <div class="tab-body" role="region" aria-label="Attachments and quizzes">
-          <div *ngIf="attachmentsTab === 'attachments'">
-            <div *ngIf="attachments && attachments.length; else noAttachSide">
-              <div class="attachments">
-                <div *ngFor="let a of attachments" class="attachment-item">
-                  <div class="left">
-                    <div class="name">{{ a.fileName }}</div>
-                    <div class="size">{{ a.fileSize || 'Unknown size' }}</div>
+        <div class="sidebar-divider"></div>
+
+        <!-- Lesson Details -->
+        <div class="details-section">
+          <h4 class="section-title">Lesson details</h4>
+
+          <div class="detail-item">
+            <span class="detail-icon">📊</span>
+            <div class="detail-content">
+              <span class="detail-label">Level</span>
+              <span class="detail-value">{{ lesson?.level || lesson?.difficultyLevel || 'Beginner' }}</span>
+            </div>
+          </div>
+
+          <div class="detail-item">
+            <span class="detail-icon">🌐</span>
+            <div class="detail-content">
+              <span class="detail-label">Language</span>
+              <span class="detail-value">{{ lesson?.language || 'English' }}</span>
+            </div>
+          </div>
+
+          <div class="detail-item">
+            <span class="detail-icon">🏷️</span>
+            <div class="detail-content">
+              <span class="detail-label">Category</span>
+              <span class="detail-value">{{ lesson?.category || 'General' }}</span>
+            </div>
+          </div>
+
+          <div class="detail-item">
+            <span class="detail-icon">📁</span>
+            <div class="detail-content">
+              <span class="detail-label">Resources</span>
+              <span class="detail-value">{{ (attachments.length || 0) }} files</span>
+            </div>
+          </div>
+
+          <div class="detail-item" *ngIf="lesson?.durationSeconds">
+            <span class="detail-icon">⏱️</span>
+            <div class="detail-content">
+              <span class="detail-label">Duration</span>
+              <span class="detail-value">{{ (lesson.durationSeconds / 60) | number:'1.0-0' }} min</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="sidebar-divider"></div>
+
+        <!-- Instructor Info -->
+        <div class="instructor-section" *ngIf="lesson?.instructor || lesson?.createdByName">
+          <h4 class="section-title">Instructor</h4>
+          <div class="instructor-info">
+            <div class="instructor-avatar">
+              <img [src]="lesson?.instructor?.avatarUrl || 'https://ui-avatars.com/api/?name=' + (lesson?.instructor?.name || lesson?.createdByName || 'I') + '&background=7c3aed&color=fff&size=64'"
+                   [alt]="lesson?.instructor?.name || lesson?.createdByName || 'Instructor'" />
+            </div>
+            <div class="instructor-meta">
+              <div class="instructor-name">{{ lesson?.instructor?.name || lesson?.createdByName || 'Instructor' }}</div>
+              <div class="instructor-role" *ngIf="lesson?.instructor?.title">{{ lesson?.instructor?.title }}</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="sidebar-divider" *ngIf="!attachmentsHidden"></div>
+
+        <!-- Attachments Toggle -->
+        <div class="attachments-toggle">
+          <button class="toggle-btn" (click)="toggleAttachmentsHide()">
+            <span class="toggle-icon">{{ attachmentsHidden ? '📎' : '📎' }}</span>
+            <span class="toggle-text">{{ attachmentsHidden ? 'Show attachments' : 'Hide attachments' }}</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Attachments Panel -->
+      <div *ngIf="!attachmentsHidden" class="sidebar-card attachments-card">
+        <div class="tabs-header">
+          <button class="tab-button"
+                  [class.active]="attachmentsTab==='attachments'"
+                  (click)="setAttachmentsTab('attachments')">
+            <span class="tab-icon">📎</span>
+            <span class="tab-label">Attachments</span>
+          </button>
+          <button class="tab-button"
+                  [class.active]="attachmentsTab==='quizzes'"
+                  (click)="setAttachmentsTab('quizzes')">
+            <span class="tab-icon">📝</span>
+            <span class="tab-label">Quizzes</span>
+          </button>
+        </div>
+
+        <div class="tab-content" role="region" aria-label="Attachments and quizzes">
+          <!-- Attachments Tab -->
+          <div *ngIf="attachmentsTab === 'attachments'" class="tab-panel">
+            <div *ngIf="attachments && attachments.length > 0; else noAttachments" class="attachments-list">
+              <div *ngFor="let a of attachments" class="resource-item">
+                <div class="resource-icon">📄</div>
+                <div class="resource-info">
+                  <div class="resource-name">{{ a.fileName }}</div>
+                  <div class="resource-size">{{ a.fileSize || 'Unknown size' }}</div>
+                </div>
+                <a class="resource-action" [href]="a.fileDownloadUrl" target="_blank" rel="noopener noreferrer">
+                  <span>↓</span>
+                </a>
+              </div>
+            </div>
+            <ng-template #noAttachments>
+              <div class="empty-state">
+                <span class="empty-icon">📎</span>
+                <p class="empty-text">No attachments available</p>
+              </div>
+            </ng-template>
+          </div>
+
+          <!-- Quizzes Tab -->
+          <div *ngIf="attachmentsTab === 'quizzes'" class="tab-panel">
+            <div *ngIf="quizzes && quizzes.length > 0; else noQuizzes" class="quizzes-list">
+              <div *ngFor="let q of quizzes" class="resource-item clickable" (click)="showQuiz(q)">
+                <div class="resource-icon">📝</div>
+                <div class="resource-info">
+                  <div class="resource-name">{{ q.title || q.name || ('Quiz ' + (q.id || '')) }}</div>
+                  <div class="resource-size">
+                    {{ q.totalScore ? (q.totalScore + ' pts') : '' }}
+                    <span *ngIf="!q.isActive" class="inactive-badge">Inactive</span>
                   </div>
-                  <div class="right">
-                    <a class="btn-download" [href]="a.fileDownloadUrl" target="_blank" rel="noopener noreferrer">Open</a>
-                  </div>
+                </div>
+                <div class="resource-action">
+                  <span>→</span>
                 </div>
               </div>
             </div>
-            <ng-template #noAttachSide>
-              <div class="empty">No attachments</div>
-            </ng-template>
-          </div>
-
-          <div *ngIf="attachmentsTab === 'quizzes'">
-            <div *ngIf="quizzes && quizzes.length; else noQuizzes">
-              <ul>
-                <li *ngFor="let q of quizzes" class="attachment-item" style="cursor:pointer" (click)="showQuiz(q)">
-                  <div class="left">
-                    <div class="name">{{ q.title || q.name || ('Quiz ' + (q.id || '')) }}</div>
-                  </div>
-                  <div class="right">
-                    <div class="meta">{{ q.totalScore ? (q.totalScore + ' pts') : '' }} {{ q.isActive ? '' : '(inactive)' }}</div>
-                  </div>
-                </li>
-              </ul>
-            </div>
             <ng-template #noQuizzes>
-              <div class="empty">No quizzes available</div>
+              <div class="empty-state">
+                <span class="empty-icon">📝</span>
+                <p class="empty-text">No quizzes available</p>
+              </div>
             </ng-template>
 
-            <div *ngIf="selectedQuiz" class="info-card" style="margin-top:10px">
-              <h4>{{ selectedQuiz.title }}</h4>
-              <div><strong>Total:</strong> {{ selectedQuiz.totalScore }} pts</div>
-              <div *ngIf="selectedQuiz.questions && selectedQuiz.questions.length">
-                <div *ngFor="let qq of selectedQuiz.questions" style="margin-top:8px">
-                  <div><strong>{{ qq.text }}</strong> <small>({{ qq.questionMark }} pts)</small></div>
-                  <ul>
-                    <li *ngFor="let o of qq.options">{{ o.text }} <span *ngIf="o.isCorrect">✅</span></li>
+            <!-- Selected Quiz Details -->
+            <div *ngIf="selectedQuiz" class="quiz-details">
+              <h4 class="quiz-title">{{ selectedQuiz.title }}</h4>
+              <div class="quiz-score">Total: {{ selectedQuiz.totalScore }} pts</div>
+              <div *ngIf="selectedQuiz.questions && selectedQuiz.questions.length > 0" class="quiz-questions">
+                <div *ngFor="let qq of selectedQuiz.questions; let i = index" class="quiz-question">
+                  <div class="question-header">
+                    <strong>{{ i + 1 }}. {{ qq.text }}</strong>
+                    <span class="question-points">({{ qq.questionMark }} pts)</span>
+                  </div>
+                  <ul class="question-options">
+                    <li *ngFor="let o of qq.options" [class.correct]="o.isCorrect">
+                      {{ o.text }}
+                      <span *ngIf="o.isCorrect" class="correct-mark">✓</span>
+                    </li>
                   </ul>
                 </div>
               </div>

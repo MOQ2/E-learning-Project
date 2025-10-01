@@ -5,17 +5,19 @@ export interface CourseDto {
   id: number;
   name: string;
   description: string;
-  oneTimePrice: number;
-  currency: string;
-  thumbnail: string;
-  previewVideoUrl: string;
+  oneTimePrice?: number | null;
+  currency?: string | null;
+  thumbnail?: number | string | null;
+  thumbnailUrl?: string | null;
+  previewVideoUrl?: string | null;
   estimatedDurationInHours: number;
   status: string;
   difficultyLevel: string;
   isActive: boolean;
   tags: TagDto[];
-  rating?: number;
   instructor: string;
-  ratingsCount?: number;
-  students?: number;
+  averageRating?: number | null;
+  reviewCount?: number | null;
+  enrolledCount?: number | null;
+  category?: string | null;
 }

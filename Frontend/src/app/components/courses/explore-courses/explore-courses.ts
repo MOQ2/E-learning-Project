@@ -58,6 +58,7 @@ export class ExploreCoursesPage implements OnInit, OnDestroy {
     isActive: true
   };
 
+  currentSort: string = 'trending'; // Track current sort
 
   private lastAppliedFilters: CourseFilterParams = {};
 
@@ -269,7 +270,7 @@ export class ExploreCoursesPage implements OnInit, OnDestroy {
       .filter(category => category.selected)
       .map(category => category.name);
 
-    this.currentFilters.tags = selectedCategories.length > 0 ? selectedCategories : undefined;
+    this.currentFilters.categories = selectedCategories.length > 0 ? selectedCategories : undefined;
     this.applyFilters();
   }
 
@@ -384,5 +385,124 @@ export class ExploreCoursesPage implements OnInit, OnDestroy {
   retryLoading() {
     this.error = null;
     this.triggerCourseLoad();
+  }
+
+  /**
+   * Handle sort changes from course grid
+   */
+  onSortChange(sortType: string) {
+    this.currentSort = sortType;
+
+    // Clear existing sort parameters and duration filters
+    delete this.currentFilters.sort;
+
+    // Reset duration filters unless it's the under2h filter
+    if (sortType !== 'under2h') {
+      delete this.currentFilters.minDurationHours;
+      delete this.currentFilters.maxDurationHours;
+    }
+
+    switch(sortType) {
+      case 'trending':
+        // Sort by most recent (trending content is usually new content)
+        this.currentFilters.sort = 'createdDate,desc';
+        this.applyFiltersImmediate();
+        break;
+
+      case 'topRated':
+        // Sort by average rating (client-side)
+        // Backend doesn't have averageRating as a database column
+        delete this.currentFilters.sort;
+        this.applyFiltersImmediateWithClientSort('rating');
+        break;
+
+      case 'newest':
+        // Sort by newest first
+        this.currentFilters.sort = 'createdDate,desc';
+        this.applyFiltersImmediate();
+        break;
+
+      case 'under2h':
+        // Filter courses under 2 hours and sort by duration
+        this.currentFilters.maxDurationHours = 2;
+        this.currentFilters.sort = 'estimatedDurationInHours,asc';
+        this.applyFiltersImmediate();
+        break;
+    }
+  }
+
+  /**
+   * Apply filters and sort results on client side
+   */
+  private applyFiltersImmediateWithClientSort(sortBy: string) {
+    this.currentFilters.page = 0;
+    const filtersToApply = { ...this.currentFilters };
+    this.lastAppliedFilters = filtersToApply;
+
+    this.isLoading = true;
+    this.error = null;
+    this.loadingNotificationId = this.notificationService.loading('Loading courses...');
+
+    this.courseService.getCourses(filtersToApply).subscribe({
+      next: (response: any) => {
+        this.isLoading = false;
+
+        if (this.loadingNotificationId) {
+          this.notificationService.remove(this.loadingNotificationId);
+          this.loadingNotificationId = null;
+        }
+
+        if (response.success && response.data) {
+          let courses = response.data.content || [];
+
+          // Apply client-side sorting
+          if (sortBy === 'rating') {
+            courses = courses.sort((a: CourseDto, b: CourseDto) => {
+              const ratingA = a.averageRating ?? 0;
+              const ratingB = b.averageRating ?? 0;
+
+              // Sort by rating descending (highest first)
+              if (ratingB !== ratingA) {
+                return ratingB - ratingA;
+              }
+
+              // If ratings are equal, sort by review count descending
+              return (b.reviewCount ?? 0) - (a.reviewCount ?? 0);
+            });
+          }
+
+          this.courses = courses;
+          this.totalPages = response.data.totalPages || 0;
+          this.totalResults = response.data.totalElements || 0;
+          this.currentPage = (response.data.number || 0) + 1;
+          this.error = null;
+
+          this.notificationService.success(`Loaded ${this.courses.length} courses successfully!`, 2000);
+        } else {
+          this.error = response.message || 'Failed to load courses. Please try again.';
+          this.courses = [];
+          this.totalPages = 0;
+          this.totalResults = 0;
+
+          if (this.error) {
+            this.notificationService.error(this.error);
+          }
+        }
+      },
+      error: (error) => {
+        this.isLoading = false;
+
+        if (this.loadingNotificationId) {
+          this.notificationService.remove(this.loadingNotificationId);
+          this.loadingNotificationId = null;
+        }
+
+        this.error = 'An unexpected error occurred. Please try again.';
+        if (this.error) {
+          this.notificationService.error(this.error);
+        }
+        console.error('Unexpected error in course loading:', error);
+      }
+    });
   }
 }

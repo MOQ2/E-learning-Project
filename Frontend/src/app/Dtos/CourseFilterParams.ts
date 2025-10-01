@@ -12,6 +12,7 @@ export interface CourseFilterParams {
   statuses?: string[];
   difficultyLevels?: string[];
   tags?: string[];
+  categories?: string[];
   page?: number;
   size?: number;
   sort?: string;
