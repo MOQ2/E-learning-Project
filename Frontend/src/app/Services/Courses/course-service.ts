@@ -108,6 +108,12 @@ private api = `${environment.apiUrl}`
       });
     }
 
+    if (filters.categories && filters.categories.length > 0) {
+      filters.categories.forEach(category => {
+        params = params.append('categories', category);
+      });
+    }
+
     if (filters.tags && filters.tags.length > 0) {
       const tagsJson = JSON.stringify(filters.tags.map(tag => ({ name: tag })));
       params = params.set('tags', tagsJson);
@@ -341,6 +347,17 @@ private api = `${environment.apiUrl}`
 
   getLessons(): Observable<any> {
     return this.http.get<ApiResponse<any>>(`${this.api}/api/lessons`).pipe(
+      map(response => response.data)
+    );
+  }
+
+  /**
+   * Search courses by query string
+   * @param query Search query
+   */
+  searchCourses(query: string): Observable<any[]> {
+    const params = new HttpParams().set('query', query);
+    return this.http.get<ApiResponse<any[]>>(`${this.api}/api/courses/search`, { params }).pipe(
       map(response => response.data)
     );
   }

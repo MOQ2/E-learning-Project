@@ -1,40 +1,40 @@
 <div class="course-card" (click)="onCardClick($event)" role="button" tabindex="0">
-  <div class="course-image">
-    <img [src]="course.thumbnail" [alt]="course.name" />
-    <div class="course-badge" [style.background-color]="course.tags[0]?.color || '#8b5cf6'">
-      {{ course.tags[0]?.name || 'Course' }}
-    </div>
-    <div class="course-rating">
-      <span class="rating-value">
-        <span class="star-icon" aria-hidden="true">★</span>
-        {{ course.rating || 0 }} · {{ course.ratingsCount || 0 }}
-      </span>
+  <!-- Course Thumbnail with Decorative Border -->
+  <div class="course-thumbnail-wrapper">
+    <span class="category-chip" *ngIf="course.category">{{ formatCategory(course.category) }}</span>
+    <div class="thumbnail-border">
+      <div class="course-image">
+        <img [src]="getThumbnailSrc()" [alt]="course.name || 'Course thumbnail'" loading="lazy"
+       (error)="$any($event.target).src = '/mortarboard_1940690.png'" />
+      </div>
     </div>
   </div>
 
+  <!-- Course Content -->
   <div class="course-content">
     <h3 class="course-title">{{ course.name }}</h3>
-    <div class="course-price">${{ course.oneTimePrice }}</div>
-    <p class="course-instructor">{{ course.instructor || 'Instructor' }}</p>
+    <p class="course-description" *ngIf="course.description">
+      {{ course.description }}
+    </p>
 
-    <div class="course-meta">
-      <span class="course-duration">⏱️ {{ course.estimatedDurationInHours || 0 }} hours</span>
-      <span class="course-students">👥 {{ course.students || 0 }}</span>
-    </div>
-
-    <div class="course-actions">
-      <button
-        class="enroll-btn"
-        [class.enrolled]="isEnrolled"
-        (click)="onEnroll($event)">
-        {{ isEnrolled ? '✓ Enrolled' : 'Enroll' }}
-      </button>
-      <button
-        class="save-btn"
-        [class.saved]="isSaved"
-        (click)="onSave($event)">
-        {{ isSaved ? '❤️' : '🤍' }} Save
-      </button>
+    <div class="course-footer">
+      <div class="course-meta">
+        <div class="meta-item rating-meta">
+          <span class="star-icon" [class.empty]="!hasRating()">★</span>
+          <ng-container *ngIf="hasRating(); else ratingPlaceholder">
+            <span class="rating-value">{{ getRatingValue() }}</span>
+            <span class="rating-count">· {{ getReviewLabel() }}</span>
+          </ng-container>
+          <ng-template #ratingPlaceholder>
+            <span class="rating-placeholder">{{ getReviewLabel() }}</span>
+          </ng-template>
+        </div>
+        <div class="meta-item learners-meta">
+          <span class="learners-icon">👥</span>
+          <span>{{ getLearnerLabel() }}</span>
+        </div>
+      </div>
+      <div class="course-price-tag">{{ formatPrice(course.oneTimePrice, course.currency) }}</div>
     </div>
   </div>
 </div>

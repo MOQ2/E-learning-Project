@@ -17,6 +17,7 @@ import com.example.e_learning_system.Repository.TagsRepository;
 import com.example.e_learning_system.excpetions.BaseException;
 import com.fasterxml.jackson.databind.JsonSerializable.Base;
 import com.example.e_learning_system.Config.Category;
+import java.math.BigDecimal;
 import java.util.Collections;
 
 import java.util.List;
@@ -24,7 +25,6 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import org.springframework.http.HttpStatus;
 
 public class CourseMapper {
     private CourseMapper() {
@@ -41,15 +41,22 @@ public class CourseMapper {
             return null;
         }
 
+        BigDecimal monthly = course.getSubscriptionPriceMonthly();
+        BigDecimal threeMonths = course.getSubscriptionPrice3Months();
+        BigDecimal sixMonths = course.getSubscriptionPrice6Months();
+        boolean hasSubscriptionPricing = (monthly != null && monthly.compareTo(BigDecimal.ZERO) > 0)
+                || (threeMonths != null && threeMonths.compareTo(BigDecimal.ZERO) > 0)
+                || (sixMonths != null && sixMonths.compareTo(BigDecimal.ZERO) > 0);
+
         return CourseDetailsDto.builder()
                 .id(course.getId())
                 .name(course.getName())
                 .description(course.getDescription())
                 .oneTimePrice(course.getOneTimePrice())
-                .subscriptionPriceMonthly(course.getSubscriptionPriceMonthly())
-                .subscriptionPrice3Months(course.getSubscriptionPrice3Months())
-                .subscriptionPrice6Months(course.getSubscriptionPrice6Months())
-                .allowsSubscription(course.getAllowsSubscription())
+                .subscriptionPriceMonthly(monthly)
+                .subscriptionPrice3Months(threeMonths)
+                .subscriptionPrice6Months(sixMonths)
+                .allowsSubscription(Boolean.TRUE.equals(course.getAllowsSubscription()) || hasSubscriptionPricing)
                 .currency(course.getCurrency())
                 .thumbnail(course.getThumbnail() != null ? course.getThumbnail().getId() : null)
                 .estimatedDurationInHours(course.getEstimatedDrationInHours())
@@ -84,6 +91,7 @@ public class CourseMapper {
                 .thumbnail(course.getThumbnail() != null ? course.getThumbnail().getId() : null)
                 .instructor(course.getCreatedBy() != null ? course.getCreatedBy().getName() : null)
                 .estimatedDurationInHours(course.getEstimatedDrationInHours())
+                .category(course.getCategory())
                 .build();
     }
 

@@ -47,7 +47,8 @@ export class CourseViewComponent implements OnInit, OnChanges {
     name?: string;
     description?: string;
     oneTimePrice?: number;
-    currency?: string;
+    currency?: string | null;
+    currencyCode?: string | null;
     category?: string | null;
     estimatedDurationInHours?: number;
     status?: string | null;
@@ -59,15 +60,23 @@ export class CourseViewComponent implements OnInit, OnChanges {
     instructor?: string | null;
     lastUpdated?: string | null;
     thumbnailUrl?: string | null;
-    plans?: any;
-  certificate?: boolean | null;
-  instructorTitle?: string | null;
+    plans?: {
+      monthly?: number | null;
+      threeMonths?: number | null;
+      sixMonths?: number | null;
+      annual?: number | null;
+    };
+    certificate?: boolean | null;
+    instructorTitle?: string | null;
     instructorAvatar?: string | null;
     language?: string | null;
     subtitles?: string[] | null;
     enrolledCount?: number;
     averageRating?: number;
     reviewCount?: number;
+    tags?: Array<any>;
+    allowsSubscription?: boolean;
+    hasSubscriptionPlans?: boolean;
   } | null = null;
 
   constructor(
@@ -309,44 +318,112 @@ export class CourseViewComponent implements OnInit, OnChanges {
   private normalize(raw: any) {
     if (!raw) return null;
 
-    return {
+    console.log('[CourseView] Raw backend data:', raw);
+
+    // Extract category from tags or category field
+    const category = raw.category || (raw.tags && raw.tags.length > 0 ? (raw.tags[0].name || raw.tags[0]) : null);
+
+    const currencyCode = raw.currency || 'USD';
+    const oneTimePrice = this.parsePrice(raw.oneTimePrice ?? raw.price);
+    const plans = {
+      monthly: this.parsePrice(raw.subscriptionPriceMonthly ?? raw.monthlyPrice ?? raw.monthly),
+      threeMonths: this.parsePrice(raw.subscriptionPrice3Months ?? raw.threeMonthsPrice ?? raw['3months']),
+      sixMonths: this.parsePrice(raw.subscriptionPrice6Months ?? raw.sixMonthsPrice ?? raw.sixMonths),
+      annual: this.parsePrice(raw.subscriptionPrice12Months ?? raw.annualPrice ?? raw.yearly ?? raw.twelveMonths)
+    };
+    const hasSubscriptionPlans = Object.values(plans).some(value => (value ?? 0) > 0);
+
+    const normalized = {
       id: raw.id || raw.courseId || null,
       name: raw.name || 'Untitled course',
       description: raw.description || '',
-      oneTimePrice: raw.oneTimePrice || raw.price || 0,
-      currency: raw.currency || '$',
-      category: raw.category || (raw.tags && raw.tags.length ? raw.tags[0] : null),
+      oneTimePrice: oneTimePrice ?? 0,
+      currency: this.formatCurrency(currencyCode),
+      currencyCode,
+      category: category,
       estimatedDurationInHours: raw.estimatedDurationInHours || raw.estimatedDrationInHours || raw.estimatedDuration || 0,
       status: raw.status || null,
       difficultyLevel: raw.difficultyLevel || raw.level || null,
       isActive: raw.isActive ?? true,
-      modules: (raw.modules || []).map((m: any) => ({
-        order: m.moduleOrder ?? null,
+      modules: (raw.modules || []).map((m: any, index: number) => ({
+        order: m.moduleOrder ?? (index + 1),
         id: m.module?.moduleId ?? m.moduleId ?? m.id ?? null,
         name: m.module?.moduleName ?? m.name ?? 'Module',
         description: m.module?.moduleDescription ?? m.description ?? '',
         estimatedDuration: m.module?.estimatedDuration ?? m.estimatedDuration ?? 0,
-        numberOfVideos: m.module?.numberOfvideos ?? 0,
-        active: m.module?.active ?? true
+        numberOfVideos: m.module?.numberOfvideos ?? m.numberOfVideos ?? 0,
+        active: m.module?.active ?? m.active ?? true,
+        previewAvailable: m.module?.previewAvailable ?? m.previewAvailable ?? false
       })),
       whatYouWillLearn: raw.whatYouWillLearn || raw.objectives || [],
-      resources: raw.resources || ['Downloadable notebooks', 'Datasets and cheat sheets', 'Quizzes and certificate', 'Community Q&A'],
-      instructor: raw.instructor || raw.createdByName || null,
-      lastUpdated: raw.updatedAt || raw.lastUpdated || null,
-      thumbnailUrl: this.buildThumbnailUrl(raw.thumbnail)
-      ,
-      // map subscription plans/pricing from backend DTO names (and fallbacks)
-      plans: raw.plans || raw.pricing || raw.subscription || {
-        monthly: raw.subscriptionPriceMonthly ?? raw.monthlyPrice ?? raw.monthly ?? null,
-        threeMonths: raw.subscriptionPrice3Months ?? raw.threeMonthsPrice ?? raw['3months'] ?? null,
-        sixMonths: raw.subscriptionPrice6Months ?? raw.sixMonthsPrice ?? raw.sixMonths ?? null,
-        annual: raw.annualPrice ?? raw.yearly ?? null
-      },
-      allowsSubscription: raw.allowsSubscription ?? raw.allows_subscriptions ?? true,
+      resources: raw.resources || [],
+      instructor: raw.instructor || raw.createdByName || 'Instructor',
+      lastUpdated: raw.updatedAt || raw.lastUpdated || new Date().toISOString(),
+      thumbnailUrl: this.buildThumbnailUrl(raw.thumbnail),
+      // map subscription plans/pricing from backend DTO names
+      plans,
+      allowsSubscription: raw.allowsSubscription ?? hasSubscriptionPlans,
+      hasSubscriptionPlans,
       enrolledCount: raw.enrolledCount ?? raw.enrollmentsCount ?? 0,
       averageRating: raw.averageRating ?? raw.avgRating ?? 0,
-      reviewCount: raw.reviewCount ?? raw.reviewsCount ?? 0
+      reviewCount: raw.reviewCount ?? raw.reviewsCount ?? 0,
+      tags: raw.tags || [],
+      certificate: raw.certificate ?? true,
+      instructorTitle: raw.instructorTitle || null,
+      instructorAvatar: raw.instructorAvatar || null,
+      language: raw.language || 'English',
+      subtitles: raw.subtitles || []
     };
+
+    console.log('[CourseView] Normalized data:', {
+      enrolledCount: normalized.enrolledCount,
+      averageRating: normalized.averageRating,
+      reviewCount: normalized.reviewCount
+    });
+
+    return normalized;
+  }
+
+  private formatCurrency(curr: string): string {
+    const currencyMap: { [key: string]: string } = {
+      'USD': '$',
+      'EUR': '€',
+      'GBP': '£',
+      'ILS': '₪',
+      'JOD': 'JD'
+    };
+    const key = (typeof curr === 'string' ? curr : '').toUpperCase();
+    return currencyMap[key] || curr;
+  }
+
+  private parsePrice(value: any): number | null {
+    if (value === null || value === undefined) {
+      return null;
+    }
+
+    if (typeof value === 'number') {
+      return Number.isFinite(value) ? value : null;
+    }
+
+    if (typeof value === 'string') {
+      const trimmed = value.trim();
+      if (!trimmed) {
+        return null;
+      }
+      const numeric = Number(trimmed);
+      return Number.isNaN(numeric) ? null : numeric;
+    }
+
+    if (typeof value === 'object' && value !== null) {
+      if ('value' in value) {
+        return this.parsePrice((value as { value: any }).value);
+      }
+      if ('amount' in value) {
+        return this.parsePrice((value as { amount: any }).amount);
+      }
+    }
+
+    return null;
   }
 
   private buildThumbnailUrl(thumbnail: any) {
@@ -363,9 +440,23 @@ export class CourseViewComponent implements OnInit, OnChanges {
     this.router.navigate(['/payment'], { queryParams: { courseId: this.courseData.id, plan: 'one-time', price: this.courseData.oneTimePrice } });
   }
 
-  onSelectPlan(plan: string, price?: number) {
-    this.subscribe.emit({ plan, price });
-    this.router.navigate(['/payment'], { queryParams: { courseId: this.courseData?.id, plan, price } });
+  onSelectPlan(plan: string, price?: number | null) {
+    const normalizedPrice = price ?? undefined;
+    const payload: { plan: string; price?: number } = { plan };
+    if (normalizedPrice !== undefined) {
+      payload.price = normalizedPrice;
+    }
+
+    this.subscribe.emit(payload);
+    this.router.navigate([
+      '/payment'
+    ], {
+      queryParams: {
+        courseId: this.courseData?.id,
+        plan,
+        price: normalizedPrice
+      }
+    });
   }
 
   onPreview() {

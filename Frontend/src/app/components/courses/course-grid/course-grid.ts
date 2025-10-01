@@ -14,6 +14,7 @@ export class CourseGridComponent {
   @Output() currentPageChange = new EventEmitter<number>();
   @Output() enrollClick = new EventEmitter<{ course: Course, enrolled: boolean }>();
   @Output() saveClick = new EventEmitter<{ course: Course, saved: boolean }>();
+  @Output() sortChange = new EventEmitter<string>();
 
 
   @Input() totalPages: number = 5;
@@ -44,20 +45,45 @@ export class CourseGridComponent {
 
 
   onSurpriseMe() {
-    console.log('Surprise me clicked');
+    // Get a random course and navigate to it
+    if (this.courses.length > 0) {
+      const randomIndex = Math.floor(Math.random() * this.courses.length);
+      const randomCourse = this.courses[randomIndex];
+      window.location.href = `/course/${randomCourse.id}`;
+    }
   }
 
   onRefineFilters() {
-    console.log('Refine filters clicked');
+    // Scroll to sidebar or toggle sidebar visibility
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   }
 
   toggleTopFilter(filter: any) {
     this.topFilters.forEach(f => f.active = false);
     filter.active = true;
+
+    // Emit the sort change based on filter name
+    let sortType = '';
+    switch(filter.name) {
+      case 'Trending':
+        sortType = 'trending';
+        break;
+      case 'Top Rated':
+        sortType = 'topRated';
+        break;
+      case 'New':
+        sortType = 'newest';
+        break;
+      case 'Under 2h':
+        sortType = 'under2h';
+        break;
+    }
+    this.sortChange.emit(sortType);
   }
 
   onMoreFilters() {
-    console.log('More filters clicked');
+    // Scroll to sidebar
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   }
 
 

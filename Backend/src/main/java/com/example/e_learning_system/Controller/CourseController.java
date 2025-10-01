@@ -7,6 +7,7 @@ import com.example.e_learning_system.Config.DifficultyLevel;
 import com.example.e_learning_system.Dto.ApiResponse;
 import com.example.e_learning_system.Dto.CourseDtos.CourseDetailsDto;
 import com.example.e_learning_system.Dto.CourseDtos.CourseFilterDto;
+import com.example.e_learning_system.Dto.CourseDtos.CourseSearchResultDto;
 import com.example.e_learning_system.Dto.CourseDtos.CourseSummaryDto;
 import com.example.e_learning_system.Dto.CourseDtos.CreateCourseDto;
 import com.example.e_learning_system.Dto.CourseDtos.TagDto;
@@ -269,28 +270,28 @@ public class CourseController {
         return ResponseEntity.ok(ApiResponse.success("User courses retrieved successfully", courses));
     }
 
-    /**
-     * Search courses by name
-     */
-    @GetMapping("/search")
-    public ResponseEntity<ApiResponse<Page<CourseSummaryDto>>> searchCourses(
-            @RequestParam String name,
-            @RequestParam(required = false) Boolean activeOnly,
-            @PageableDefault(size = 20) Pageable pageable) {
+    // /**
+    //  * Search courses by name
+    //  */
+    // @GetMapping("/search")
+    // public ResponseEntity<ApiResponse<Page<CourseSummaryDto>>> searchCourses(
+    //         @RequestParam String name,
+    //         @RequestParam(required = false) Boolean activeOnly,
+    //         @PageableDefault(size = 20) Pageable pageable) {
 
-        CourseFilterDto.CourseFilterDtoBuilder filterBuilder = CourseFilterDto.builder()
-                .name(name);
+    //     CourseFilterDto.CourseFilterDtoBuilder filterBuilder = CourseFilterDto.builder()
+    //             .name(name);
 
-        // If activeOnly is specified and true, filter by active courses
-        if (activeOnly != null && activeOnly) {
-            filterBuilder.isActive(true);
-        }
+    //     // If activeOnly is specified and true, filter by active courses
+    //     if (activeOnly != null && activeOnly) {
+    //         filterBuilder.isActive(true);
+    //     }
 
-        CourseFilterDto filterDto = filterBuilder.build();
+    //     CourseFilterDto filterDto = filterBuilder.build();
 
-        Page<CourseSummaryDto> courses = courseService.getCourses(filterDto, pageable);
-        return ResponseEntity.ok(ApiResponse.success("Search results retrieved successfully", courses));
-    }
+    //     Page<CourseSummaryDto> courses = courseService.getCourses(filterDto, pageable);
+    //     return ResponseEntity.ok(ApiResponse.success("Search results retrieved successfully", courses));
+    // }
 
     /**
      * Get courses within price range
@@ -362,6 +363,14 @@ public class CourseController {
     public ResponseEntity<ApiResponse<List<TagDto>>> getCategories() {
 
         return ResponseEntity.ok(ApiResponse.success("Tags retrieved successfully", courseService.getAllTags()));
+    }
+
+    @GetMapping("/search")
+    public ResponseEntity<ApiResponse<List<CourseSearchResultDto>>> searchCourses(
+            @RequestParam String query
+    ) {
+        List<CourseSearchResultDto> results = courseService.searchCourses(query);
+        return ResponseEntity.ok(ApiResponse.success("Search results retrieved successfully", results));
     }
 
 
