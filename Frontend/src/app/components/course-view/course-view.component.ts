@@ -5,6 +5,7 @@ import { HttpClient } from '@angular/common/http';
 import { CourseService } from '../../Services/Courses/course-service';
 import { Router } from '@angular/router';
 import { StarRatingComponent } from '../star-rating/star-rating.component';
+import { NotificationService } from '../../Services/notification.service';
 
 @Component({
   selector: 'app-course-view',
@@ -69,7 +70,12 @@ export class CourseViewComponent implements OnInit, OnChanges {
     reviewCount?: number;
   } | null = null;
 
-  constructor(private http: HttpClient, private courseService: CourseService, private router: Router) {}
+  constructor(
+    private http: HttpClient,
+    private courseService: CourseService,
+    private router: Router,
+    private notificationService: NotificationService
+  ) {}
 
   ngOnInit(): void {
     if (!this.course && this.courseId) {
@@ -91,6 +97,9 @@ export class CourseViewComponent implements OnInit, OnChanges {
   public loadCourse(id: number) {
     this.loading = true;
     this.error = null;
+
+    const loadingNotification = this.notificationService.loading('Loading course details...');
+
     this.courseService.getCourse(id).subscribe({
       next: (res: any) => {
         const payload = res && res.data ? res.data : res;
@@ -98,10 +107,18 @@ export class CourseViewComponent implements OnInit, OnChanges {
         // load reviews separately
         this.loadReviews(id);
         this.loading = false;
+
+        this.notificationService.remove(loadingNotification);
+        this.notificationService.success('Course loaded successfully!', 2000);
       },
       error: (err: any) => {
         this.error = err?.error?.message || err?.message || 'Failed to load course';
         this.loading = false;
+
+        this.notificationService.remove(loadingNotification);
+        if (this.error) {
+          this.notificationService.error(this.error);
+        }
       }
     });
   }
@@ -140,6 +157,12 @@ export class CourseViewComponent implements OnInit, OnChanges {
 
   submitReview() {
     if (!this.courseData || !this.courseData.id) return;
+
+    if (!this.reviewText || !this.reviewRating) {
+      this.notificationService.error('Please provide both rating and review text');
+      return;
+    }
+
     const payload: any = { userId: 1, feedbackText: this.reviewText, rating: this.reviewRating, isAnonymous: this.reviewAnonymous };
     // optimistic update: show the review immediately and update counts
     const tempReview = {
@@ -159,9 +182,14 @@ export class CourseViewComponent implements OnInit, OnChanges {
     this.showAllReviews = true;
 
     this.isSubmitting = true;
+
+    const submittingNotification = this.notificationService.loading('Submitting your review...');
     // fire POST, then reload authoritative data in background
     this.courseService.postReview(this.courseData.id, payload).subscribe({
       next: (res: any) => {
+        this.notificationService.remove(submittingNotification);
+        this.notificationService.success('Review submitted successfully!', 3000);
+
         // we don't rely on the response to update UI — reload will reconcile
         // trigger a background reload of reviews to reconcile optimistic state
         if (this.courseData && this.courseData.id) {
@@ -187,6 +215,9 @@ export class CourseViewComponent implements OnInit, OnChanges {
       },
       error: (err: any) => {
         console.error('Failed to submit review', err);
+        this.notificationService.remove(submittingNotification);
+        this.notificationService.error('Failed to submit review. Please try again.');
+
         // remove the optimistic review on error and decrement counts
         const idx = this.reviews.findIndex(r => r && r.id === tempReview.id);
         if (idx >= 0) this.reviews.splice(idx, 1);

@@ -1,14 +1,13 @@
-<div class="course-card">
+<div class="course-card" (click)="onCardClick($event)" role="button" tabindex="0">
   <div class="course-image">
     <img [src]="course.thumbnail" [alt]="course.name" />
-    <div class="course-badge" [style.background-color]="course.tags[0].color">
-      {{ course.tags[0].name }}
+    <div class="course-badge" [style.background-color]="course.tags[0]?.color || '#8b5cf6'">
+      {{ course.tags[0]?.name || 'Course' }}
     </div>
     <div class="course-rating">
-
       <span class="rating-value">
         <span class="star-icon" aria-hidden="true">★</span>
-        {{ course.rating }} · {{ course.ratingsCount }}
+        {{ course.rating || 0 }} · {{ course.ratingsCount || 0 }}
       </span>
     </div>
   </div>
@@ -16,24 +15,24 @@
   <div class="course-content">
     <h3 class="course-title">{{ course.name }}</h3>
     <div class="course-price">${{ course.oneTimePrice }}</div>
-    <p class="course-instructor">{{ course.instructor }} </p>
+    <p class="course-instructor">{{ course.instructor || 'Instructor' }}</p>
 
     <div class="course-meta">
-      <span class="course-duration">⏱️ {{ course.estimatedDurationInHours ? course.estimatedDurationInHours : 0 }} hours</span>
-      <span class="course-students">👥 {{ course.students ? course.students : 0 }}</span>
+      <span class="course-duration">⏱️ {{ course.estimatedDurationInHours || 0 }} hours</span>
+      <span class="course-students">👥 {{ course.students || 0 }}</span>
     </div>
 
     <div class="course-actions">
       <button
         class="enroll-btn"
         [class.enrolled]="isEnrolled"
-        (click)="onEnroll()">
+        (click)="onEnroll($event)">
         {{ isEnrolled ? '✓ Enrolled' : 'Enroll' }}
       </button>
       <button
         class="save-btn"
         [class.saved]="isSaved"
-        (click)="onSave()">
+        (click)="onSave($event)">
         {{ isSaved ? '❤️' : '🤍' }} Save
       </button>
     </div>

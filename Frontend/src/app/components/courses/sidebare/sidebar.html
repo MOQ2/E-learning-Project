@@ -20,8 +20,8 @@
         class="filter-option"
         [class.selected]="category.selected"
         (click)="toggleCategory(category)">
-        <span class="option-icon">{{ category.icon }}</span>
-        {{ category.name }}
+        <span class="option-icon">📚</span>
+        {{ category.displayName || category.name }}
       </button>
     </div>
   </div>
