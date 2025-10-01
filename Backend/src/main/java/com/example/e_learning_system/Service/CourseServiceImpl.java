@@ -2,13 +2,14 @@ package com.example.e_learning_system.Service;
 
 import com.example.e_learning_system.Config.CourseStatus;
 import com.example.e_learning_system.Dto.CourseDtos.*;
-import com.example.e_learning_system.Entities.Course;
 import com.example.e_learning_system.Entities.CourseModules;
+import com.example.e_learning_system.Entities.Course;
 import com.example.e_learning_system.Entities.Module;
 import com.example.e_learning_system.Entities.TagsEntity;
 import com.example.e_learning_system.Entities.UserEntity;
 import com.example.e_learning_system.Service.Interfaces.CourseService;
 import com.example.e_learning_system.Mapper.CourseMapper;
+import com.example.e_learning_system.Dto.OrderDtos.IdOrderDto;
 import com.example.e_learning_system.Repository.CourseModulesRepository;
 import com.example.e_learning_system.Repository.CourseRepository;
 import com.example.e_learning_system.Repository.ModuleRepository;
@@ -30,8 +31,14 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
+import java.util.stream.Collectors;
 import com.example.e_learning_system.Repository.UserCourseAccessRepository;
 import com.example.e_learning_system.Repository.UserFeedbackRepository;
 @Service
@@ -358,47 +365,54 @@ public class CourseServiceImpl implements CourseService {
 
     @Override
     public void updateModuleOrderInCourse(int courseId, int moduleId, int newOrder) {
-        Course course = courseRepository.findById(courseId)
-                .orElseThrow(() -> ResourceNotFound.courseNotFound(courseId + ""));
-        CourseModules courseModule = courseModulesRepository.findByCourseIdAndModuleId(courseId, moduleId)
-                .orElseThrow(() -> ResourceNotFound.moduleNotFoundInCourse(moduleId + "", courseId + ""));
-        if (!course.isUniqOrder(newOrder)) {
-            throw new RuntimeException("Module order already exists in the course select a unique order");
-        }
-        courseModule.setModuleOrder(newOrder);
-        courseModulesRepository.save(courseModule);
+        updateModuleOrdersInCourse(courseId, Collections.singletonList(new IdOrderDto(moduleId, newOrder)));
     }
 
     @Override
-    public void updateModuleOrdersInCourse(int courseId, java.util.List<com.example.e_learning_system.Dto.OrderDtos.IdOrderDto> orders) {
-        if (orders == null || orders.isEmpty()) return;
+    public void updateModuleOrdersInCourse(int courseId, List<IdOrderDto> orders) {
+        if (orders == null || orders.isEmpty()) {
+            return;
+        }
 
         Course course = courseRepository.findById(courseId)
                 .orElseThrow(() -> ResourceNotFound.courseNotFound(courseId + ""));
 
-        // Validate no duplicate orders in payload
-        java.util.Set<Integer> seen = new java.util.HashSet<>();
-        for (com.example.e_learning_system.Dto.OrderDtos.IdOrderDto od : orders) {
-            if (od.getOrder() == null || od.getOrder() < 0) throw new RuntimeException("Invalid order");
-            if (!seen.add(od.getOrder())) throw new RuntimeException("Duplicate order in payload");
+        List<CourseModules> courseModules = courseModulesRepository.findByCourse(course);
+        if (courseModules.isEmpty()) {
+            return;
         }
 
-        // Apply updates
-        for (com.example.e_learning_system.Dto.OrderDtos.IdOrderDto od : orders) {
-            int moduleId = od.getId();
-            int newOrder = od.getOrder();
-            CourseModules cm = courseModulesRepository.findByCourseIdAndModuleId(courseId, moduleId)
-                    .orElseThrow(() -> ResourceNotFound.moduleNotFoundInCourse(moduleId + "", courseId + ""));
+        Map<Integer, CourseModules> courseModuleByModuleId = courseModules.stream()
+                .collect(Collectors.toMap(cm -> cm.getModule().getId(), cm -> cm));
 
-            // ensure uniqueness among existing ones (excluding current)
-            boolean exists = course.getCourseModules().stream()
-                    .anyMatch(cmod -> cmod.getModuleOrder() == newOrder && cmod.getModule().getId() != moduleId);
-            if (exists) {
-                throw new RuntimeException("module order already exists in the course");
+        Map<Integer, Integer> requestedOrders = new HashMap<>();
+        for (IdOrderDto od : orders) {
+            if (od.getId() == null) {
+                throw new RuntimeException("Module id is required");
             }
-            cm.setModuleOrder(newOrder);
-            courseModulesRepository.save(cm);
+            if (!courseModuleByModuleId.containsKey(od.getId())) {
+                throw ResourceNotFound.moduleNotFoundInCourse(od.getId() + "", courseId + "");
+            }
+            if (od.getOrder() == null || od.getOrder() < 0) {
+                throw new RuntimeException("Invalid order value");
+            }
+            Integer previous = requestedOrders.putIfAbsent(od.getId(), od.getOrder());
+            if (previous != null && !previous.equals(od.getOrder())) {
+                throw new RuntimeException("Conflicting orders supplied for the same module");
+            }
         }
+
+        Set<Integer> finalOrders = new HashSet<>();
+        for (CourseModules courseModule : courseModules) {
+            int moduleId = courseModule.getModule().getId();
+            int newOrder = requestedOrders.getOrDefault(moduleId, courseModule.getModuleOrder());
+            if (!finalOrders.add(newOrder)) {
+                throw new RuntimeException("Duplicate module order detected");
+            }
+            courseModule.setModuleOrder(newOrder);
+        }
+
+        courseModulesRepository.saveAll(courseModules);
     }
 
     @Override

@@ -69,12 +69,27 @@ public class ModuleController {
      */
     @GetMapping("/{moduleId}/lessons")
     public ResponseEntity<ApiResponse<java.util.List<VideoDto>>> getModuleLessons(@PathVariable int moduleId) {
-        DetailedModuleDto module = moduleService.getModule(moduleId);
-        if (module != null) {
-            java.util.List<VideoDto> videos = module.getVideos();
+        try {
+            java.util.List<VideoDto> videos = moduleService.getModuleLessons(moduleId);
             return ResponseEntity.ok(ApiResponse.success("Module lessons retrieved successfully", videos));
+        } catch (RuntimeException ex) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ApiResponse.error(ex.getMessage()));
         }
-        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ApiResponse.error("Module not found"));
+    }
+
+    /**
+     * Get a specific lesson within a module context (includes order from ModuleVideos join table)
+     */
+    @GetMapping("/{moduleId}/lessons/{lessonId}")
+    public ResponseEntity<ApiResponse<VideoDto>> getLessonInModule(
+            @PathVariable int moduleId,
+            @PathVariable int lessonId) {
+        try {
+            VideoDto video = moduleService.getLessonInModule(moduleId, lessonId);
+            return ResponseEntity.ok(ApiResponse.success("Lesson retrieved successfully", video));
+        } catch (RuntimeException ex) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ApiResponse.error(ex.getMessage()));
+        }
     }
 
     @PostMapping("/{moduleId}/videos/{videoId}")

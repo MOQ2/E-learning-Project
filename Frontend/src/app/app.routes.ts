@@ -21,6 +21,7 @@ export const routes: Routes = [
   {path: 'payment',  component:Payment},
   {path: 'courses', component:ExploreCoursesPage},
   {path: 'course-editor', component: CourseEditorPageComponent},
+  {path: 'course-editor/:courseId', component: CourseEditorPageComponent},
   {path: 'homepage', component: HomePage},
   // module lessons: /module/:moduleId/lesson/:lessonId
   { path: 'module/:moduleId/lesson/:lessonId', component: LessonWrapper },
