@@ -1,7 +1,10 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
 import { CourseService } from '../../../Services/Courses/course-service';
+import { UserService } from '../../../Services/User/user-service';
+import { UserVideoService } from '../../../Services/UserVideo/user-video.service';
+import { VideoProgressService } from '../../../Services/VideoProgress/video-progress.service';
 import { HttpClientModule } from '@angular/common/http';
 import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
 
@@ -15,7 +18,7 @@ import Hls from 'hls.js';
   templateUrl: './lesson-page.html',
   styleUrls: ['./lesson-page.css']
 })
-export class LessonPage implements OnInit {
+export class LessonPage implements OnInit, OnDestroy {
   moduleId: number | null = null;
   lessonId: number | null = null;
   lessons: any[] = [];
@@ -54,11 +57,22 @@ export class LessonPage implements OnInit {
   // cached grouped modules used by the sidebar to avoid recreating arrays on each change
   groupedModules: { title: string; items: any[]; key: string }[] = [];
 
+  // User and watched videos tracking
+  userId: number | null = null;
+  watchedVideoIds: Set<number> = new Set();
+  courseId: number | null = null;
+
+  // Cleanup function for video progress tracking
+  private cleanupProgressTracking: (() => void) | null = null;
+
   constructor(
     private route: ActivatedRoute,
     private router: Router,
     private courseService: CourseService,
-    private sanitizer: DomSanitizer
+    private sanitizer: DomSanitizer,
+    private userService: UserService,
+    private userVideoService: UserVideoService,
+    private videoProgressService: VideoProgressService
   ) {}
 
   ngOnInit(): void {
@@ -67,12 +81,26 @@ export class LessonPage implements OnInit {
     const courseParam = this.route.snapshot.paramMap.get('courseId');
     this.moduleId = modParam ? Number(modParam) : null;
     this.lessonId = lessonParam ? Number(lessonParam) : null;
+    this.courseId = courseParam ? Number(courseParam) : null;
     console.log('[LessonPage] ngOnInit route params:', { moduleId: this.moduleId, lessonId: this.lessonId, courseId: courseParam });
+
+    // Get current user
+    const user = this.userService.getUser();
+    if (user) {
+      this.userId = user.user_id;
+    }
 
     // If we have a courseId route param prefer loading full course (modules + lessons)
     if (courseParam) {
       const cid = Number(courseParam);
       this.loadCourseModules(cid).then(() => {
+        // Load watched videos
+        if (this.userId) {
+          this.loadWatchedVideos().then(() => {
+            this.markCompletedLessons();
+          });
+        }
+
         // if lesson specified, select it, otherwise pick first lesson in first module
         if (this.lessonId) {
           this.selectLesson(this.lessonId);
@@ -113,9 +141,7 @@ export class LessonPage implements OnInit {
     try {
       const mod = await this.courseService.getModule(id).toPromise();
       // backend DetailedModuleDto contains videos: List<VideoDto>
-  this.lessons = mod?.videos || [];
-  // build grouped modules from the single-loaded module so sidebar has a stable structure
-  this.groupedModules = this.buildGroupedFromLessons(this.lessons, mod);
+      this.lessons = mod?.videos || [];
       this.lessonCount = this.lessons.length;
       // set selected module when loading a single module route
       this.selectedModule = mod;
@@ -126,7 +152,11 @@ export class LessonPage implements OnInit {
       } catch (e) {}
       // if module includes courseId try to load full course modules
       if (mod && mod.courseId) {
-        this.loadCourseModules(mod.courseId).catch(() => {});
+        await this.loadCourseModules(mod.courseId);
+      } else {
+        // Only build grouped modules from single module if we don't have a courseId
+        // (i.e., we won't be loading the full course modules)
+        this.groupedModules = this.buildGroupedFromLessons(this.lessons, mod);
       }
     } catch (err: any) {
       this.error = err?.message || 'Failed to load module';
@@ -187,9 +217,13 @@ export class LessonPage implements OnInit {
       }));
 
       console.log('[LessonPage] populated fullModules length=', this.fullModules.length);
+      console.log('[LessonPage] fullModules data:', this.fullModules);
       // build and cache grouped modules for stable rendering
       this.groupedModules = this.buildGroupedFromFullModules(this.fullModules);
+      console.log('[LessonPage] groupedModules length=', this.groupedModules.length);
+      console.log('[LessonPage] groupedModules data:', this.groupedModules);
     } catch (err: any) {
+      console.error('[LessonPage] Error loading course modules:', err);
       // gracefully ignore and keep fullModules empty
       this.fullModules = [];
     } finally {
@@ -319,16 +353,40 @@ export class LessonPage implements OnInit {
     if (target) this.selectLesson(target.id || target.videoId || target);
   }
 
-  // open syllabus modal or route (stub for now)
-  openSyllabus() {
-    // placeholder: future implementation
-    console.log('open syllabus');
-  }
 
   // initialize Plyr player for the video element
   loadPlyr() {
     const video = document.querySelector('#player') as HTMLMediaElement | null;
-    if (!video || !this.videoSrc) return;
+    if (!video || !this.videoSrc) {
+      console.warn('[LessonPage] loadPlyr: video element or videoSrc not available', { video: !!video, videoSrc: !!this.videoSrc });
+      return;
+    }
+
+    console.log('[LessonPage] loadPlyr called for lesson:', this.lesson?.id || this.lessonId, 'userId:', this.userId);
+
+    // Cleanup previous progress tracking if exists
+    if (this.cleanupProgressTracking) {
+      this.cleanupProgressTracking();
+      this.cleanupProgressTracking = null;
+    }
+
+    // Initialize video progress tracking using the service
+    if (this.userId) {
+      const currentLessonId = this.lesson?.id || this.lesson?.videoId || this.lessonId;
+      if (currentLessonId) {
+        this.cleanupProgressTracking = this.videoProgressService.initializeProgressTracking({
+          videoElement: video,
+          lessonId: currentLessonId,
+          userId: this.userId,
+          completionThreshold: 90,
+          onCompletion: (lessonId) => {
+            // Update local state and UI when lesson is marked as completed
+            this.watchedVideoIds.add(lessonId);
+            this.markCompletedLessons();
+          }
+        });
+      }
+    }
 
     // destroy previous sources
     try {
@@ -344,11 +402,13 @@ export class LessonPage implements OnInit {
             // initialize Plyr after hls attach
             // eslint-disable-next-line no-unused-vars
             const player = new PlyrCtor(video as any, { controls: ['play', 'progress', 'current-time', 'mute', 'volume', 'fullscreen'] });
+            console.log('[LessonPage] HLS player initialized');
           });
         } else {
           // Fallback to native playback if browser supports
           video.src = this.videoSrc as string;
           const player = new PlyrCtor(video as any, { controls: ['play', 'progress', 'current-time', 'mute', 'volume', 'fullscreen'] });
+          console.log('[LessonPage] Native HLS player initialized');
         }
       } else {
         // non-HLS video (mp4 etc)
@@ -356,10 +416,10 @@ export class LessonPage implements OnInit {
         try { video.setAttribute('crossorigin', 'anonymous'); } catch (e) {}
         video.src = this.videoSrc as string;
         const player = new PlyrCtor(video as any, { controls: ['play', 'progress', 'current-time', 'mute', 'volume', 'fullscreen'] });
+        console.log('[LessonPage] Standard video player initialized');
       }
     } catch (e) {
-      // ignore initialization errors
-      // console.warn('player init err', e);
+      console.error('[LessonPage] Error initializing player:', e);
     }
   }
 
@@ -443,12 +503,15 @@ export class LessonPage implements OnInit {
 
   // Build grouped modules structure from fullModules array (already normalized)
   buildGroupedFromFullModules(fullModules: any[]) {
+    console.log('[buildGroupedFromFullModules] input fullModules:', fullModules);
     const groups: { title: string; items: any[]; key: string }[] = [];
     for (const m of fullModules || []) {
       const title = m.title || m.name || m.moduleName || m.moduleTitle || 'Module';
       const items = Array.isArray(m.videos) ? m.videos : (Array.isArray(m.lessons) ? m.lessons : []);
+      console.log('[buildGroupedFromFullModules] module:', m, 'title:', title, 'items count:', items.length);
       groups.push({ title, items, key: (m.id || m.moduleId || title).toString().replace(/\s+/g, '_') });
     }
+    console.log('[buildGroupedFromFullModules] returning groups:', groups);
     return groups;
   }
 
@@ -468,6 +531,70 @@ export class LessonPage implements OnInit {
       if (a.fileDownloadUrl) {
         window.open(a.fileDownloadUrl, '_blank', 'noopener');
       }
+    }
+  }
+
+  // Load watched videos for the current user
+  async loadWatchedVideos(): Promise<void> {
+    if (!this.userId) return;
+
+    try {
+      this.watchedVideoIds = await this.videoProgressService.loadWatchedVideos(this.userId);
+      console.log('[LessonPage] Loaded watched videos:', this.watchedVideoIds.size);
+    } catch (err) {
+      console.warn('Could not load watched videos:', err);
+    }
+  }
+
+  // Mark lessons as completed based on watched videos
+  markCompletedLessons(): void {
+    console.log('[LessonPage] Marking completed lessons. Watched IDs:', Array.from(this.watchedVideoIds));
+
+    const hasFullCourse = Array.isArray(this.fullModules) && this.fullModules.length > 0;
+
+    // Mark lessons in fullModules
+    if (hasFullCourse) {
+      let totalMarked = 0;
+      this.fullModules.forEach(module => {
+        const videos = module.videos || module.lessons || [];
+        videos.forEach((video: any) => {
+          const videoId = video.videoId || video.id;
+          video.completed = this.watchedVideoIds.has(videoId);
+          if (video.completed) {
+            totalMarked++;
+            console.log(`  ✓ Lesson ${videoId} marked as completed`);
+          }
+        });
+      });
+      console.log(`[LessonPage] Marked ${totalMarked} lessons as completed in fullModules`);
+
+      // Rebuild grouped modules to reflect completion status
+      this.groupedModules = this.buildGroupedFromFullModules(this.fullModules);
+    }
+
+    // Mark lessons in the lessons array
+    if (this.lessons && this.lessons.length > 0) {
+      let totalMarked = 0;
+      this.lessons.forEach(lesson => {
+        const lessonId = lesson.videoId || lesson.id;
+        lesson.completed = this.watchedVideoIds.has(lessonId);
+        if (lesson.completed) totalMarked++;
+      });
+      console.log(`[LessonPage] Marked ${totalMarked} lessons as completed in lessons array`);
+
+      // If using lessons (single module), rebuild grouped modules
+      if (!hasFullCourse && this.selectedModule) {
+        this.groupedModules = this.buildGroupedFromLessons(this.lessons, this.selectedModule);
+      }
+    }
+  }
+
+  ngOnDestroy(): void {
+    // Cleanup video progress tracking listeners when component is destroyed
+    if (this.cleanupProgressTracking) {
+      this.cleanupProgressTracking();
+      this.cleanupProgressTracking = null;
+      console.log('[LessonPage] Cleaned up video progress tracking on component destroy');
     }
   }
 }

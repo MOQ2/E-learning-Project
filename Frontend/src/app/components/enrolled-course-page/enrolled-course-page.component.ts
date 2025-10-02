@@ -6,6 +6,8 @@ import { UserService } from '../../Services/User/user-service';
 import { NotificationService } from '../../Services/notification.service';
 import { StarRatingComponent } from '../star-rating/star-rating.component';
 import { FormsModule } from '@angular/forms';
+import { MyLearningService } from '../../Services/MyLearning/my-learning.service';
+import { UserVideoService } from '../../Services/UserVideo/user-video.service';
 
 interface CourseProgress {
   completedLessons: number;
@@ -69,12 +71,17 @@ export class EnrolledCoursePageComponent implements OnInit {
   // Course resources/attachments
   courseResources: any[] = [];
 
+  // Watched videos tracking
+  watchedVideoIds: Set<number> = new Set();
+
   constructor(
     private route: ActivatedRoute,
     private router: Router,
     private courseService: CourseService,
     private userService: UserService,
-    private notificationService: NotificationService
+    private notificationService: NotificationService,
+    private myLearningService: MyLearningService,
+    private userVideoService: UserVideoService
   ) {}
 
   ngOnInit(): void {
@@ -100,6 +107,8 @@ export class EnrolledCoursePageComponent implements OnInit {
     this.loading = true;
     this.error = null;
 
+    console.log('🔄 loadCourseData started. CourseId:', this.courseId, 'UserId:', this.userId);
+
     try {
       // Check if user has access to this course
       if (this.userId) {
@@ -116,11 +125,26 @@ export class EnrolledCoursePageComponent implements OnInit {
       // Load lessons for each module
       await this.loadModuleLessons();
 
+      // Load watched videos to mark lessons as completed
+      console.log('🎯 About to load watched videos. UserId:', this.userId);
+      if (this.userId) {
+        await this.loadWatchedVideos();
+        console.log('✅ loadWatchedVideos completed. WatchedIds:', Array.from(this.watchedVideoIds));
+      } else {
+        console.warn('⚠️ Skipping loadWatchedVideos because userId is:', this.userId);
+      }
+
+      // Mark lessons as completed based on watched videos
+      this.markCompletedLessons();
+
+      // Calculate module progress
+      this.calculateModuleProgress();
+
       // Load course resources/attachments
       await this.loadCourseResources();
 
-      // Load progress data (mock for now - you can implement backend API)
-      this.calculateProgress();
+      // Load progress data from backend API
+      await this.loadProgressFromBackend();
 
       // Load quizzes
       await this.loadQuizzes();
@@ -278,15 +302,111 @@ export class EnrolledCoursePageComponent implements OnInit {
     }
   }
 
-  calculateProgress(): void {
-    let totalLessons = 0;
-    let completedLessons = 0;
+  async loadProgressFromBackend(): Promise<void> {
+    if (!this.userId || !this.courseId) {
+      // Fall back to local calculation if user or course not available
+      this.calculateProgressLocally();
+      return;
+    }
 
+    try {
+      const enrolledCourse = await this.myLearningService.getEnrolledCourseDetails(
+        this.userId,
+        this.courseId
+      ).toPromise();
+
+      if (enrolledCourse) {
+        // Update progress from backend data
+        this.courseProgress.percentage = enrolledCourse.progressPercentage;
+        this.courseProgress.completedLessons = enrolledCourse.completedLessons || 0;
+        this.courseProgress.totalLessons = enrolledCourse.totalLessons || 0;
+        this.courseProgress.certificateEligible = enrolledCourse.progressPercentage >= 80;
+
+        // Time spent calculation (from quiz completions or estimate)
+        this.courseProgress.timeSpent = Math.floor((enrolledCourse.totalLessons || 0) * 15);
+      } else {
+        this.calculateProgressLocally();
+      }
+    } catch (err) {
+      console.warn('Could not load progress from backend, calculating locally:', err);
+      this.calculateProgressLocally();
+    }
+  }
+
+  async loadWatchedVideos(): Promise<void> {
+    if (!this.userId) {
+      console.warn('⚠️ Cannot load watched videos: userId is null');
+      return;
+    }
+
+    console.log('📡 Loading watched videos for user:', this.userId);
+    try {
+      const watchedVideos = await this.userVideoService.getWatchedVideos(this.userId).toPromise();
+      console.log('📦 API Response:', watchedVideos);
+      console.log('📦 Response type:', typeof watchedVideos, Array.isArray(watchedVideos));
+
+      if (watchedVideos && Array.isArray(watchedVideos)) {
+        this.watchedVideoIds = new Set(watchedVideos.map(v => {
+          const id = v.videoId || v.id;
+          console.log(`  Video: ${v.title || v.videoName} - ID: ${id}`);
+          return id;
+        }).filter(id => id !== undefined) as number[]);
+        console.log('✅ Loaded watched videos:', this.watchedVideoIds.size, 'IDs:', Array.from(this.watchedVideoIds));
+      } else {
+        console.warn('⚠️ Watched videos response is not an array:', watchedVideos);
+      }
+    } catch (err) {
+      console.error('❌ Error loading watched videos:', err);
+    }
+  }
+
+  markCompletedLessons(): void {
+    // Mark lessons as completed based on watched videos
+    console.log('Marking completed lessons. Watched video IDs:', Array.from(this.watchedVideoIds));
+    this.modules.forEach(module => {
+      const lessons = module.videos || module.lessons || [];
+      console.log(`Module "${module.moduleName || module.name}": ${lessons.length} lessons`);
+      lessons.forEach((lesson: any) => {
+        const lessonId = lesson.videoId || lesson.id;
+        lesson.completed = this.watchedVideoIds.has(lessonId);
+        if (lesson.completed) {
+          console.log(`  ✓ Lesson ${lessonId} (${lesson.videoName || lesson.title}) marked as completed`);
+        }
+      });
+    });
+  }
+
+  calculateModuleProgress(): void {
+    // Calculate progress for each module
     this.modules.forEach(module => {
       const lessons = module.videos || module.lessons || [];
       const moduleTotalLessons = lessons.length;
       const moduleCompletedLessons = lessons.filter((l: any) => l.completed).length;
 
+      if (module.id) {
+        this.moduleProgress.set(module.id, {
+          moduleId: module.id,
+          completed: moduleCompletedLessons === moduleTotalLessons && moduleTotalLessons > 0,
+          lessonsCompleted: moduleCompletedLessons,
+          totalLessons: moduleTotalLessons,
+          percentage: moduleTotalLessons > 0 ? (moduleCompletedLessons / moduleTotalLessons) * 100 : 0
+        });
+      }
+    });
+  }
+
+  calculateProgressLocally(): void {
+    // Fallback local calculation when backend API is unavailable
+    let totalLessons = 0;
+    let completedLessons = 0;
+
+    console.log('Calculating progress locally...');
+    this.modules.forEach(module => {
+      const lessons = module.videos || module.lessons || [];
+      const moduleTotalLessons = lessons.length;
+      const moduleCompletedLessons = lessons.filter((l: any) => l.completed).length;
+
+      console.log(`Module "${module.moduleName || module.name}": ${moduleCompletedLessons}/${moduleTotalLessons} completed`);
       totalLessons += moduleTotalLessons;
       completedLessons += moduleCompletedLessons;
 
@@ -306,6 +426,8 @@ export class EnrolledCoursePageComponent implements OnInit {
     this.courseProgress.completedLessons = completedLessons;
     this.courseProgress.percentage = totalLessons > 0 ? (completedLessons / totalLessons) * 100 : 0;
     this.courseProgress.certificateEligible = this.courseProgress.percentage >= 80;
+
+    console.log(`📊 Course Progress: ${completedLessons}/${totalLessons} (${this.courseProgress.percentage.toFixed(1)}%)`);
 
     // Mock time spent
     this.courseProgress.timeSpent = Math.floor(completedLessons * 15); // 15 mins per lesson avg

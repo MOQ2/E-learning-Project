@@ -229,7 +229,9 @@
 
         <!-- Modules List -->
         <div class="modules-list">
-          <div class="module-item" *ngFor="let module of modules; trackBy: trackByModuleId">
+          <div class="module-item"
+               [class.completed]="getModuleProgress(module.id)?.completed"
+               *ngFor="let module of modules; trackBy: trackByModuleId">
             <div class="module-header" (click)="toggleModule(module.id)">
               <div class="module-info">
                 <button class="module-toggle" [class.expanded]="isModuleExpanded(module.id)">

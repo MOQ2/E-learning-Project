@@ -3,7 +3,7 @@ public enum CourseStatus {
     DRAFT("draft"),
     PUBLISHED("published"),
     ARCHIVED("archived");
-
+    
     private final String value;
 
     CourseStatus(String value) {
