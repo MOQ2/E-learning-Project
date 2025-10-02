@@ -25,8 +25,15 @@
         </div>
 
         <div *ngIf="!moduleCollapsed[module.key]">
-          <div *ngFor="let l of module.items; trackBy: trackByLesson" (click)="selectLesson(l.id || l.videoId)" [class.active]="(lesson && (lesson.id || lesson.videoId) === (l.id || l.videoId))" class="lesson-item">
-            <div class="icon">▶</div>
+          <div *ngFor="let l of module.items; trackBy: trackByLesson"
+               (click)="selectLesson(l.id || l.videoId)"
+               [class.active]="(lesson && (lesson.id || lesson.videoId) === (l.id || l.videoId))"
+               [class.completed]="l.completed"
+               class="lesson-item">
+            <div class="icon">
+              <span *ngIf="!l.completed">▶</span>
+              <span *ngIf="l.completed" class="completed-icon">✓</span>
+            </div>
             <div class="title">{{ l.title || l.name || ('Lesson ' + (l.order || l.id)) }}</div>
             <div class="duration">{{ l.durationSeconds ? (l.durationSeconds/60 | number:'1.0-0') + ':00' : '' }}</div>
           </div>

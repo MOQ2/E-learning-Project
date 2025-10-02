@@ -9,6 +9,7 @@ import { ExploreCoursesPage } from './components/courses/explore-courses/explore
 import { CoursePage } from './components/course-page/course-page';
 import { LessonWrapper } from './components/lesson-wrapper/lesson-wrapper';
 import { EnrolledCoursePageComponent } from './components/enrolled-course-page/enrolled-course-page.component';
+import { MyLearningPage } from './components/my-learning-page/my-learning-page';
 
 export const routes: Routes = [
   // make the course page the home page; it accepts optional id via /course/:id or ?courseId=
@@ -21,6 +22,7 @@ export const routes: Routes = [
   {path: 'signUp',  component:Signup},
   {path: 'payment',  component:Payment},
   {path: 'courses', component:ExploreCoursesPage},
+  {path: 'my-learning', component: MyLearningPage},
   {path: 'course-editor', component: CourseEditorPageComponent},
   {path: 'course-editor/:courseId', component: CourseEditorPageComponent},
   {path: 'homepage', component: HomePage},
