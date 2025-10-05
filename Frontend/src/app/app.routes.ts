@@ -27,7 +27,7 @@ export const routes: Routes = [
   {path: 'course-editor', component: CourseEditorPageComponent},
   {path: 'course-editor/:courseId', component: CourseEditorPageComponent},
   {path: 'homepage', component: HomePage},
-  { path: 'payment', component: Payment, canActivate: [authGuard] }
+  { path: 'payment', component: Payment, canActivate: [authGuard] },
   { path: 'module/:moduleId/lesson/:lessonId', component: LessonWrapper },
   { path: 'module/:moduleId', component: LessonWrapper },
   { path: 'lesson/:lessonId', component: LessonWrapper }
