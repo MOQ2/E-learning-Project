@@ -31,18 +31,6 @@ export class CourseService {
 private api = `${environment.apiUrl}`
   constructor(private http: HttpClient) {}
 
-  // getCourses(): Observable<CourseInterface[]> {
-  //   return this.http.get<{success: boolean,message: string ,data: CourseInterface[]}>(this.api+'/api/courses/all')
-  //     .pipe(
-  //       map(res => res.data)
-  //     )
-  // }
-  // getCourses(): Observable<CourseInterface[]> {
-  //   return this.http.get<{success: boolean,message: string ,data: CourseInterface[]}>(this.api+'/api/courses/all')
-  //     .pipe(
-  //       map(res => res.data)
-  //     )
-  // }
 
 
 
