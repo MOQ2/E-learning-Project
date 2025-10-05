@@ -104,6 +104,21 @@ export class MyLearningPage implements OnInit {
     return courses;
   }
 
+  get topContinueLearning(): EnrolledCourseDto[] {
+    return this.continueLearning.slice(0, 3);
+  }
+
+  get completedCoursesList(): EnrolledCourseDto[] {
+    return this.enrolledCourses
+      .filter(course => course.progressPercentage >= 100)
+      .sort(
+        (a, b) =>
+          new Date(b.lastAccessedDate || b.enrolledDate).getTime() -
+          new Date(a.lastAccessedDate || a.enrolledDate).getTime()
+      )
+      .slice(0, 3);
+  }
+
   goToCourse(course: EnrolledCourseDto): void {
     this.router.navigate(['/course', course.courseId, 'enrolled']);
   }
