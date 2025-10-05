@@ -1,11 +1,13 @@
 package com.example.e_learning_system.Service;
 
 import com.example.e_learning_system.Config.CourseStatus;
+import com.example.e_learning_system.Config.Tags;
 import com.example.e_learning_system.Dto.CourseDtos.*;
 import com.example.e_learning_system.Entities.Attachment;
 import com.example.e_learning_system.Entities.CourseModules;
 import com.example.e_learning_system.Entities.Course;
 import com.example.e_learning_system.Entities.Module;
+import com.example.e_learning_system.Entities.TagsEntity;
 import com.example.e_learning_system.Entities.TagsEntity;
 import com.example.e_learning_system.Entities.UserEntity;
 import com.example.e_learning_system.Service.Interfaces.CourseService;
@@ -14,6 +16,7 @@ import com.example.e_learning_system.Dto.OrderDtos.IdOrderDto;
 import com.example.e_learning_system.Repository.CourseModulesRepository;
 import com.example.e_learning_system.Repository.CourseRepository;
 import com.example.e_learning_system.Repository.ModuleRepository;
+import com.example.e_learning_system.Repository.TagsRepository;
 import com.example.e_learning_system.Repository.TagsRepository;
 import com.example.e_learning_system.Repository.UserRepository;
 import com.example.e_learning_system.Repository.AttachmentRepository;

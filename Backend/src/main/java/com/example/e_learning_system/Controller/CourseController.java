@@ -4,6 +4,7 @@ import com.example.e_learning_system.Config.Category;
 import com.example.e_learning_system.Config.CourseStatus;
 import com.example.e_learning_system.Config.Currency;
 import com.example.e_learning_system.Config.DifficultyLevel;
+import com.example.e_learning_system.Config.Tags;
 import com.example.e_learning_system.Dto.ApiResponse;
 import com.example.e_learning_system.Dto.CourseDtos.CourseDetailsDto;
 import com.example.e_learning_system.Dto.CourseDtos.CourseFilterDto;
@@ -11,8 +12,14 @@ import com.example.e_learning_system.Dto.CourseDtos.CourseSearchResultDto;
 import com.example.e_learning_system.Dto.CourseDtos.CourseSummaryDto;
 import com.example.e_learning_system.Dto.CourseDtos.CreateCourseDto;
 import com.example.e_learning_system.Dto.CourseDtos.TagDto;
+import com.example.e_learning_system.Dto.CourseDtos.TagDto;
 import com.example.e_learning_system.Dto.CourseDtos.UpdateCourseDto;
+import com.example.e_learning_system.Entities.TagsEntity;
 import com.example.e_learning_system.Service.Interfaces.CourseService;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
+
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -29,7 +36,9 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 
+
 import java.math.BigDecimal;
+import java.util.ArrayList;
 import java.util.ArrayList;
 import java.util.List;
 
