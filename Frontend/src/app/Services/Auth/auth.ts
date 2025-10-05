@@ -2,10 +2,8 @@ import { Injectable } from '@angular/core';
 import {HttpClient} from '@angular/common/http';
 import {Observable} from 'rxjs';
 import {environment} from '../../../environments/environment';
+import {AuthResponseDTO, LoginRequestDTO, RegisterRequestDTO} from '../../models/authDto';
 
-interface AuthResponse{
-  token : string;
-}
 
 @Injectable({
   providedIn: 'root'
@@ -16,13 +14,11 @@ export class Auth {
   constructor(private http:HttpClient) {
   }
 
-  login(email : string , password : string) : Observable<AuthResponse>
-  {
-    return this.http.post<AuthResponse>(`${this.api}/login` , {email , password});
+  login(data: LoginRequestDTO): Observable<AuthResponseDTO> {
+    return this.http.post<AuthResponseDTO>(`${this.api}/login`, data);
   }
 
-  signUp(name : string ,email : string , password : string ,phone : string , bio : string) : Observable<AuthResponse>
-  {
-    return this.http.post<AuthResponse>(`${this.api}/register` , {name ,email , password,phone , bio});
+  signUp(data: RegisterRequestDTO): Observable<AuthResponseDTO> {
+    return this.http.post<AuthResponseDTO>(`${this.api}/register`, data);
   }
 }

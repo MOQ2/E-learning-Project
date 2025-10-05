@@ -10,6 +10,7 @@ import { CoursePage } from './components/course-page/course-page';
 import { LessonWrapper } from './components/lesson-wrapper/lesson-wrapper';
 import { EnrolledCoursePageComponent } from './components/enrolled-course-page/enrolled-course-page.component';
 import { MyLearningPage } from './components/my-learning-page/my-learning-page';
+import { authGuard } from './Services/Auth/auth-guard';
 
 export const routes: Routes = [
   // make the course page the home page; it accepts optional id via /course/:id or ?courseId=
@@ -21,14 +22,13 @@ export const routes: Routes = [
   {path: 'login',  component:Login},
   {path: 'signUp',  component:Signup},
   {path: 'payment',  component:Payment},
-  {path: 'courses', component:ExploreCoursesPage},
+  { path: 'courses', component: ExploreCoursesPage, canActivate: [authGuard] },
   {path: 'my-learning', component: MyLearningPage},
   {path: 'course-editor', component: CourseEditorPageComponent},
   {path: 'course-editor/:courseId', component: CourseEditorPageComponent},
   {path: 'homepage', component: HomePage},
-
+  { path: 'payment', component: Payment, canActivate: [authGuard] }
   { path: 'module/:moduleId/lesson/:lessonId', component: LessonWrapper },
   { path: 'module/:moduleId', component: LessonWrapper },
   { path: 'lesson/:lessonId', component: LessonWrapper }
 ];
-

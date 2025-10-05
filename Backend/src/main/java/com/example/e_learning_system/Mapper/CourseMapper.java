@@ -6,10 +6,12 @@ import com.example.e_learning_system.Dto.CourseDtos.CourseModuleDto;
 import com.example.e_learning_system.Dto.CourseDtos.CourseSummaryDto;
 import com.example.e_learning_system.Dto.CourseDtos.CreateCourseDto;
 import com.example.e_learning_system.Dto.CourseDtos.TagDto;
+import com.example.e_learning_system.Dto.CourseDtos.TagDto;
 import com.example.e_learning_system.Dto.CourseDtos.UpdateCourseDto;
 import com.example.e_learning_system.Entities.Attachment;
 import com.example.e_learning_system.Entities.Course;
 import com.example.e_learning_system.Entities.CourseModules;
+import com.example.e_learning_system.Entities.TagsEntity;
 import com.example.e_learning_system.Entities.TagsEntity;
 import com.example.e_learning_system.Entities.UserEntity;
 import com.example.e_learning_system.Repository.AttachmentRepository;
@@ -171,6 +173,7 @@ public class CourseMapper {
                 .isActive(createCourseDto.isActive())
                 .createdBy(createdBy)
                 .tags(tags)
+                .tags(tags)
                 .build();
     }
 
@@ -232,6 +235,13 @@ public class CourseMapper {
                     .collect(Collectors.toSet());
             existingCourse.setTags(tags);
         }
+        if (updateCourseDto.getTags() != null && !updateCourseDto.getTags().isEmpty()) {
+            Set<TagsEntity> tags = updateCourseDto.getTags().stream()
+                    .map(tag -> tagsRepository.findByName(tag))
+                    .filter(Objects::nonNull)
+                    .collect(Collectors.toSet());
+            existingCourse.setTags(tags);
+        }
         return existingCourse;
     }
 
@@ -242,6 +252,11 @@ public class CourseMapper {
         if (courseDetailsDto == null) {
             return null;
         }
+
+        Set<TagsEntity> tags = courseDetailsDto.getTags().stream()
+                .map(tagDto -> tagsRepository.findByName(tagDto.getName()))
+                .filter(Objects::nonNull)
+                .collect(Collectors.toSet());
 
         Set<TagsEntity> tags = courseDetailsDto.getTags().stream()
                 .map(tagDto -> tagsRepository.findByName(tagDto.getName()))
@@ -259,6 +274,7 @@ public class CourseMapper {
                 .status(courseDetailsDto.getStatus())
                 .difficultyLevel(courseDetailsDto.getDifficultyLevel())
                 .isActive(courseDetailsDto.isActive())
+                .tags(tags)
                 .tags(tags)
                 .build();
     }
@@ -278,6 +294,11 @@ public class CourseMapper {
                 .filter(Objects::nonNull)
                 .collect(Collectors.toSet());
 
+        Set<TagsEntity> tags = createCourseDto.getTags().stream()
+                .map(tag -> tagsRepository.findByName(tag))
+                .filter(Objects::nonNull)
+                .collect(Collectors.toSet());
+
         existingCourse.setName(createCourseDto.getName());
         existingCourse.setDescription(createCourseDto.getDescription());
         existingCourse.setOneTimePrice(createCourseDto.getOneTimePrice());
@@ -287,6 +308,7 @@ public class CourseMapper {
         existingCourse.setStatus(createCourseDto.getStatus());
         existingCourse.setDifficultyLevel(createCourseDto.getDifficultyLevel());
         existingCourse.setActive(createCourseDto.isActive());
+        existingCourse.setTags(tags);
         existingCourse.setTags(tags);
     }
 
