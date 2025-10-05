@@ -178,19 +178,3 @@ public class Course extends BaseEntity {
         tag.getCourses().remove(this);
     }
 }
-
-    public void addTag (TagsEntity tag){
-        if(tag == null)
-            return;
-
-        this.tags.add(tag);
-        tag.getCourses().add(this);
-    }
-    public void removeTag (TagsEntity tag){
-        if(tag == null)
-            return;
-
-        this.tags.remove(tag);
-        tag.getCourses().remove(this);
-    }
-}
