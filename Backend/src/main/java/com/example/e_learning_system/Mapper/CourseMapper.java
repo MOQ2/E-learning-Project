@@ -258,10 +258,6 @@ public class CourseMapper {
                 .filter(Objects::nonNull)
                 .collect(Collectors.toSet());
 
-        Set<TagsEntity> tags = courseDetailsDto.getTags().stream()
-                .map(tagDto -> tagsRepository.findByName(tagDto.getName()))
-                .filter(Objects::nonNull)
-                .collect(Collectors.toSet());
 
         return Course.builder()
                 .id(courseDetailsDto.getId())
@@ -289,10 +285,7 @@ public class CourseMapper {
             return;
         }
 
-        Set<TagsEntity> tags = createCourseDto.getTags().stream()
-                .map(tag -> tagsRepository.findByName(tag))
-                .filter(Objects::nonNull)
-                .collect(Collectors.toSet());
+
 
         Set<TagsEntity> tags = createCourseDto.getTags().stream()
                 .map(tag -> tagsRepository.findByName(tag))
