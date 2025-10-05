@@ -1,10 +1,9 @@
-import { Component, OnInit } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { Component, OnInit, Inject } from '@angular/core';
+import { CommonModule, DOCUMENT } from '@angular/common';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { CourseService } from '../../Services/Courses/course-service';
 import { UserService } from '../../Services/User/user-service';
 import { NotificationService } from '../../Services/notification.service';
-import { StarRatingComponent } from '../star-rating/star-rating.component';
 import { FormsModule } from '@angular/forms';
 import { MyLearningService } from '../../Services/MyLearning/my-learning.service';
 import { UserVideoService } from '../../Services/UserVideo/user-video.service';
@@ -28,7 +27,7 @@ interface ModuleProgress {
 @Component({
   selector: 'app-enrolled-course-page',
   standalone: true,
-  imports: [CommonModule, StarRatingComponent, FormsModule, RouterLink],
+  imports: [CommonModule, FormsModule, RouterLink],
   templateUrl: './enrolled-course-page.component.html',
   styleUrls: ['./enrolled-course-page.component.css']
 })
@@ -81,7 +80,8 @@ export class EnrolledCoursePageComponent implements OnInit {
     private userService: UserService,
     private notificationService: NotificationService,
     private myLearningService: MyLearningService,
-    private userVideoService: UserVideoService
+    private userVideoService: UserVideoService,
+    @Inject(DOCUMENT) private document: Document
   ) {}
 
   ngOnInit(): void {
@@ -453,9 +453,123 @@ export class EnrolledCoursePageComponent implements OnInit {
     ];
   }
 
+  get nextLesson(): {
+    lessonId: number;
+    lessonTitle: string;
+    moduleName: string;
+    duration?: number;
+    locked?: boolean;
+    completed?: boolean;
+  } | null {
+    for (const module of this.modules) {
+      const lessons = module.videos || module.lessons || [];
+      const upcoming = lessons.find((lesson: any) => !lesson.completed && !lesson.locked);
+
+      if (upcoming) {
+        const lessonId = upcoming.id ?? upcoming.videoId;
+        if (lessonId === undefined || lessonId === null) {
+          continue;
+        }
+        return {
+          lessonId,
+          lessonTitle: upcoming.videoName || upcoming.title || upcoming.name || 'Lesson',
+          moduleName: module.moduleName || module.name || module.title || 'Module',
+          duration: upcoming.duration,
+          locked: upcoming.locked,
+          completed: upcoming.completed
+        };
+      }
+    }
+
+    if (this.modules.length > 0) {
+      const firstModule = this.modules[0];
+      const firstLesson = (firstModule.videos || firstModule.lessons || [])[0];
+      if (firstLesson) {
+        const lessonId = firstLesson.id ?? firstLesson.videoId;
+        if (lessonId === undefined || lessonId === null) {
+          return null;
+        }
+        return {
+          lessonId,
+          lessonTitle: firstLesson.videoName || firstLesson.title || firstLesson.name || 'Lesson',
+          moduleName: firstModule.moduleName || firstModule.name || firstModule.title || 'Module',
+          duration: firstLesson.duration,
+          locked: firstLesson.locked,
+          completed: firstLesson.completed
+        };
+      }
+    }
+
+    return null;
+  }
+
+  get upcomingQuiz(): any | null {
+    if (!this.availableQuizzes || this.availableQuizzes.length === 0) {
+      return null;
+    }
+
+    const next = this.availableQuizzes.find(quiz => !this.quizScores.has(quiz.id));
+    return next || this.availableQuizzes[0];
+  }
+
+  get completedQuizzesCount(): number {
+    return this.quizScores.size;
+  }
+
+  get progressStatusLabel(): string {
+    const percentage = this.courseProgress.percentage;
+    if (percentage >= 100) {
+      return 'Course completed';
+    }
+    if (percentage >= 80) {
+      return 'Certificate unlocked';
+    }
+    if (percentage >= 50) {
+      return 'On track';
+    }
+    if (percentage > 0) {
+      return 'Keep going';
+    }
+    return "Let's get started";
+  }
+
+  get accessSummary(): string {
+    if (!this.hasAccess) {
+      return 'Access pending';
+    }
+
+    if (!this.accessType) {
+      return 'General access';
+    }
+
+    switch (this.accessType) {
+      case 'SUBSCRIPTION_ACCESS':
+        return 'Subscription';
+      case 'DIRECT':
+        return 'Direct purchase';
+      default:
+        return this.accessType.replace(/_/g, ' ').toLowerCase().replace(/(^|\s)\w/g, (c: string) => c.toUpperCase());
+    }
+  }
+
+  get daysUntilExpiry(): number | null {
+    return this.calculateDaysUntilExpiry();
+  }
+
+  get hasAttachments(): boolean {
+    return Array.isArray(this.courseResources) && this.courseResources.length > 0;
+  }
+
   // UI Methods
   setActiveTab(tab: 'overview' | 'curriculum' | 'resources' | 'discussion'): void {
     this.activeTab = tab;
+  }
+
+  scrollToSection(sectionId: string): void {
+    const target = this.document?.getElementById(sectionId);
+    if (target) {
+      target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
   }
 
   toggleModule(moduleId: number): void {
@@ -500,7 +614,10 @@ export class EnrolledCoursePageComponent implements OnInit {
   }
 
   goToLesson(lessonId: number): void {
-    if (!this.courseId) return;
+    if (!this.courseId || !lessonId) {
+      this.notificationService.info('Lesson details are not available yet.');
+      return;
+    }
     this.router.navigate(['/course', this.courseId, 'learn'], {
       queryParams: { lessonId }
     });
@@ -532,6 +649,15 @@ export class EnrolledCoursePageComponent implements OnInit {
     this.notificationService.info('Resource download feature coming soon!');
   }
 
+  downloadAllResources(): void {
+    if (!this.hasAttachments) {
+      this.notificationService.info('No resources available to download yet.');
+      return;
+    }
+
+    this.notificationService.info('Bulk download is coming soon. Please download files individually for now.');
+  }
+
   formatDuration(minutes: number): string {
     if (minutes < 60) return `${minutes}m`;
     const hours = Math.floor(minutes / 60);
@@ -552,7 +678,7 @@ export class EnrolledCoursePageComponent implements OnInit {
     return date.toLocaleDateString();
   }
 
-  getDaysUntilExpiry(): number | null {
+  private calculateDaysUntilExpiry(): number | null {
     if (!this.accessExpiresAt) return null;
 
     const now = new Date();

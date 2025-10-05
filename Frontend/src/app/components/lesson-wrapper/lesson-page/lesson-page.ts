@@ -7,6 +7,7 @@ import { UserVideoService } from '../../../Services/UserVideo/user-video.service
 import { VideoProgressService } from '../../../Services/VideoProgress/video-progress.service';
 import { HttpClientModule } from '@angular/common/http';
 import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
+import { Subscription } from 'rxjs';
 
 // local imports for Plyr and hls.js
 import Hls from 'hls.js';
@@ -64,6 +65,8 @@ export class LessonPage implements OnInit, OnDestroy {
 
   // Cleanup function for video progress tracking
   private cleanupProgressTracking: (() => void) | null = null;
+  private queryParamSub: Subscription | null = null;
+  private skipNextQueryParamHandling = false;
 
   constructor(
     private route: ActivatedRoute,
@@ -79,9 +82,37 @@ export class LessonPage implements OnInit, OnDestroy {
     const modParam = this.route.snapshot.paramMap.get('moduleId');
     const lessonParam = this.route.snapshot.paramMap.get('lessonId');
     const courseParam = this.route.snapshot.paramMap.get('courseId');
+    const queryLessonParam = this.route.snapshot.queryParamMap.get('lessonId');
     this.moduleId = modParam ? Number(modParam) : null;
     this.lessonId = lessonParam ? Number(lessonParam) : null;
     this.courseId = courseParam ? Number(courseParam) : null;
+
+    if (!this.lessonId && queryLessonParam) {
+      const parsed = Number(queryLessonParam);
+      this.lessonId = Number.isFinite(parsed) ? parsed : null;
+    }
+
+    this.queryParamSub = this.route.queryParamMap.subscribe(params => {
+      if (this.skipNextQueryParamHandling) {
+        this.skipNextQueryParamHandling = false;
+        return;
+      }
+
+      const qpLesson = params.get('lessonId');
+      if (!qpLesson) {
+        return;
+      }
+
+      const parsedLessonId = Number(qpLesson);
+      if (!Number.isFinite(parsedLessonId)) {
+        return;
+      }
+
+      if (this.lessonId !== parsedLessonId) {
+        this.lessonId = parsedLessonId;
+        this.selectLesson(parsedLessonId, true);
+      }
+    });
     console.log('[LessonPage] ngOnInit route params:', { moduleId: this.moduleId, lessonId: this.lessonId, courseId: courseParam });
 
     // Get current user
@@ -231,7 +262,12 @@ export class LessonPage implements OnInit, OnDestroy {
     }
   }
 
-  async selectLesson(id: number) {
+  async selectLesson(id: number, skipRouteUpdate = false) {
+    const numericId = Number(id);
+    if (!Number.isFinite(numericId)) {
+      return;
+    }
+    this.lessonId = numericId;
     this.loadingLesson = true;
     this.error = null;
     // Do NOT clear `lesson` or `videoSrc` immediately — keep current content visible
@@ -239,7 +275,7 @@ export class LessonPage implements OnInit, OnDestroy {
     try {
       // If we have the full course modules loaded, try to locate which module contains this lesson
       if (this.fullModules && this.fullModules.length) {
-        const found = this.findModuleForLesson(id);
+        const found = this.findModuleForLesson(numericId);
         if (found && found.module) {
           this.selectedModule = found.module;
           // normalize module videos/lessons into this.lessons so prev/next work
@@ -254,7 +290,7 @@ export class LessonPage implements OnInit, OnDestroy {
         }
       }
 
-      const lesson = await this.courseService.getLesson(id).toPromise();
+  const lesson = await this.courseService.getLesson(numericId).toPromise();
       // Once fetched, replace the displayed lesson
       this.lesson = lesson;
 
@@ -293,21 +329,46 @@ export class LessonPage implements OnInit, OnDestroy {
       }));
 
       // request presigned URL for video: use video id field
-      const videoId = lesson?.id || lesson?.videoId || id;
+  const videoId = lesson?.id || lesson?.videoId || numericId;
       if (videoId) {
-        const url = await this.courseService.getVideoUrl(videoId).toPromise();
+  const url = await this.courseService.getVideoUrl(videoId).toPromise();
         // swap to new source only after it's available
         this.videoSrc = url;
         // initialize player after the source is set
         setTimeout(() => this.loadPlyr(), 0);
       }
 
-      // update route to reflect selected lesson
-      // Removed navigation to prevent page refresh
+      if (!skipRouteUpdate) {
+        this.updateLessonRoute(numericId);
+      }
     } catch (err: any) {
       this.error = err?.message || 'Failed to load lesson';
     } finally {
       this.loadingLesson = false;
+    }
+  }
+
+  private updateLessonRoute(lessonId: number) {
+    if (this.courseId) {
+      this.skipNextQueryParamHandling = true;
+      this.router.navigate([], {
+        relativeTo: this.route,
+        queryParams: { lessonId },
+        queryParamsHandling: 'merge',
+        replaceUrl: true
+      }).finally(() => {
+        this.skipNextQueryParamHandling = false;
+      });
+      return;
+    }
+
+    if (this.moduleId) {
+      this.skipNextQueryParamHandling = true;
+      this.router.navigate(['/module', this.moduleId, 'lesson', lessonId], {
+        replaceUrl: true
+      }).finally(() => {
+        this.skipNextQueryParamHandling = false;
+      });
     }
   }
 
@@ -595,6 +656,11 @@ export class LessonPage implements OnInit, OnDestroy {
       this.cleanupProgressTracking();
       this.cleanupProgressTracking = null;
       console.log('[LessonPage] Cleaned up video progress tracking on component destroy');
+    }
+
+    if (this.queryParamSub) {
+      this.queryParamSub.unsubscribe();
+      this.queryParamSub = null;
     }
   }
 }
