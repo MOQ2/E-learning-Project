@@ -1,0 +1,133 @@
+   <div>
+      <!-- Chat Window -->
+      <div
+        class="chat-container"
+        [class.is-open]="internalIsOpen()"
+        [class.is-closed]="!internalIsOpen()">
+        <div class="chat-window">
+          <!-- Header -->
+          <div class="chat-header">
+            <div class="header-title-group">
+              <div class="header-icon-wrapper">
+                <svg class="header-icon" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 8V4H8"/><rect width="16" height="12" x="4" y="8" rx="2"/><path d="M2 14h2"/><path d="M20 14h2"/><path d="M15 13v2"/><path d="M9 13v2"/></svg>
+              </div>
+              <h1 class="header-title">{{ chatTitle() }}</h1>
+            </div>
+            <div class="header-actions">
+              <button (click)="newChat()" class="new-chat-button">
+                New chat
+              </button>
+              <button (click)="toggleChat()" class="minimize-button">
+                  <svg xmlns="http://www.w3.org/2000/svg" class="minimize-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                      <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7" />
+                  </svg>
+              </button>
+            </div>
+          </div>
+
+          <!-- Chat Messages Area -->
+          <div class="messages-area">
+            @for(message of messages(); track $index) {
+              <div class="message-wrapper" [class.assistant]="message.sender === 'assistant'" [class.user]="message.sender === 'user'">
+                <div class="message-content-wrapper">
+
+                  <!-- Assistant Message Bubbles -->
+                  @if (message.sender === 'assistant') {
+                    @switch (message.content.type) {
+                      @case ('text') {
+                        <div class="message-bubble">
+                          @if(message.content.header) {
+                            <h2 class="message-header">{{ message.content.header }}</h2>
+                          }
+                          @if (Array.isArray(message.content.body)) {
+                            <div class="message-body-list">
+                              @for(line of message.content.body; track $index) {
+                                <p>{{ line }}</p>
+                              }
+                            </div>
+                          } @else {
+                            <p class="message-body">{{ message.content.body }}</p>
+                          }
+                        </div>
+                      }
+                      @case ('courses') {
+                        <div class="courses-card">
+                          <h3 class="courses-header">{{ message.content.header }}</h3>
+                          @for(course of message.content.courses; track course.title) {
+                            <div class="course-item">
+                              <img [src]="course.imageUrl" [alt]="course.title" class="course-image">
+                              <div class="course-details">
+                                <h4 class="course-title">{{ course.title }}</h4>
+                                <div class="course-meta">
+                                  <span>{{ course.level }}</span>
+                                  <span>•</span>
+                                  <span>{{ course.duration }}</span>
+                                  <span>•</span>
+                                  <span>{{ course.feature }}</span>
+                                </div>
+                              </div>
+                              <button (click)="onCourseAction(course)" class="course-button">
+                                {{ course.enrolled ? 'View' : 'Enroll' }}
+                              </button>
+                            </div>
+                          }
+                        </div>
+                      }
+                    }
+                  }
+
+                  <!-- User Message Bubble -->
+                  @if (message.sender === 'user' && message.content.type === 'text') {
+                    <div class="message-bubble user-bubble">
+                      <p class="user-message-body">{{ message.content.body }}</p>
+                    </div>
+                  }
+
+                </div>
+                <p class="message-timestamp">{{ message.sender === 'user' ? 'You' : 'Assistant' }} • {{ message.timestamp }}</p>
+              </div>
+            }
+          </div>
+
+          <!-- Input Area -->
+          <div class="input-area">
+            <div class="input-wrapper">
+              <div class="input-field-container">
+                <input
+                  type="text"
+                  [value]="newMessage()"
+                  (input)="newMessage.set($any($event.target).value)"
+                  (keypress)="onKeyPress($event)"
+                  placeholder="Describe what you want to learn..."
+                  class="input-field"
+                  [disabled]="isLoading()"
+                >
+                <div class="input-icon-wrapper">
+                  <svg xmlns="http://www.w3.org/2000/svg" class="input-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m18 15-6-6-6 6"/></svg>
+                </div>
+              </div>
+              <button (click)="sendMessage()" class="send-button" [disabled]="!newMessage().trim() || isLoading()">
+                @if (isLoading()) {
+                  <svg class="send-icon animate-spin" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                    <path d="M21 12a9 9 0 11-6.219-8.56"/>
+                  </svg>
+                  <span>Thinking...</span>
+                } @else {
+                  <svg xmlns="http://www.w3.org/2000/svg" class="send-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg>
+                  <span>Send</span>
+                }
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Minimized "Ball" Button (conditionally shown) -->
+      @if (!internalIsOpen()) {
+        <button (click)="toggleChat()" class="minimized-ball-button">
+            <svg xmlns="http://www.w3.org/2000/svg" class="minimized-ball-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+            </svg>
+        </button>
+      }
+    </div>
