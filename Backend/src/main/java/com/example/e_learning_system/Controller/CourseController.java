@@ -16,6 +16,7 @@ import com.example.e_learning_system.Dto.CourseDtos.TagDto;
 import com.example.e_learning_system.Dto.CourseDtos.UpdateCourseDto;
 import com.example.e_learning_system.Entities.TagsEntity;
 import com.example.e_learning_system.Service.Interfaces.CourseService;
+import com.example.e_learning_system.Service.AuthorizationService;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -50,6 +51,7 @@ import java.util.List;
 public class CourseController {
 
     private final CourseService courseService;
+    private final AuthorizationService authorizationService;
 
 
     /**
@@ -132,50 +134,60 @@ public class CourseController {
     }
 
     /**
-     * Create a new course
-     * TODO: Extract user ID from JWT token instead of using request parameter
+     * Create a new course - Only teachers and admins can create courses
      */
     @PostMapping(consumes = org.springframework.http.MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<ApiResponse<CourseDetailsDto>> createCourse(
             @Valid @ModelAttribute CreateCourseDto createCourseDto
             ) {
-        //TODO use this instead of 1 in the create course method 
-        //int user_id = Math.toIntExact(UserUtil.getCurrentUserId());
+        // Check authorization - only teachers and admins can create courses
+        authorizationService.requireTeacherOrAdmin();
         
-        // TODO - replace with actual user ID from JWT
-        log.info("tags list is {}" , createCourseDto.getTags());
-        CourseDetailsDto course = courseService.createCourse(createCourseDto, 1);
+        // Get current user ID from JWT token
+        int currentUserId = authorizationService.getCurrentUser().getId();
+        
+        log.info("Creating course with tags: {}", createCourseDto.getTags());
+        CourseDetailsDto course = courseService.createCourse(createCourseDto, currentUserId);
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(ApiResponse.success("Course created successfully", course));
     }
 
     /**
-     * Update an existing course
+     * Update an existing course - Only course creator or admin can update
      */
     @PutMapping(value = "/{id}", consumes = org.springframework.http.MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<ApiResponse<CourseDetailsDto>> updateCourse(
             @PathVariable Integer id,
             @Valid @ModelAttribute UpdateCourseDto updateCourseDto) {
                 
-        courseService.updateCourse(updateCourseDto , id);
+        // Check authorization - only course creator or admin can update
+        authorizationService.requireCourseEditAccess(id);
+        
+        courseService.updateCourse(updateCourseDto, id);
         CourseDetailsDto updatedCourse = courseService.getCourseById(id);
         return ResponseEntity.ok(ApiResponse.success("Course updated successfully", updatedCourse));
     }
 
     /**
-     * Delete a course
+     * Delete a course - Only course creator or admin can delete
      */
     @DeleteMapping("/{id}")
     public ResponseEntity<ApiResponse<Void>> deleteCourse(@PathVariable Integer id) {
+        // Check authorization - only course creator or admin can delete
+        authorizationService.requireCourseEditAccess(id);
+        
         courseService.deleteCourse(id);
         return ResponseEntity.ok(ApiResponse.success("Course deleted successfully", null));
     }
 
     /**
-     * Deactivate a course
+     * Deactivate a course - Only course creator or admin can deactivate
      */
     @PatchMapping("/{id}/deactivate")
     public ResponseEntity<ApiResponse<Void>> deactivateCourse(@PathVariable Integer id) {
+        // Check authorization - only course creator or admin can deactivate
+        authorizationService.requireCourseEditAccess(id);
+        
         courseService.deactivateCourse(id, true);
         return ResponseEntity.ok(ApiResponse.success("Course deactivated successfully", null));
     }
@@ -264,12 +276,15 @@ public class CourseController {
     }
 
     /**
-     * Get courses by creator/user
+     * Get courses by creator/user - Only accessible by the user themselves or admin
      */
     @GetMapping("/user/{userId}")
     public ResponseEntity<ApiResponse<Page<CourseSummaryDto>>> getCoursesByUser(
             @PathVariable Integer userId,
             @PageableDefault(size = 20) Pageable pageable) {
+
+        // Check authorization - only the user themselves or admin can access
+        authorizationService.requireUserDataAccess(userId);
 
         CourseFilterDto filterDto = CourseFilterDto.builder()
                 .createdByUserId(userId)
@@ -278,29 +293,6 @@ public class CourseController {
         Page<CourseSummaryDto> courses = courseService.getCourses(filterDto, pageable);
         return ResponseEntity.ok(ApiResponse.success("User courses retrieved successfully", courses));
     }
-
-    // /**
-    //  * Search courses by name
-    //  */
-    // @GetMapping("/search")
-    // public ResponseEntity<ApiResponse<Page<CourseSummaryDto>>> searchCourses(
-    //         @RequestParam String name,
-    //         @RequestParam(required = false) Boolean activeOnly,
-    //         @PageableDefault(size = 20) Pageable pageable) {
-
-    //     CourseFilterDto.CourseFilterDtoBuilder filterBuilder = CourseFilterDto.builder()
-    //             .name(name);
-
-    //     // If activeOnly is specified and true, filter by active courses
-    //     if (activeOnly != null && activeOnly) {
-    //         filterBuilder.isActive(true);
-    //     }
-
-    //     CourseFilterDto filterDto = filterBuilder.build();
-
-    //     Page<CourseSummaryDto> courses = courseService.getCourses(filterDto, pageable);
-    //     return ResponseEntity.ok(ApiResponse.success("Search results retrieved successfully", courses));
-    // }
 
     /**
      * Get courses within price range
@@ -327,26 +319,31 @@ public class CourseController {
     }
 
     /**
-     * create and add a module to a course
+     * Add a module to a course - Only course creator or admin can modify course modules
      **/
     @PostMapping ("{courseId}/modules/{moduleId}/{moduleOrder}")
-        public ResponseEntity<ApiResponse<Void>> getCoursesByModule(
+        public ResponseEntity<ApiResponse<Void>> addModuleToCourse(
                 @PathVariable int courseId ,
                 @PathVariable int moduleId,
                 @PathVariable int moduleOrder
         ){
+            // Check authorization - only course creator or admin can modify course modules
+            authorizationService.requireCourseEditAccess(courseId);
 
             courseService.addModuleToCourse(courseId, moduleId, moduleOrder);
-            return ResponseEntity.ok(ApiResponse.success("module %d have been added to course %d in order {}".formatted(moduleId,courseId,moduleOrder),null));
+            return ResponseEntity.ok(ApiResponse.success("Module %d have been added to course %d in order %d".formatted(moduleId,courseId,moduleOrder),null));
         }
 
     @DeleteMapping("{courseId}/modules/{moduleId}/")
-    public ResponseEntity<ApiResponse<Void>> deleteCourse(
+    public ResponseEntity<ApiResponse<Void>> removeModuleFromCourse(
             @PathVariable int courseId,
             @PathVariable int moduleId
     ){
+        // Check authorization - only course creator or admin can modify course modules
+        authorizationService.requireCourseEditAccess(courseId);
+        
         courseService.removeModuleFromCourse(courseId, moduleId);
-        return ResponseEntity.ok(ApiResponse.success("module %d have been removed from course %d".formatted(moduleId,courseId),null));
+        return ResponseEntity.ok(ApiResponse.success("Module %d have been removed from course %d".formatted(moduleId,courseId),null));
     }
 
     @PutMapping("{courseId}/modules/{moduleId}/order/{newOrder}")
@@ -355,6 +352,9 @@ public class CourseController {
             @PathVariable int moduleId,
             @PathVariable int newOrder
     ){
+        // Check authorization - only course creator or admin can modify course modules
+        authorizationService.requireCourseEditAccess(courseId);
+        
         courseService.updateModuleOrderInCourse(courseId, moduleId, newOrder);
         return ResponseEntity.ok(ApiResponse.success("Module %d order updated to %d in course %d".formatted(moduleId, newOrder, courseId), null));
     }
@@ -364,6 +364,9 @@ public class CourseController {
             @PathVariable int courseId,
             @RequestBody java.util.List<com.example.e_learning_system.Dto.OrderDtos.IdOrderDto> orders
     ){
+        // Check authorization - only course creator or admin can modify course modules
+        authorizationService.requireCourseEditAccess(courseId);
+        
         courseService.updateModuleOrdersInCourse(courseId, orders);
         return ResponseEntity.ok(ApiResponse.success("Module orders updated successfully", null));
     }

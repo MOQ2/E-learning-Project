@@ -4,6 +4,7 @@ import com.example.e_learning_system.Dto.ApiResponse;
 import com.example.e_learning_system.Dto.VideoDtos.CreatVideoDto;
 import com.example.e_learning_system.Dto.VideoDtos.VideoDto;
 import com.example.e_learning_system.Service.Interfaces.VideoService;
+import com.example.e_learning_system.Service.AuthorizationService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -22,9 +23,10 @@ import java.util.Set;
 public class LessonController {
 
     private final VideoService videoService;
+    private final AuthorizationService authorizationService;
 
     /**
-     * Create a new lesson (alias for video upload)
+        * Create lesson - Only teachers and admins can create lessons
      */
     @PostMapping("/upload")
     public ResponseEntity<ApiResponse<VideoDto>> createLesson(
@@ -39,10 +41,15 @@ public class LessonController {
             @RequestParam(value = "attachments", required = false) Set<Integer> attachments
             ) {
 
+        // Only teachers and admins can create lessons
+        authorizationService.requireTeacherOrAdmin();
+        
+        Integer currentUserId = authorizationService.getCurrentUser().getId();
+
         CreatVideoDto createVideoDto = CreatVideoDto.builder()
                 .title(title)
                 .durationSeconds(durationSeconds)
-                .createdByUserId(1) // TODO: Replace with actual user ID from auth context
+                .createdByUserId(currentUserId)
                 .explanation(explanation)
                 .whatWeWillLearn(whatWeWillLearn)
                 .status(status)
@@ -51,26 +58,32 @@ public class LessonController {
                 .attachments(attachments)
                 .build();
 
-        VideoDto videoDto = videoService.uploadVideo(file, createVideoDto, 1);
+        VideoDto videoDto = videoService.uploadVideo(file, createVideoDto, currentUserId);
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(ApiResponse.success("Lesson created successfully", videoDto));
     }
 
     /**
-     * Get lesson by ID
+     * Get lesson by ID - Only teachers and admins can view lesson content
      */
     @GetMapping("/{id}")
     public ResponseEntity<ApiResponse<VideoDto>> getLesson(@PathVariable Integer id) {
+        // Only teachers and admins can view lesson content (students cannot as per requirements)
+        authorizationService.requireVideoViewAccess();
+        
         VideoDto video = videoService.getVideoById(id);
         return ResponseEntity.ok(ApiResponse.success("Lesson retrieved successfully", video));
     }
 
     /**
-     * Get all lessons with pagination
+     * Get all lessons with pagination - Only teachers and admins can view lessons
      */
     @GetMapping
     public ResponseEntity<ApiResponse<Page<VideoDto>>> getLessons(
             @PageableDefault(size = 20) Pageable pageable) {
+        // Only teachers and admins can view lessons
+        authorizationService.requireVideoViewAccess();
+        
         Page<VideoDto> videos = videoService.getVideos(pageable);
         return ResponseEntity.ok(ApiResponse.success("Lessons retrieved successfully", videos));
     }

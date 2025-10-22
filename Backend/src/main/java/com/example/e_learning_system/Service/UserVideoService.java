@@ -24,9 +24,7 @@ public class UserVideoService implements UserVideo {
     @Override
     @Transactional
     public void markedWatched(Integer videoId) {
-        //Integer userId = UserUtil.getCurrentUserId().intValue();
-        // TODO : remove this overwrite
-        int userId = 1;
+        Integer userId = UserUtil.getCurrentUserId().intValue();
         UserEntity user = userRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("User not found"));
         VideoEntity video = videoRepository.findById(videoId)
