@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy } from '@angular/core';
+import { Component, OnInit, OnDestroy, AfterViewInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
 import { CourseService } from '../../../Services/Courses/course-service';
@@ -8,18 +8,19 @@ import { VideoProgressService } from '../../../Services/VideoProgress/video-prog
 import { HttpClientModule } from '@angular/common/http';
 import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
 import { Subscription } from 'rxjs';
-
+import { Chatbot } from '../../chatbot/chatbot';
 // local imports for Plyr and hls.js
 import Hls from 'hls.js';
+import { Sidebar } from '../sidebar/sidebar';
 
 @Component({
   selector: 'app-lesson-page',
   standalone: true,
-  imports: [CommonModule, HttpClientModule],
+  imports: [CommonModule, HttpClientModule, Sidebar, Chatbot],
   templateUrl: './lesson-page.html',
   styleUrls: ['./lesson-page.css']
 })
-export class LessonPage implements OnInit, OnDestroy {
+export class LessonPage implements OnInit, OnDestroy, AfterViewInit {
   moduleId: number | null = null;
   lessonId: number | null = null;
   lessons: any[] = [];
@@ -67,6 +68,8 @@ export class LessonPage implements OnInit, OnDestroy {
   private cleanupProgressTracking: (() => void) | null = null;
   private queryParamSub: Subscription | null = null;
   private skipNextQueryParamHandling = false;
+  // resize listener reference so we can remove it on destroy
+  private _resizeListener: (() => void) | null = null;
 
   constructor(
     private route: ActivatedRoute,
@@ -166,6 +169,13 @@ export class LessonPage implements OnInit, OnDestroy {
     }
   }
 
+  ngAfterViewInit(): void {
+    // ensure layout is ready then set sidebar height
+    setTimeout(() => this.updateSidebarHeight(), 150);
+    this._resizeListener = () => this.updateSidebarHeight();
+    window.addEventListener('resize', this._resizeListener);
+  }
+
   private async loadModule(id: number) {
     this.loading = true;
     this.error = null;
@@ -216,9 +226,15 @@ export class LessonPage implements OnInit, OnDestroy {
 
       // unwrap wrapper objects (some backends return { module: {...}, moduleOrder } entries)
       this.fullModules = modulesArray.map((m: any) => {
-        if (m && m.module) return { ...m.module, _wrapper: m };
-        return m;
-      });
+        if (m && m.module) {
+          return {
+            ...m.module,
+            _wrapper: m,
+            order: m.moduleOrder ?? m.order ?? 0 // extract order from wrapper
+          };
+        }
+        return { ...m, order: m.order ?? m.moduleOrder ?? 0 };
+      }).sort((a: any, b: any) => (a.order || 0) - (b.order || 0)); // Sort modules by their order
 
       // If the modules don't already include videos/lessons, fetch each module's details to obtain its videos
       await Promise.all(this.fullModules.map(async (m: any, idx: number) => {
@@ -345,6 +361,8 @@ export class LessonPage implements OnInit, OnDestroy {
       this.error = err?.message || 'Failed to load lesson';
     } finally {
       this.loadingLesson = false;
+      // update the sidebar size now that lesson content changed
+      setTimeout(() => this.updateSidebarHeight(), 80);
     }
   }
 
@@ -650,6 +668,10 @@ export class LessonPage implements OnInit, OnDestroy {
     }
   }
 
+  onLessonCardClick(id: number): void {
+    this.selectLesson(id);
+  }
+
   ngOnDestroy(): void {
     // Cleanup video progress tracking listeners when component is destroyed
     if (this.cleanupProgressTracking) {
@@ -661,6 +683,68 @@ export class LessonPage implements OnInit, OnDestroy {
     if (this.queryParamSub) {
       this.queryParamSub.unsubscribe();
       this.queryParamSub = null;
+    }
+    // remove resize listener
+    if (this._resizeListener) {
+      window.removeEventListener('resize', this._resizeListener);
+      this._resizeListener = null;
+    }
+  }
+
+  /**
+   * Measure the main video + info area and set the sidebar container height
+   * so it visually matches the same vertical length.
+   */
+  updateSidebarHeight(): void {
+    try {
+      const videoWrap = document.querySelector('.video-wrap') as HTMLElement | null;
+      const infoGrid = document.querySelector('.info-grid') as HTMLElement | null;
+      if (!videoWrap && !infoGrid) return;
+
+      const rectVideo = videoWrap ? videoWrap.getBoundingClientRect() : null;
+      const rectInfo = infoGrid ? infoGrid.getBoundingClientRect() : null;
+
+      // Prefer aligning to the bottom of the "What you'll learn" card. Fallback to the info grid
+      // or video area if that specific card can't be found.
+      const learnCard = document.querySelector('.info-learn') as HTMLElement | null;
+      const rectLearn = learnCard ? learnCard.getBoundingClientRect() : null;
+      const desiredBottom = rectLearn ? rectLearn.bottom : (rectInfo ? rectInfo.bottom : (rectVideo ? rectVideo.bottom : 0));
+
+      // compute available space from the top of the sidebar to the desired bottom
+      const sidebarHost = document.querySelector('app-sidebar') as HTMLElement | null;
+      let targetHeight = 0;
+      if (sidebarHost) {
+        const sidebarTop = Math.ceil(sidebarHost.getBoundingClientRect().top);
+        targetHeight = Math.max(0, Math.ceil(desiredBottom - sidebarTop));
+      }
+
+      // add a small buffer for padding
+      targetHeight = targetHeight + 8;
+
+      // Try to set the internal sidebar container first
+      const sidebarContainer = document.querySelector('app-sidebar .sidebar-container') as HTMLElement | null;
+
+      if (sidebarContainer) {
+        // Do not force a fixed height. Allow the sidebar to be its natural height,
+        // but cap it with max-height so it won't extend beyond the learn card bottom.
+        if (targetHeight > 0) {
+          sidebarContainer.style.maxHeight = `${targetHeight}px`;
+          sidebarContainer.style.overflowY = 'auto';
+        } else {
+          sidebarContainer.style.maxHeight = '';
+          sidebarContainer.style.overflowY = 'visible';
+        }
+      } else if (sidebarHost) {
+        if (targetHeight > 0) {
+          sidebarHost.style.maxHeight = `${targetHeight}px`;
+          sidebarHost.style.overflowY = 'auto';
+        } else {
+          sidebarHost.style.maxHeight = '';
+          sidebarHost.style.overflowY = 'visible';
+        }
+      }
+    } catch (e) {
+      // ignore measurement failures
     }
   }
 }

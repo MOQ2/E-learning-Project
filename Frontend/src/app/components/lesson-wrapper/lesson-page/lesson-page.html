@@ -1,59 +1,38 @@
 <div class="lesson-page">
+  <!-- Floating show sidebar button (visible when sidebar is hidden) -->
+  <button *ngIf="!showSidebar" class="floating-show-sidebar" (click)="toggleSidebar()" title="Show sidebar">
+    ▶ Show Lessons
+  </button>
+
   <div class="content-grid" [class.sidebar-hidden]="!showSidebar">
     <aside class="lesson-list">
-      <div class="list-header">
-        <div class="course-content">Course content</div>
-        <div class="progress">{{ (lesson?.progress || 0) }}% done</div>
-      </div>
-
-      <div class="course-progress">
-        <div class="bar"><div class="fill" [style.width]="(lesson?.progress || 0) + '%'" ></div></div>
-      </div>
-
-  <div *ngIf="loading && (!fullModules || fullModules.length === 0) && lessons.length === 0" class="loader">Loading...</div>
-  <div *ngIf="!loading && lessons.length === 0 && (!fullModules || fullModules.length === 0)" class="empty">No lessons</div>
-
-      <div *ngFor="let module of getGroupedModules(); trackBy: trackByModule" class="module-block">
-        <div class="module-label">
-          <div class="icon">≡</div>
-          <div class="module-title">{{ module.title }}</div>
-          <div class="spacer"></div>
-          <button class="collapse-btn" aria-expanded="{{ !moduleCollapsed[module.key] }}" (click)="toggleModuleCollapse(module.key)">
-            <span *ngIf="!moduleCollapsed[module.key]">−</span>
-            <span *ngIf="moduleCollapsed[module.key]">+</span>
-          </button>
-        </div>
-
-        <div *ngIf="!moduleCollapsed[module.key]">
-          <div *ngFor="let l of module.items; trackBy: trackByLesson"
-               (click)="selectLesson(l.id || l.videoId)"
-               [class.active]="(lesson && (lesson.id || lesson.videoId) === (l.id || l.videoId))"
-               [class.completed]="l.completed"
-               class="lesson-item">
-            <div class="icon">
-              <span *ngIf="!l.completed">▶</span>
-              <span *ngIf="l.completed" class="completed-icon">✓</span>
-            </div>
-            <div class="title">{{ l.title || l.name || ('Lesson ' + (l.order || l.id)) }}</div>
-            <div class="duration">{{ l.durationSeconds ? (l.durationSeconds/60 | number:'1.0-0') + ':00' : '' }}</div>
-          </div>
-        </div>
-      </div>
+      <app-sidebar
+        [groupedModules]="getGroupedModules()"
+        [activeLessonId]="lesson?.id || lesson?.videoId || lessonId"
+        [progress]="lesson?.progress || 0"
+        [loading]="loading && (!fullModules || fullModules.length === 0) && lessons.length === 0"
+        [moduleCollapsed]="moduleCollapsed"
+        (lessonSelected)="onLessonCardClick($event)"
+        (moduleToggled)="toggleModuleCollapse($event)"
+        (toggleSidebar)="toggleSidebar()">
+      </app-sidebar>
     </aside>
 
     <main class="lesson-main">
       <div *ngIf="loadingLesson" style="padding:12px;text-align:center">Loading lesson...</div>
       <div class="course-header">
         <div class="left">
-          <div class="course-title">{{ courseTitle || 'Course' }}</div>
-          <div class="module-title" *ngIf="selectedModuleTitle">{{ selectedModuleTitle }}</div>
+          <div class="course-breadcrumb"
+               style="color:#666; font-weight:400; display:flex; align-items:center; gap:0.5rem; white-space:nowrap;">
+            <span class="crumb-course">{{ courseTitle || 'Course' }}</span>
+            <span class="crumb-sep" aria-hidden="true">·</span>
+            <span class="crumb-module" *ngIf="selectedModuleTitle">{{ selectedModuleTitle }}</span>
+            <span class="crumb-sep" *ngIf="selectedModuleTitle && (lesson?.title || lesson?.name)" aria-hidden="true">·</span>
+            <span class="crumb-lesson">{{ lesson?.title || lesson?.name || '' }}</span>
+          </div>
         </div>
-        <div class="center"><span class="status">Enrolled</span></div>
-        <div class="right">
-          <button class="btn-resources">Resources</button>
-          <button class="btn-resume">Resume</button>
-          <button class="btn-toggle-sidebar small" (click)="toggleSidebar()" title="Toggle sidebar">{{ showSidebar ? 'Hide' : 'Show' }}</button>
-        </div>
+
+
       </div>
 
       <div class="video-wrap">
@@ -93,190 +72,97 @@
           <div *ngIf="!prerequisitesList || prerequisitesList.length === 0" class="muted">No prerequisites.</div>
         </div>
 
-        <!-- Attachments moved to right-side panel to avoid duplication -->
+        <!-- Attachments / Quizzes card (moved into info-grid) -->
+        <div class="info-card attachments-card">
+          <div class="tabs-header">
+            <button class="tab-button"
+                    [class.active]="attachmentsTab==='attachments'"
+                    (click)="setAttachmentsTab('attachments')">
+              <span class="tab-icon">📎</span>
+              <span class="tab-label">Attachments</span>
+            </button>
+            <button class="tab-button"
+                    [class.active]="attachmentsTab==='quizzes'"
+                    (click)="setAttachmentsTab('quizzes')">
+              <span class="tab-icon">📝</span>
+              <span class="tab-label">Quizzes</span>
+            </button>
+          </div>
+
+          <div class="tab-content" role="region" aria-label="Attachments and quizzes">
+            <!-- Attachments Tab -->
+            <div *ngIf="attachmentsTab === 'attachments'" class="tab-panel">
+              <div *ngIf="attachments && attachments.length > 0; else noAttachments" class="attachments-list">
+                <div *ngFor="let a of attachments" class="resource-item">
+                  <div class="resource-icon">📄</div>
+                  <div class="resource-info">
+                    <div class="resource-name">{{ a.fileName }}</div>
+                    <div class="resource-size">{{ a.fileSize || 'Unknown size' }}</div>
+                  </div>
+                  <a class="resource-action" [href]="a.fileDownloadUrl" target="_blank" rel="noopener noreferrer">
+                    <span>↓</span>
+                  </a>
+                </div>
+              </div>
+              <ng-template #noAttachments>
+                <div class="empty-state">
+                  <span class="empty-icon">📎</span>
+                  <p class="empty-text">No attachments available</p>
+                </div>
+              </ng-template>
+            </div>
+
+            <!-- Quizzes Tab -->
+            <div *ngIf="attachmentsTab === 'quizzes'" class="tab-panel">
+              <div *ngIf="quizzes && quizzes.length > 0; else noQuizzes" class="quizzes-list">
+                <div *ngFor="let q of quizzes" class="resource-item clickable" (click)="showQuiz(q)">
+                  <div class="resource-icon">📝</div>
+                  <div class="resource-info">
+                    <div class="resource-name">{{ q.title || q.name || ('Quiz ' + (q.id || '')) }}</div>
+                    <div class="resource-size">
+                      {{ q.totalScore ? (q.totalScore + ' pts') : '' }}
+                      <span *ngIf="!q.isActive" class="inactive-badge">Inactive</span>
+                    </div>
+                  </div>
+                  <div class="resource-action">
+                    <span>→</span>
+                  </div>
+                </div>
+              </div>
+              <ng-template #noQuizzes>
+                <div class="empty-state">
+                  <span class="empty-icon">📝</span>
+                  <p class="empty-text">No quizzes available</p>
+                </div>
+              </ng-template>
+
+              <!-- Selected Quiz Details -->
+              <div *ngIf="selectedQuiz" class="quiz-details">
+                <h4 class="quiz-title">{{ selectedQuiz.title }}</h4>
+                <div class="quiz-score">Total: {{ selectedQuiz.totalScore }} pts</div>
+                <div *ngIf="selectedQuiz.questions && selectedQuiz.questions.length > 0" class="quiz-questions">
+                  <div *ngFor="let qq of selectedQuiz.questions; let i = index" class="quiz-question">
+                    <div class="question-header">
+                      <strong>{{ i + 1 }}. {{ qq.text }}</strong>
+                      <span class="question-points">({{ qq.questionMark }} pts)</span>
+                    </div>
+                    <ul class="question-options">
+                      <li *ngFor="let o of qq.options" [class.correct]="o.isCorrect">
+                        {{ o.text }}
+                        <span *ngIf="o.isCorrect" class="correct-mark">✓</span>
+                      </li>
+                    </ul>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
 
     </main>
 
-    <!-- Right sidebar: progress, lesson details, instructor -->
-    <aside class="side-col">
-      <!-- Progress Card -->
-      <div class="sidebar-card">
-        <div class="progress-section">
-          <div class="progress-header">
-            <span class="progress-icon">📊</span>
-            <span class="progress-title">Your progress</span>
-          </div>
-          <div class="progress-bar-wrapper">
-            <div class="progress-bar">
-              <div class="progress-fill" [style.width]="(lesson?.progress || 0) + '%'"></div>
-            </div>
-            <span class="progress-text">{{ (lesson?.progress || 0) }}% complete</span>
-          </div>
-        </div>
 
-        <div class="sidebar-divider"></div>
-
-        <!-- Lesson Details -->
-        <div class="details-section">
-          <h4 class="section-title">Lesson details</h4>
-
-          <div class="detail-item">
-            <span class="detail-icon">📊</span>
-            <div class="detail-content">
-              <span class="detail-label">Level</span>
-              <span class="detail-value">{{ lesson?.level || lesson?.difficultyLevel || 'Beginner' }}</span>
-            </div>
-          </div>
-
-          <div class="detail-item">
-            <span class="detail-icon">🌐</span>
-            <div class="detail-content">
-              <span class="detail-label">Language</span>
-              <span class="detail-value">{{ lesson?.language || 'English' }}</span>
-            </div>
-          </div>
-
-          <div class="detail-item">
-            <span class="detail-icon">🏷️</span>
-            <div class="detail-content">
-              <span class="detail-label">Category</span>
-              <span class="detail-value">{{ lesson?.category || 'General' }}</span>
-            </div>
-          </div>
-
-          <div class="detail-item">
-            <span class="detail-icon">📁</span>
-            <div class="detail-content">
-              <span class="detail-label">Resources</span>
-              <span class="detail-value">{{ (attachments.length || 0) }} files</span>
-            </div>
-          </div>
-
-          <div class="detail-item" *ngIf="lesson?.durationSeconds">
-            <span class="detail-icon">⏱️</span>
-            <div class="detail-content">
-              <span class="detail-label">Duration</span>
-              <span class="detail-value">{{ (lesson.durationSeconds / 60) | number:'1.0-0' }} min</span>
-            </div>
-          </div>
-        </div>
-
-        <div class="sidebar-divider"></div>
-
-        <!-- Instructor Info -->
-        <div class="instructor-section" *ngIf="lesson?.instructor || lesson?.createdByName">
-          <h4 class="section-title">Instructor</h4>
-          <div class="instructor-info">
-            <div class="instructor-avatar">
-              <img [src]="lesson?.instructor?.avatarUrl || 'https://ui-avatars.com/api/?name=' + (lesson?.instructor?.name || lesson?.createdByName || 'I') + '&background=7c3aed&color=fff&size=64'"
-                   [alt]="lesson?.instructor?.name || lesson?.createdByName || 'Instructor'" />
-            </div>
-            <div class="instructor-meta">
-              <div class="instructor-name">{{ lesson?.instructor?.name || lesson?.createdByName || 'Instructor' }}</div>
-              <div class="instructor-role" *ngIf="lesson?.instructor?.title">{{ lesson?.instructor?.title }}</div>
-            </div>
-          </div>
-        </div>
-
-        <div class="sidebar-divider" *ngIf="!attachmentsHidden"></div>
-
-        <!-- Attachments Toggle -->
-        <div class="attachments-toggle">
-          <button class="toggle-btn" (click)="toggleAttachmentsHide()">
-            <span class="toggle-icon">{{ attachmentsHidden ? '📎' : '📎' }}</span>
-            <span class="toggle-text">{{ attachmentsHidden ? 'Show attachments' : 'Hide attachments' }}</span>
-          </button>
-        </div>
-      </div>
-
-      <!-- Attachments Panel -->
-      <div *ngIf="!attachmentsHidden" class="sidebar-card attachments-card">
-        <div class="tabs-header">
-          <button class="tab-button"
-                  [class.active]="attachmentsTab==='attachments'"
-                  (click)="setAttachmentsTab('attachments')">
-            <span class="tab-icon">📎</span>
-            <span class="tab-label">Attachments</span>
-          </button>
-          <button class="tab-button"
-                  [class.active]="attachmentsTab==='quizzes'"
-                  (click)="setAttachmentsTab('quizzes')">
-            <span class="tab-icon">📝</span>
-            <span class="tab-label">Quizzes</span>
-          </button>
-        </div>
-
-        <div class="tab-content" role="region" aria-label="Attachments and quizzes">
-          <!-- Attachments Tab -->
-          <div *ngIf="attachmentsTab === 'attachments'" class="tab-panel">
-            <div *ngIf="attachments && attachments.length > 0; else noAttachments" class="attachments-list">
-              <div *ngFor="let a of attachments" class="resource-item">
-                <div class="resource-icon">📄</div>
-                <div class="resource-info">
-                  <div class="resource-name">{{ a.fileName }}</div>
-                  <div class="resource-size">{{ a.fileSize || 'Unknown size' }}</div>
-                </div>
-                <a class="resource-action" [href]="a.fileDownloadUrl" target="_blank" rel="noopener noreferrer">
-                  <span>↓</span>
-                </a>
-              </div>
-            </div>
-            <ng-template #noAttachments>
-              <div class="empty-state">
-                <span class="empty-icon">📎</span>
-                <p class="empty-text">No attachments available</p>
-              </div>
-            </ng-template>
-          </div>
-
-          <!-- Quizzes Tab -->
-          <div *ngIf="attachmentsTab === 'quizzes'" class="tab-panel">
-            <div *ngIf="quizzes && quizzes.length > 0; else noQuizzes" class="quizzes-list">
-              <div *ngFor="let q of quizzes" class="resource-item clickable" (click)="showQuiz(q)">
-                <div class="resource-icon">📝</div>
-                <div class="resource-info">
-                  <div class="resource-name">{{ q.title || q.name || ('Quiz ' + (q.id || '')) }}</div>
-                  <div class="resource-size">
-                    {{ q.totalScore ? (q.totalScore + ' pts') : '' }}
-                    <span *ngIf="!q.isActive" class="inactive-badge">Inactive</span>
-                  </div>
-                </div>
-                <div class="resource-action">
-                  <span>→</span>
-                </div>
-              </div>
-            </div>
-            <ng-template #noQuizzes>
-              <div class="empty-state">
-                <span class="empty-icon">📝</span>
-                <p class="empty-text">No quizzes available</p>
-              </div>
-            </ng-template>
-
-            <!-- Selected Quiz Details -->
-            <div *ngIf="selectedQuiz" class="quiz-details">
-              <h4 class="quiz-title">{{ selectedQuiz.title }}</h4>
-              <div class="quiz-score">Total: {{ selectedQuiz.totalScore }} pts</div>
-              <div *ngIf="selectedQuiz.questions && selectedQuiz.questions.length > 0" class="quiz-questions">
-                <div *ngFor="let qq of selectedQuiz.questions; let i = index" class="quiz-question">
-                  <div class="question-header">
-                    <strong>{{ i + 1 }}. {{ qq.text }}</strong>
-                    <span class="question-points">({{ qq.questionMark }} pts)</span>
-                  </div>
-                  <ul class="question-options">
-                    <li *ngFor="let o of qq.options" [class.correct]="o.isCorrect">
-                      {{ o.text }}
-                      <span *ngIf="o.isCorrect" class="correct-mark">✓</span>
-                    </li>
-                  </ul>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </aside>
   </div>
   <!-- Move lesson-details below grid so wider content doesn't shift side columns -->
   <section class="lesson-details fullwidth">
@@ -289,3 +175,5 @@
     </div>
   </section>
 </div>
+  <!-- Chatbot component (floating assistant) -->
+  <app-chatbot></app-chatbot>

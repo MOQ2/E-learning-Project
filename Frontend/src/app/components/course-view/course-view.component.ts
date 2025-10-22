@@ -3,14 +3,14 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { HttpClient } from '@angular/common/http';
 import { CourseService } from '../../Services/Courses/course-service';
-import { Router } from '@angular/router';
+import { Router, RouterModule } from '@angular/router';
 import { StarRatingComponent } from '../star-rating/star-rating.component';
 import { NotificationService } from '../../Services/notification.service';
 
 @Component({
   selector: 'app-course-view',
   standalone: true,
-  imports: [CommonModule, FormsModule, StarRatingComponent],
+  imports: [CommonModule, FormsModule, RouterModule, StarRatingComponent],
   templateUrl: './course-view.component.html',
   styleUrls: ['./course-view.component.css']
 })
@@ -345,16 +345,18 @@ export class CourseViewComponent implements OnInit, OnChanges {
       status: raw.status || null,
       difficultyLevel: raw.difficultyLevel || raw.level || null,
       isActive: raw.isActive ?? true,
-      modules: (raw.modules || []).map((m: any, index: number) => ({
-        order: m.moduleOrder ?? (index + 1),
-        id: m.module?.moduleId ?? m.moduleId ?? m.id ?? null,
-        name: m.module?.moduleName ?? m.name ?? 'Module',
-        description: m.module?.moduleDescription ?? m.description ?? '',
-        estimatedDuration: m.module?.estimatedDuration ?? m.estimatedDuration ?? 0,
-        numberOfVideos: m.module?.numberOfvideos ?? m.numberOfVideos ?? 0,
-        active: m.module?.active ?? m.active ?? true,
-        previewAvailable: m.module?.previewAvailable ?? m.previewAvailable ?? false
-      })),
+      modules: (raw.modules || [])
+        .map((m: any, index: number) => ({
+          order: m.moduleOrder ?? (index + 1),
+          id: m.module?.moduleId ?? m.moduleId ?? m.id ?? null,
+          name: m.module?.moduleName ?? m.name ?? 'Module',
+          description: m.module?.moduleDescription ?? m.description ?? '',
+          estimatedDuration: m.module?.estimatedDuration ?? m.estimatedDuration ?? 0,
+          numberOfVideos: m.module?.numberOfvideos ?? m.numberOfVideos ?? 0,
+          active: m.module?.active ?? m.active ?? true,
+          previewAvailable: m.module?.previewAvailable ?? m.previewAvailable ?? false
+        }))
+        .sort((a: any, b: any) => a.order - b.order), // Sort modules by their order
       whatYouWillLearn: raw.whatYouWillLearn || raw.objectives || [],
       resources: raw.resources || [],
       instructor: raw.instructor || raw.createdByName || 'Instructor',

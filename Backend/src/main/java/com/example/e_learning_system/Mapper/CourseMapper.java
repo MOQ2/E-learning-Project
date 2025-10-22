@@ -320,6 +320,7 @@ public class CourseMapper {
         return courseModules.stream()
                 .map(CourseMapper::fromCourseModuleToCourseModuleDto)
                 .filter(Objects::nonNull)
+                .sorted((a, b) -> Integer.compare(a.getModuleOrder(), b.getModuleOrder())) // Sort by module order
                 .collect(Collectors.toList());
     }
 

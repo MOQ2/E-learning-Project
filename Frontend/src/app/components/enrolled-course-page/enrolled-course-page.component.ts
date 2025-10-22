@@ -1,12 +1,13 @@
 import { Component, OnInit, Inject } from '@angular/core';
 import { CommonModule, DOCUMENT } from '@angular/common';
-import { ActivatedRoute, Router, RouterLink } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { CourseService } from '../../Services/Courses/course-service';
 import { UserService } from '../../Services/User/user-service';
 import { NotificationService } from '../../Services/notification.service';
 import { FormsModule } from '@angular/forms';
 import { MyLearningService } from '../../Services/MyLearning/my-learning.service';
 import { UserVideoService } from '../../Services/UserVideo/user-video.service';
+import { ListCard } from '../shared/list-card/list-card';
 
 interface CourseProgress {
   completedLessons: number;
@@ -24,10 +25,24 @@ interface ModuleProgress {
   percentage: number;
 }
 
+type LessonStatusTone = 'completed' | 'in-progress' | 'locked' | 'not-started';
+
+interface LessonStatusDisplay {
+  text: string;
+  tone: LessonStatusTone;
+}
+
+interface ModuleStatusDisplay {
+  text: string;
+  tone: LessonStatusTone;
+  completedLessons: number;
+  totalLessons: number;
+}
+
 @Component({
   selector: 'app-enrolled-course-page',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterLink],
+  imports: [CommonModule, FormsModule, ListCard],
   templateUrl: './enrolled-course-page.component.html',
   styleUrls: ['./enrolled-course-page.component.css']
 })
@@ -588,6 +603,255 @@ export class EnrolledCoursePageComponent implements OnInit {
     return this.moduleProgress.get(moduleId);
   }
 
+  getModuleStatus(moduleId: number | null | undefined): ModuleStatusDisplay {
+    if (!moduleId) {
+      return {
+        text: '',
+        tone: 'not-started',
+        completedLessons: 0,
+        totalLessons: 0
+      };
+    }
+
+    const progress = this.moduleProgress.get(moduleId);
+    if (!progress) {
+      return {
+        text: '',
+        tone: 'not-started',
+        completedLessons: 0,
+        totalLessons: 0
+      };
+    }
+
+    if (progress.completed) {
+      return {
+        text: 'Completed',
+        tone: 'completed',
+        completedLessons: progress.lessonsCompleted,
+        totalLessons: progress.totalLessons
+      };
+    }
+
+    if (progress.lessonsCompleted > 0) {
+      return {
+        text: `${progress.lessonsCompleted}/${progress.totalLessons} completed`,
+        tone: 'in-progress',
+        completedLessons: progress.lessonsCompleted,
+        totalLessons: progress.totalLessons
+      };
+    }
+
+    return {
+      text: '',
+      tone: 'not-started',
+      completedLessons: progress.lessonsCompleted,
+      totalLessons: progress.totalLessons
+    };
+  }
+
+  getModuleSummary(module: any): string {
+    if (!module) {
+      return '';
+    }
+
+    const lessons = module.videos || module.lessons || [];
+    const lessonCountText = lessons.length === 1 ? '1 lesson' : `${lessons.length} lessons`;
+    const durationText = this.getModuleDurationText(module, lessons);
+
+    return durationText ? `${lessonCountText} • ${durationText}` : lessonCountText;
+  }
+
+  getLessonStatus(lesson: any): LessonStatusDisplay {
+    if (!lesson) {
+      return { text: 'Not started', tone: 'not-started' };
+    }
+
+    const locked = lesson.locked || lesson.isLocked || lesson.requiresUnlock;
+    if (locked) {
+      const lockReason = lesson.lockReason || lesson.lockMessage || 'Locked until previous complete';
+      return { text: lockReason, tone: 'locked' };
+    }
+
+    if (lesson.completed || lesson.isCompleted) {
+      return { text: 'Completed', tone: 'completed' };
+    }
+
+    const progressValue = this.extractProgressValue(lesson);
+    if (progressValue > 0) {
+      return { text: 'In progress', tone: 'in-progress' };
+    }
+
+    if (lesson.statusLabel && typeof lesson.statusLabel === 'string') {
+      return { text: lesson.statusLabel, tone: 'not-started' };
+    }
+
+    return { text: 'Not started', tone: 'not-started' };
+  }
+
+  getLessonDurationText(lesson: any): string {
+    if (!lesson) {
+      return '';
+    }
+
+    const directLabel = lesson.durationLabel || lesson.durationText || lesson.timeLabel;
+    if (typeof directLabel === 'string' && directLabel.trim().length > 0) {
+      return directLabel.trim();
+    }
+
+    const durationMinutes = this.extractLessonDurationMinutes(lesson);
+    if (durationMinutes !== null) {
+      if (durationMinutes >= 60) {
+        return this.formatModuleMinutes(durationMinutes);
+      }
+      return this.formatLessonMinutesToTimestamp(durationMinutes);
+    }
+
+    if (typeof lesson.durationSeconds === 'number' && Number.isFinite(lesson.durationSeconds)) {
+      return this.formatLessonMinutesToTimestamp(lesson.durationSeconds / 60);
+    }
+
+    return '';
+  }
+
+  getLessonSecondaryText(lesson: any): string | null {
+    if (!lesson) {
+      return null;
+    }
+
+    if (this.isQuizLesson(lesson)) {
+      const questionCount = lesson.questionCount || lesson.totalQuestions || lesson.numberOfQuestions || lesson.questionsCount;
+      if (typeof questionCount === 'number' && questionCount > 0) {
+        return `${questionCount} question${questionCount === 1 ? '' : 's'}`;
+      }
+      if (lesson.quizTitle) {
+        return lesson.quizTitle;
+      }
+    }
+
+    if (this.isProjectLesson(lesson) && Array.isArray(lesson.attachments) && lesson.attachments.length > 0) {
+      return 'Instructions + files';
+    }
+
+    const subtitle = lesson.subtitle || lesson.subTitle || lesson.secondaryLabel;
+    if (typeof subtitle === 'string' && subtitle.trim().length > 0) {
+      return subtitle.trim();
+    }
+
+    const summary = lesson.shortDescription || lesson.summary;
+    if (typeof summary === 'string' && summary.trim().length > 0 && summary.trim().length <= 80) {
+      return summary.trim();
+    }
+
+    return null;
+  }
+
+  isQuizLesson(lesson: any): boolean {
+    if (!lesson) {
+      return false;
+    }
+
+    const type = (lesson.lessonType || lesson.type || lesson.contentType || '').toString().toLowerCase();
+    if (type.includes('quiz') || type.includes('assessment') || type.includes('exam')) {
+      return true;
+    }
+
+    const title = (lesson.videoName || lesson.title || lesson.name || '').toString().toLowerCase();
+    return title.includes('quiz');
+  }
+
+  isProjectLesson(lesson: any): boolean {
+    if (!lesson) {
+      return false;
+    }
+
+    const type = (lesson.lessonType || lesson.type || '').toString().toLowerCase();
+    if (type.includes('project') || type.includes('capstone')) {
+      return true;
+    }
+
+    const title = (lesson.videoName || lesson.title || lesson.name || '').toString().toLowerCase();
+    return title.includes('project');
+  }
+
+  getLessonIcon(lesson: any): string {
+    if (!lesson) {
+      return '▶';
+    }
+
+    if (this.isQuizLesson(lesson)) {
+      return '📝';
+    }
+
+    if (this.isProjectLesson(lesson)) {
+      return '📁';
+    }
+
+    if (lesson.locked || lesson.isLocked) {
+      return '🔒';
+    }
+
+    return '▶';
+  }
+
+  getLessonTitleWithIcon(lesson: any): string {
+    const title = lesson?.videoName || lesson?.title || lesson?.name || 'Lesson';
+    return `${title}`.trim();
+  }
+
+  getLessonSubtitle(lesson: any, status: LessonStatusDisplay): string | undefined {
+    const baseSubtitle = this.getLessonSecondaryText(lesson);
+    if (baseSubtitle) {
+      return baseSubtitle;
+    }
+
+    if (status.tone === 'locked') {
+      return status.text;
+    }
+
+    return undefined;
+  }
+
+  getLessonStatusLabel(status: LessonStatusDisplay): string {
+    if (status.tone === 'locked') {
+      return 'Locked';
+    }
+
+    return status.text;
+  }
+
+  getLessonStatusColor(tone: LessonStatusTone): string {
+    switch (tone) {
+      case 'completed':
+        return '#10B981';
+      case 'in-progress':
+        return '#F59E0B';
+      case 'locked':
+        return '#9CA3AF';
+      case 'not-started':
+      default:
+        return '#7C3AED';
+    }
+  }
+
+  getLessonLabelIcon(tone: LessonStatusTone): string | null {
+    if (tone === 'completed') {
+      return '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"></polyline></svg>';
+    }
+
+    return null;
+  }
+
+  onLessonCardClick(lesson: any, status: LessonStatusDisplay, lessonId?: number): void {
+    if (status.tone === 'locked') {
+      return;
+    }
+
+    const targetLessonId = lessonId || lesson?.id || lesson?.videoId;
+    if (targetLessonId) {
+      this.goToLesson(targetLessonId);
+    }
+  }
+
   // Navigation Methods
   startLearning(): void {
     if (!this.courseId) return;
@@ -646,7 +910,23 @@ export class EnrolledCoursePageComponent implements OnInit {
   }
 
   downloadResource(resource: any): void {
-    this.notificationService.info('Resource download feature coming soon!');
+    if (!resource) {
+      this.notificationService.error('Resource not found');
+      return;
+    }
+
+    if (resource.downloadUrl || resource.url || resource.fileUrl) {
+      const url = resource.downloadUrl || resource.url || resource.fileUrl;
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = resource.name || resource.fileName || 'resource';
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      this.notificationService.success(`Downloaded ${resource.name || 'resource'}`);
+    } else {
+      this.notificationService.info('Resource download feature coming soon!');
+    }
   }
 
   downloadAllResources(): void {
@@ -696,5 +976,159 @@ export class EnrolledCoursePageComponent implements OnInit {
 
   trackByQuizId(index: number, quiz: any): any {
     return quiz?.id || index;
+  }
+
+  private getModuleDurationText(module: any, lessons: any[]): string {
+    const directCandidates = [
+      module?.estimatedDuration,
+      module?.estimatedDurationInMinutes,
+      module?.totalDuration,
+      module?.duration,
+      module?.durationMinutes,
+      module?._wrapper?.estimatedDuration
+    ];
+
+    for (const candidate of directCandidates) {
+      const parsed = this.parseDurationToMinutes(candidate);
+      if (parsed !== null) {
+        return this.formatModuleMinutes(parsed);
+      }
+    }
+
+    const aggregatedMinutes = lessons.reduce((total: number, lesson: any) => {
+      const minutes = this.extractLessonDurationMinutes(lesson);
+      return minutes !== null ? total + minutes : total;
+    }, 0);
+
+    if (aggregatedMinutes > 0) {
+      return this.formatModuleMinutes(aggregatedMinutes);
+    }
+
+    return '';
+  }
+
+  private extractProgressValue(lesson: any): number {
+    const progressCandidates = [
+      lesson?.progress,
+      lesson?.progressPercentage,
+      lesson?.percentage,
+      lesson?.completedPercentage,
+      lesson?.watchedPercentage
+    ];
+
+    for (const candidate of progressCandidates) {
+      if (typeof candidate === 'number' && Number.isFinite(candidate) && candidate > 0) {
+        return candidate;
+      }
+    }
+
+    return 0;
+  }
+
+  private extractLessonDurationMinutes(lesson: any): number | null {
+    if (!lesson) {
+      return null;
+    }
+
+    const directCandidates = [
+      lesson.durationMinutes,
+      lesson.videoDurationMinutes,
+      lesson.totalDurationMinutes,
+      lesson.duration,
+      lesson.length,
+      lesson.lengthMinutes
+    ];
+
+    for (const candidate of directCandidates) {
+      const parsed = this.parseDurationToMinutes(candidate);
+      if (parsed !== null) {
+        return parsed;
+      }
+    }
+
+    const secondsCandidates = [lesson.durationSeconds, lesson.videoDurationSeconds, lesson.lengthSeconds];
+    for (const candidate of secondsCandidates) {
+      if (typeof candidate === 'number' && Number.isFinite(candidate) && candidate > 0) {
+        return candidate / 60;
+      }
+    }
+
+    return null;
+  }
+
+  private parseDurationToMinutes(value: any): number | null {
+    if (typeof value === 'number' && Number.isFinite(value)) {
+      return value;
+    }
+
+    if (typeof value !== 'string') {
+      return null;
+    }
+
+    const trimmed = value.trim();
+    if (!trimmed) {
+      return null;
+    }
+
+    const colonMatch = trimmed.match(/^(\d+):(\d{1,2})$/);
+    if (colonMatch) {
+      const minutes = parseInt(colonMatch[1], 10);
+      const seconds = parseInt(colonMatch[2], 10);
+      if (!Number.isNaN(minutes) && !Number.isNaN(seconds)) {
+        return minutes + seconds / 60;
+      }
+    }
+
+    const hourMinuteMatch = trimmed.match(/^(?:(\d+)\s*h(?:ours?)?\s*)?(\d+)?\s*(?:m(?:in(?:utes)?)?)?$/i);
+    if (hourMinuteMatch) {
+      const hours = hourMinuteMatch[1] ? parseInt(hourMinuteMatch[1], 10) : 0;
+      const minutes = hourMinuteMatch[2] ? parseInt(hourMinuteMatch[2], 10) : 0;
+      if (!Number.isNaN(hours) || !Number.isNaN(minutes)) {
+        return hours * 60 + minutes;
+      }
+    }
+
+    const numeric = parseFloat(trimmed.replace(/[^0-9.]/g, ''));
+    if (!Number.isNaN(numeric) && numeric > 0) {
+      return numeric;
+    }
+
+    return null;
+  }
+
+  private formatModuleMinutes(totalMinutes: number): string {
+    if (!Number.isFinite(totalMinutes) || totalMinutes <= 0) {
+      return '';
+    }
+
+    const rounded = Math.round(totalMinutes);
+    if (rounded >= 60) {
+      const hours = Math.floor(rounded / 60);
+      const minutes = rounded % 60;
+      if (minutes === 0) {
+        return `${hours}h`;
+      }
+      return `${hours}h ${minutes} min`;
+    }
+
+    return `${rounded} min`;
+  }
+
+  private formatLessonMinutesToTimestamp(minutes: number): string {
+    if (!Number.isFinite(minutes) || minutes <= 0) {
+      return '';
+    }
+
+    const totalSeconds = Math.round(minutes * 60);
+    const mins = Math.floor(totalSeconds / 60);
+    const seconds = totalSeconds % 60;
+
+    if (mins >= 60) {
+      const hours = Math.floor(mins / 60);
+      const remainingMinutes = mins % 60;
+      return `${hours}h ${remainingMinutes} min`;
+    }
+
+    return `${mins}:${seconds.toString().padStart(2, '0')}`;
   }
 }

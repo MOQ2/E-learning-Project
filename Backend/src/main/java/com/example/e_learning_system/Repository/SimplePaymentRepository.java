@@ -34,6 +34,9 @@ public interface SimplePaymentRepository extends JpaRepository<SimplePayment, In
     @Query("SELECT p FROM SimplePayment p WHERE p.course.id = :courseId AND p.status = 'COMPLETED'")
     List<SimplePayment> findSuccessfulPaymentsByCourse(@Param("courseId") Integer courseId);
 
+    @Query("SELECT p FROM SimplePayment p WHERE p.course.id = :courseId")
+    List<SimplePayment> findByCourseId(@Param("courseId") Integer courseId);
+
     @Query("SELECT p FROM SimplePayment p WHERE p.packageEntity.id = :packageId AND p.status = 'COMPLETED'")
     List<SimplePayment> findSuccessfulPaymentsByPackage(@Param("packageId") Integer packageId);
 

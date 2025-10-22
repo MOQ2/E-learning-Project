@@ -17,7 +17,6 @@ import {
   styleUrl: './my-learning-page.css'
 })
 export class MyLearningPage implements OnInit {
-  userId: number = 1; // TODO: Get from auth service
   loading: boolean = true;
   error: string | null = null;
 
@@ -48,7 +47,7 @@ export class MyLearningPage implements OnInit {
     this.loading = true;
     this.error = null;
 
-    this.myLearningService.getMyLearningDashboard(this.userId).subscribe({
+    this.myLearningService.getMyLearningDashboard().subscribe({
       next: (data: MyLearningResponseDto) => {
         this.stats = data.stats;
         this.enrolledCourses = data.enrolledCourses;

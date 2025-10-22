@@ -1,391 +1,231 @@
-<div class="course_view_page-1" *ngIf="!loading">
-  <div class="container-26">
-    <div class="background-border-27">
-      <!-- Hero Header Section -->
-      <div class="course-hero">
-        <div class="hero-badge" *ngIf="courseData?.category">
-          <span class="badge-icon">📚</span>
-          <span class="badge-text">{{ courseData?.category }}</span>
+<div class="page-container" *ngIf="!loading && courseData">
+
+
+  <main class="main-content">
+    <article class="course-details">
+      <header class="course-header card">
+        <div>
+          <h2>{{ courseData.name }}</h2>
+          <p class="course-subtitle" *ngIf="courseData.description">{{ courseData.description }}</p>
         </div>
-        <h1 class="course-title">{{ courseData?.name }}</h1>
-        <p class="course-subtitle" *ngIf="courseData?.description">{{ courseData?.description }}</p>
+        <div class="tag tag-light" *ngIf="courseData.category">{{ courseData.category }}</div>
+      </header>
+
+      <div class="card">
+        <section class="course-intro">
+          <img class="course-image" [src]="courseData.thumbnailUrl" alt="Course preview" />
+          <div class="intro-content">
+            <div class="course-highlights">
+              <div class="tag tag-cyan" *ngIf="courseData.estimatedDurationInHours">
+                {{ courseData.estimatedDurationInHours }}h content
+              </div>
+              <div class="tag tag-cyan" *ngIf="courseData.modules?.length">
+                {{ courseData.modules?.length || 0 }} modules
+              </div>
+              <div class="tag tag-cyan" *ngIf="courseData.certificate !== false">Certificate</div>
+            </div>
+            <p class="course-description" *ngIf="courseData.description">{{ courseData.description }}</p>
+            <div class="course-meta">
+              <div class="meta-item" *ngIf="courseData.difficultyLevel">Level: {{ courseData.difficultyLevel }}</div>
+              <div class="meta-item" *ngIf="courseData.language">Language: {{ courseData.language }}</div>
+              <div class="meta-item" *ngIf="courseData.enrolledCount">
+                Students: {{ courseData.enrolledCount | number }}
+              </div>
+            </div>
+          </div>
+        </section>
       </div>
 
-      <div class="container-44">
-        <div class="background-border-45">
-          <!-- Course Overview Card -->
-          <div class="container-46">
-            <div class="background-border-47">
-              <img [src]="courseData?.thumbnailUrl" class="node-48" alt="Course Image" />
-              <div class="image-overlay">
-                <div class="play-button" *ngIf="courseData?.modules?.[0]?.active">
-                  <svg width="48" height="48" viewBox="0 0 48 48" fill="none">
-                    <circle cx="24" cy="24" r="24" fill="rgba(255,255,255,0.9)"/>
-                    <path d="M19 14L34 24L19 34V14Z" fill="var(--accent)"/>
-                  </svg>
-                </div>
-              </div>
-            </div>
-            <div class="container-49">
-              <!-- Rating & Stats Row -->
-              <div class="meta-row">
-                <div class="rating-badge">
-                  <app-star-rating [rating]="courseData?.averageRating || 0"></app-star-rating>
-                  <span class="rating-text">
-                    <strong>{{ (courseData?.averageRating ?? 0) > 0 ? (courseData?.averageRating | number:'1.1-1') : 'New' }}</strong>
-                    <span class="rating-count" *ngIf="(courseData?.reviewCount ?? 0) > 0">({{ courseData?.reviewCount }})</span>
-                    <span class="rating-count" *ngIf="(courseData?.reviewCount ?? 0) === 0">(No reviews yet)</span>
-                  </span>
-                </div>
-                <div class="enrolled-badge">
-                  <span class="badge-icon">👥</span>
-                  <span class="enrolled-count">{{ (courseData?.enrolledCount ?? 0) > 0 ? courseData?.enrolledCount : 'Be the first' }} {{ (courseData?.enrolledCount ?? 0) > 0 ? 'students' : '' }}</span>
-                </div>
-              </div>
-
-              <!-- Quick Stats Pills -->
-              <div class="container-50">
-                <div class="stat-pill duration-pill">
-                  <span class="pill-icon">⏱️</span>
-                  <span class="pill-text">{{ courseData?.estimatedDurationInHours || 0 }}h total</span>
-                </div>
-                <div class="stat-pill modules-pill">
-                  <span class="pill-icon">📖</span>
-                  <span class="pill-text">{{ courseData?.modules?.length || 0 }} modules</span>
-                </div>
-                <div class="stat-pill certificate-pill">
-                  <span class="pill-icon">🎓</span>
-                  <span class="pill-text">Certificate</span>
-                </div>
-              </div>
-
-              <!-- Course Meta Tags -->
-              <div class="container-75">
-                <div class="meta-tag" *ngIf="courseData?.difficultyLevel">
-                  <span class="tag-icon">📊</span>
-                  <span class="tag-text">{{ courseData?.difficultyLevel }}</span>
-                </div>
-                <div class="meta-tag" *ngIf="courseData?.status">
-                  <span class="tag-icon">✓</span>
-                  <span class="tag-text">{{ courseData?.status }}</span>
-                </div>
-              </div>
-            </div>
+      <section class="card">
+        <h3>What you'll learn</h3>
+        <div class="feature-list" *ngIf="courseData.whatYouWillLearn?.length; else learnEmpty">
+          <div *ngFor="let item of courseData.whatYouWillLearn" class="feature-item">
+            {{ item }}
           </div>
-
-          <!-- What You'll Learn Section -->
-          <div class="learning-outcomes-section">
-            <div class="section-header">
-              <span class="section-icon">🎯</span>
-              <h2 class="section-title">What you'll learn</h2>
-            </div>
-            <div class="outcomes-grid" *ngIf="(courseData?.whatYouWillLearn?.length ?? 0) > 0">
-              <div class="outcome-item" *ngFor="let item of courseData?.whatYouWillLearn; let i = index"
-                   [style.animation-delay]="(i * 0.05) + 's'">
-                <span class="outcome-check">✓</span>
-                <p class="outcome-text">{{ item }}</p>
-              </div>
-            </div>
-            <div class="empty-state" *ngIf="(courseData?.whatYouWillLearn?.length ?? 0) === 0">
-              <span class="empty-icon">💡</span>
-              <p class="empty-text">Learning objectives will be added soon</p>
-            </div>
+        </div>
+        <ng-template #learnEmpty>
+          <div class="empty-state">
+            <span class="empty-icon">💡</span>
+            <p class="empty-text">Learning objectives will be added soon.</p>
           </div>
+        </ng-template>
+      </section>
 
-          <!-- Course Curriculum Section -->
-          <div class="curriculum-section">
-            <div class="section-header">
-              <span class="section-icon">📚</span>
-              <h2 class="section-title">Course curriculum</h2>
-              <span class="modules-count">{{ courseData?.modules?.length || 0 }} modules</span>
+      <section class="card">
+        <h3>Modules overview</h3>
+        <div class="module-list" *ngIf="courseData.modules?.length; else modulesEmpty">
+          <div *ngFor="let module of courseData.modules" class="module-item" [class.locked]="!module.active">
+            <div class="module-icon-wrapper">
+              <svg *ngIf="!module.active" xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="currentColor" viewBox="0 0 16 16"><path d="M8 1a2 2 0 0 1 2 2v4H6V3a2 2 0 0 1 2-2zm3 6V3a3 3 0 0 0-6 0v4a2 2 0 0 0-2 2v5a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2z"/></svg>
+              <svg *ngIf="module.active" xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="currentColor" viewBox="0 0 16 16"><path d="M11 1a2 2 0 0 0-2 2v4a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V9a2 2 0 0 1 2-2h5V3a3 3 0 0 1 6 0v4a.5.5 0 0 1-1 0V3a2 2 0 0 0-2-2z"/></svg>
             </div>
-            <div class="modules-list">
-              <div class="module-card" *ngFor="let m of courseData?.modules; let i = index"
-                   [class.locked]="!m.active"
-                   [style.animation-delay]="(i * 0.08) + 's'">
-                <div class="module-number">
-                  <span class="number-badge">{{ m.order || (i + 1) }}</span>
-                </div>
-                <div class="module-content">
-                  <h3 class="module-title">{{ m.name }}</h3>
-                  <p class="module-description" *ngIf="m.description">{{ m.description }}</p>
-                  <div class="module-meta">
-                    <span class="meta-item" *ngIf="m.estimatedDuration">
-                      <span class="meta-icon">⏱️</span>
-                      {{ m.estimatedDuration }}min
-                    </span>
-                    <span class="meta-item" *ngIf="m.numberOfVideos">
-                      <span class="meta-icon">🎥</span>
-                      {{ m.numberOfVideos }} videos
-                    </span>
-                  </div>
-                </div>
-                <div class="module-action">
-                  <span class="status-badge locked" *ngIf="!m.active">
-                    <span class="badge-icon">🔒</span>
-                    Locked
-                  </span>
-                  <span class="status-badge preview" *ngIf="m.active && m.previewAvailable">
-                    <span class="badge-icon">▶️</span>
-                    Preview
-                  </span>
-                  <span class="status-badge available" *ngIf="m.active && !m.previewAvailable">
-                    <span class="badge-icon">✓</span>
-                    Available
-                  </span>
-                </div>
-              </div>
-              <div class="empty-state" *ngIf="(courseData?.modules?.length ?? 0) === 0">
-                <span class="empty-icon">📦</span>
-                <p class="empty-text">Course modules will be available soon</p>
+            <div class="module-info">
+              <h4>{{ module.name }}</h4>
+              <p *ngIf="module.description">{{ module.description }}</p>
+              <div class="module-meta">
+                <span *ngIf="module.estimatedDuration" class="meta-item">Duration: {{ module.estimatedDuration }} min</span>
+                <span *ngIf="module.numberOfVideos" class="meta-item">Videos: {{ module.numberOfVideos }}</span>
               </div>
             </div>
-          </div>
-
-          <!-- Resources Section (only if exists) -->
-          <div class="resources-section" *ngIf="(courseData?.resources?.length ?? 0) > 0">
-            <div class="section-header">
-              <span class="section-icon">📦</span>
-              <h2 class="section-title">Included resources</h2>
-            </div>
-            <div class="resources-grid">
-              <div class="resource-item" *ngFor="let r of courseData?.resources; let i = index"
-                   [style.animation-delay]="(i * 0.05) + 's'">
-                <span class="resource-icon">📎</span>
-                <p class="resource-text">{{ r }}</p>
-              </div>
-            </div>
-          </div>
-
-          <!-- Reviews Section -->
-          <div class="reviews-section">
-            <div class="section-header">
-              <span class="section-icon">⭐</span>
-              <h2 class="section-title">Student reviews</h2>
-              <span class="reviews-summary" *ngIf="courseData?.reviewCount">
-                {{ courseData?.averageRating | number:'1.1-1' }} average · {{ courseData?.reviewCount }} reviews
-              </span>
-            </div>
-
-            <!-- Reviews List -->
-            <div class="reviews-list" [class.expanded]="showAllReviews">
-              <div class="empty-state" *ngIf="reviews?.length === 0 && !isReloadingReviews">
-                <span class="empty-icon">💬</span>
-                <p class="empty-text">No reviews yet. Be the first to review this course!</p>
-              </div>
-
-              <div class="review-card" *ngFor="let rev of displayedReviews; let i = index"
-                   [class.optimistic]="rev && rev._optimistic"
-                   [style.animation-delay]="(i * 0.08) + 's'">
-                <div class="review-header">
-                  <div class="reviewer-info">
-                    <div class="reviewer-avatar">
-                      {{ (rev.isAnonymous ? 'A' : (rev.userId ? rev.userId.toString().charAt(0) : 'U')) }}
-                    </div>
-                    <div class="reviewer-details">
-                      <strong class="reviewer-name">{{ rev.isAnonymous ? 'Anonymous' : ('Student ' + (rev.userId || '')) }}</strong>
-                      <span class="review-date">{{ rev.createdAt | date:'MMM d, yyyy' }}</span>
-                    </div>
-                  </div>
-                  <div class="review-rating-badge">
-                    <span class="rating-stars">{{ '⭐'.repeat(rev.rating || 0) }}</span>
-                    <span class="rating-number">{{ rev.rating || '—' }}</span>
-                  </div>
-                </div>
-                <div class="review-body">{{ rev.feedbackText }}</div>
-              </div>
-            </div>
-
-            <!-- Load More / Show Less -->
-            <div class="reviews-actions" *ngIf="reviewsTotalElements > 3">
-              <button class="load-more-btn" *ngIf="reviewsPage + 1 < reviewsTotalPages"
-                      (click)="loadMoreReviews()"
-                      [disabled]="isReloadingReviews">
-                <span *ngIf="!isReloadingReviews">Load {{ nextLoadCount }} more reviews</span>
-                <span *ngIf="isReloadingReviews" class="btn-loading">Loading...</span>
-              </button>
-              <button class="collapse-btn" *ngIf="showAllReviews && reviewsPage + 1 >= reviewsTotalPages"
-                      (click)="collapseReviews()">
-                Show less
-              </button>
-            </div>
-
-            <!-- Review Form -->
-            <div class="review-form-container">
-              <h3 class="form-title">Share your experience</h3>
-              <div class="review-form">
-                <div class="form-group">
-                  <label class="form-label">Your rating</label>
-                  <app-star-rating [editable]="true" [rating]="reviewRating" (ratingChange)="reviewRating = $event"></app-star-rating>
-                </div>
-
-                <div class="form-group">
-                  <label class="form-label">Your review</label>
-                  <textarea [(ngModel)]="reviewText"
-                            rows="4"
-                            placeholder="What did you think about this course? Share your thoughts..."
-                            class="form-textarea"></textarea>
-                </div>
-
-                <div class="form-group checkbox-group">
-                  <label class="checkbox-label">
-                    <input type="checkbox" [(ngModel)]="reviewAnonymous" class="checkbox-input" />
-                    <span class="checkbox-text">Post anonymously</span>
-                  </label>
-                </div>
-
-                <button class="submit-review-btn" (click)="submitReview()" [disabled]="isSubmitting || !reviewText || !reviewRating">
-                  <span *ngIf="!isSubmitting">
-                    <span class="btn-icon">✓</span>
-                    Submit review
-                  </span>
-                  <span *ngIf="isSubmitting" class="btn-spinner">
-                    <span class="spinner-dot"></span>
-                    Submitting...
-                  </span>
-                </button>
-              </div>
+            <div class="tag" [ngClass]="{
+                'tag-light': !module.active,
+                'tag-preview': module.active && module.previewAvailable,
+                'tag-available': module.active && !module.previewAvailable
+              }">
+              {{ !module.active ? 'Locked' : (module.previewAvailable ? 'Preview lesson' : 'Available') }}
             </div>
           </div>
         </div>
-      </div>
-    </div>
+        <ng-template #modulesEmpty>
+          <div class="empty-state">
+            <span class="empty-icon">📦</span>
+            <p class="empty-text">Course modules will be available soon.</p>
+          </div>
+        </ng-template>
+      </section>
 
-    <!-- Sidebar: Pricing & Enrollment -->
-    <div class="sidebar-card">
-      <!-- Pricing Header -->
-      <div class="pricing-header">
-        <div class="price-badge">
-          <span class="currency">{{ courseData?.currency || '$' }}</span>
-          <span class="price-amount">{{ (courseData?.oneTimePrice ?? 0) | number:'1.2-2' }}</span>
+      <section class="card" *ngIf="courseData.resources?.length">
+        <h3>Included resources</h3>
+        <div class="feature-list">
+          <div *ngFor="let resource of courseData.resources" class="feature-item">
+            {{ resource }}
+          </div>
         </div>
-        <span class="price-label">One-time payment</span>
-      </div>
+      </section>
 
-      <!-- Subscription Plans -->
-      <div class="subscription-plans" *ngIf="courseData?.hasSubscriptionPlans">
-        <div class="plans-divider">
-          <span class="divider-text">or subscribe</span>
+      <section class="card reviews-card">
+        <header class="reviews-header">
+          <div>
+            <h3>Student reviews</h3>
+            <p class="reviews-summary" *ngIf="courseData.reviewCount">
+              {{ courseData.averageRating | number:'1.1-1' }} average · {{ courseData.reviewCount }} reviews
+            </p>
+            <p class="reviews-summary" *ngIf="!courseData.reviewCount">No reviews yet</p>
+          </div>
+          <div class="rating-pill">
+            <app-star-rating [rating]="courseData.averageRating || 0"></app-star-rating>
+          </div>
+        </header>
+
+        <div class="reviews-list" [class.expanded]="showAllReviews">
+          <div class="empty-state" *ngIf="reviews?.length === 0 && !isReloadingReviews">
+            <span class="empty-icon">💬</span>
+            <p class="empty-text">Be the first to review this course.</p>
+          </div>
+
+          <article class="review-card" *ngFor="let review of displayedReviews">
+            <div class="review-header">
+              <div class="reviewer-info">
+                <div class="avatar-circle">
+                  {{ review.isAnonymous ? 'A' : (review.userId ? review.userId.toString().charAt(0) : 'U') }}
+                </div>
+                <div>
+                  <strong>{{ review.isAnonymous ? 'Anonymous learner' : ('Student ' + review.userId) }}</strong>
+                  <span>{{ review.createdAt | date:'MMM d, yyyy' }}</span>
+                </div>
+              </div>
+              <div class="review-rating">
+                <span class="stars">{{ '⭐'.repeat(review.rating || 0) }}</span>
+                <span class="score">{{ review.rating || '—' }}</span>
+              </div>
+            </div>
+            <p class="review-body">{{ review.feedbackText }}</p>
+          </article>
         </div>
 
-        <div class="plans-grid">
-          <button class="plan-option" *ngIf="courseData?.plans?.monthly"
-                  (click)="onSelectPlan('monthly', courseData?.plans?.monthly)">
-            <span class="plan-duration">Monthly</span>
-            <span class="plan-price">{{ courseData?.currency }}{{ courseData?.plans?.monthly | number:'1.2-2' }}</span>
+        <div class="reviews-actions" *ngIf="reviewsTotalElements > 3">
+          <button class="btn btn-secondary" *ngIf="reviewsPage + 1 < reviewsTotalPages" (click)="loadMoreReviews()" [disabled]="isReloadingReviews">
+            <span *ngIf="!isReloadingReviews">Load {{ nextLoadCount }} more reviews</span>
+            <span *ngIf="isReloadingReviews">Loading…</span>
           </button>
-
-          <button class="plan-option recommended" *ngIf="courseData?.plans?.threeMonths"
-                  (click)="onSelectPlan('3-months', courseData?.plans?.threeMonths)">
-            <span class="recommended-badge">Best value</span>
-            <span class="plan-duration">3 Months</span>
-            <span class="plan-price">{{ courseData?.currency }}{{ courseData?.plans?.threeMonths | number:'1.2-2' }}</span>
-          </button>
-
-          <button class="plan-option" *ngIf="courseData?.plans?.sixMonths"
-                  (click)="onSelectPlan('6-months', courseData?.plans?.sixMonths)">
-            <span class="plan-duration">6 Months</span>
-            <span class="plan-price">{{ courseData?.currency }}{{ courseData?.plans?.sixMonths | number:'1.2-2' }}</span>
-          </button>
-
-          <button class="plan-option" *ngIf="courseData?.plans?.annual"
-                  (click)="onSelectPlan('12-months', courseData?.plans?.annual)">
-            <span class="plan-duration">12 Months</span>
-            <span class="plan-price">{{ courseData?.currency }}{{ courseData?.plans?.annual | number:'1.2-2' }}</span>
+          <button class="btn btn-secondary" *ngIf="showAllReviews && reviewsPage + 1 >= reviewsTotalPages" (click)="collapseReviews()">
+            Show less
           </button>
         </div>
-      </div>
 
-      <!-- Action Buttons -->
-      <div class="action-buttons">
-        <button class="enroll-button" (click)="onSubscribeOneTime()">
-          <span class="btn-icon">🚀</span>
-          <span class="btn-text">Enroll now</span>
-        </button>
-
-        <button class="preview-button" (click)="onPreview()">
-          <span class="btn-icon">▶️</span>
-          <span class="btn-text">Preview course</span>
-        </button>
-      </div>
-
-      <!-- Trust Badges -->
-      <div class="trust-badges">
-        <div class="trust-item">
-          <span class="trust-icon">✓</span>
-          <span class="trust-text">30-day money-back guarantee</span>
-        </div>
-        <div class="trust-item">
-          <span class="trust-icon">✓</span>
-          <span class="trust-text">Full lifetime access</span>
-        </div>
-        <div class="trust-item">
-          <span class="trust-icon">✓</span>
-          <span class="trust-text">Certificate of completion</span>
-        </div>
-      </div>
-
-      <div class="sidebar-divider"></div>
-
-      <!-- Instructor Info -->
-      <div class="instructor-card" *ngIf="courseData?.instructor">
-        <div class="instructor-header">
-          <div class="instructor-avatar">
-            <img [src]="courseData?.instructorAvatar || 'https://ui-avatars.com/api/?name=' + (courseData?.instructor || 'I') + '&background=7c3aed&color=fff&size=64'"
-                 [alt]="courseData?.instructor" />
+        <div class="review-form">
+          <h4>Share your experience</h4>
+          <div class="form-row">
+            <label>Your rating</label>
+            <app-star-rating [editable]="true" [rating]="reviewRating" (ratingChange)="reviewRating = $event"></app-star-rating>
           </div>
-          <div class="instructor-details">
-            <h4 class="instructor-name">{{ courseData?.instructor }}</h4>
-            <p class="instructor-title" *ngIf="courseData?.instructorTitle">{{ courseData?.instructorTitle }}</p>
-          </div>
+          <label for="review-text">Your review</label>
+          <textarea id="review-text" rows="4" [(ngModel)]="reviewText" placeholder="What did you think about this course?" ></textarea>
+          <label class="checkbox">
+            <input type="checkbox" [(ngModel)]="reviewAnonymous" />
+            <span>Post anonymously</span>
+          </label>
+          <button class="btn btn-primary" (click)="submitReview()" [disabled]="isSubmitting || !reviewText || !reviewRating">
+            <span *ngIf="!isSubmitting">Submit review</span>
+            <span *ngIf="isSubmitting">Submitting…</span>
+          </button>
         </div>
-      </div>
+      </section>
+    </article>
 
-      <!-- Course Details -->
-      <div class="course-details">
-        <div class="detail-item" *ngIf="courseData?.lastUpdated">
-          <span class="detail-icon">📅</span>
-          <div class="detail-content">
-            <span class="detail-label">Last updated</span>
-            <span class="detail-value">{{ courseData?.lastUpdated | date:'MMM yyyy' }}</span>
+    <aside class="sidebar">
+      <div class="card">
+        <header class="sidebar-header">
+          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" viewBox="0 0 16 16"><path d="M0 4a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v8a2 2 0 0 1-2-2H2a2 2 0 0 1-2-2V4zm2-1a1 1 0 0 0-1 1v1h14V4a1 1 0 0 0-1-1H2zm13 4H1v5a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V7z"/><path d="M2 10a1 1 0 0 1 1-1h1a1 1 0 0 1 1 1v1a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1v-1z"/></svg>
+          <h3>Get access</h3>
+        </header>
+
+        <div class="sidebar-content">
+          <div class="price-info">
+            <span class="price">{{ courseData.currency }}{{ (courseData.oneTimePrice ?? 0) | number:'1.2-2' }}</span>
+            <span class="tag tag-light">One-time</span>
           </div>
-        </div>
 
-        <div class="detail-item">
-          <span class="detail-icon">🌐</span>
-          <div class="detail-content">
-            <span class="detail-label">Language</span>
-            <span class="detail-value">{{ courseData?.language || 'English' }}</span>
-          </div>
-        </div>
-
-  <div class="detail-item" *ngIf="(courseData?.subtitles?.length ?? 0) > 0">
-          <span class="detail-icon">📝</span>
-          <div class="detail-content">
-            <span class="detail-label">Subtitles</span>
-            <span class="detail-value">{{ courseData?.subtitles?.join(', ') }}</span>
-          </div>
-        </div>
-
-  <div class="detail-item" *ngIf="(courseData?.tags?.length ?? 0) > 0">
-          <span class="detail-icon">🏷️</span>
-          <div class="detail-content">
-            <span class="detail-label">Topics</span>
-            <div class="tags-list">
-              <span class="tag-chip" *ngFor="let tag of courseData?.tags | slice:0:5">{{ tag.name || tag }}</span>
+          <div class="plan-chooser" *ngIf="courseData.hasSubscriptionPlans">
+            <p>Or choose a plan</p>
+            <div class="plan-options">
+              <button class="plan-btn" *ngIf="courseData.plans?.monthly" (click)="onSelectPlan('monthly', courseData.plans?.monthly)">Monthly • {{ courseData.currency }}{{ courseData.plans?.monthly | number:'1.2-2' }}</button>
+              <button class="plan-btn" *ngIf="courseData.plans?.threeMonths" (click)="onSelectPlan('3-months', courseData.plans?.threeMonths)">3 Months • {{ courseData.currency }}{{ courseData.plans?.threeMonths | number:'1.2-2' }}</button>
+              <button class="plan-btn" *ngIf="courseData.plans?.sixMonths" (click)="onSelectPlan('6-months', courseData.plans?.sixMonths)">6 Months • {{ courseData.currency }}{{ courseData.plans?.sixMonths | number:'1.2-2' }}</button>
+              <button class="plan-btn" *ngIf="courseData.plans?.annual" (click)="onSelectPlan('12-months', courseData.plans?.annual)">12 Months • {{ courseData.currency }}{{ courseData.plans?.annual | number:'1.2-2' }}</button>
             </div>
           </div>
+
+          <div class="action-buttons">
+            <button class="btn btn-primary btn-full" (click)="onSubscribeOneTime()">Subscribe to course</button>
+            <button class="btn btn-secondary btn-full" (click)="onPreview()">Preview first lesson</button>
+            <p class="guarantee">7-day refund guarantee. Access all modules and resources.</p>
+          </div>
+
+          <hr class="divider" />
+
+          <div class="instructor-info" *ngIf="courseData.instructor">
+            <img class="avatar" [src]="courseData.instructorAvatar || 'https://ui-avatars.com/api/?name=' + (courseData.instructor || 'I') + '&background=7c3aed&color=fff&size=64'" [alt]="courseData.instructor" />
+            <div>
+              <h4>{{ courseData.instructor }}</h4>
+              <p *ngIf="courseData.instructorTitle">{{ courseData.instructorTitle }}</p>
+            </div>
+          </div>
+
+          <div class="info-pills">
+            <div class="info-item" *ngIf="courseData.lastUpdated">Last updated: {{ courseData.lastUpdated | date:'MMM yyyy' }}</div>
+            <div class="info-item" *ngIf="courseData.language">Language: {{ courseData.language }}</div>
+            <div class="info-item" *ngIf="courseData.subtitles?.length">Subtitles: {{ courseData.subtitles?.join(', ') }}</div>
+          </div>
         </div>
       </div>
-    </div>
-  </div>
-  <div *ngIf="error" class="error">
+
+      <div class="card" *ngIf="courseData.tags?.length">
+        <h3>Topics covered</h3>
+        <div class="tags-list">
+          <span class="tag tag-light" *ngFor="let tag of courseData.tags | slice:0:6">{{ tag.name || tag }}</span>
+        </div>
+      </div>
+    </aside>
+  </main>
+
+  <div *ngIf="error" class="error-card">
     <p>{{ error }}</p>
-    <button (click)="courseId && loadCourse(courseId)">Retry</button>
+    <button class="btn btn-primary" (click)="courseId && loadCourse(courseId)">Retry</button>
   </div>
 </div>
 
 <div *ngIf="loading" class="spinner-container">
   <div class="spinner"></div>
-  <div class="loading-text">Loading course...</div>
+  <div class="loading-text">Loading course…</div>
 </div>

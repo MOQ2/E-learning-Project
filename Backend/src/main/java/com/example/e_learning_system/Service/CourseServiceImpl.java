@@ -1,7 +1,7 @@
 package com.example.e_learning_system.Service;
 
 import com.example.e_learning_system.Config.CourseStatus;
-import com.example.e_learning_system.Config.Tags;
+
 import com.example.e_learning_system.Dto.CourseDtos.*;
 import com.example.e_learning_system.Entities.Attachment;
 import com.example.e_learning_system.Entities.CourseModules;
@@ -51,6 +51,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import com.example.e_learning_system.Repository.UserCourseAccessRepository;
 import com.example.e_learning_system.Repository.UserFeedbackRepository;
+import com.example.e_learning_system.Service.Interfaces.RagService;
 @Service
 @RequiredArgsConstructor
 @Transactional
@@ -66,6 +67,7 @@ public class CourseServiceImpl implements CourseService {
     private final AttachmentRepository attachmentRepository;
     private final UserCourseAccessRepository userCourseAccessRepository;
     private final UserFeedbackRepository userFeedbackRepository;
+    private final RagService ragService;
     @Value("${app.public-base-url:http://localhost:5000}")
     private String publicBaseUrl;
     @Override
@@ -157,6 +159,14 @@ public class CourseServiceImpl implements CourseService {
 
         Course savedCourse = courseRepository.save(course);
 
+        // Index the course in RAG service for intelligent recommendations
+        try {
+            indexCourseInRag(savedCourse);
+        } catch (Exception e) {
+            log.error("Failed to index course {} in RAG service: {}", savedCourse.getId(), e.getMessage());
+            // Don't fail course creation if RAG indexing fails
+        }
+
         log.info("Course created successfully with id: {}", savedCourse.getId());
         return CourseMapper.fromCourseEntityToCourseDetailsDto(savedCourse);
     }
@@ -193,7 +203,15 @@ public class CourseServiceImpl implements CourseService {
         // Update the existing course entity using the mapper
         CourseMapper.fromUpdateCourseDtoToCourseEntity( updateCourseDto , existingCourse, tagsRepository, attachmentRepository);
 
-        courseRepository.save(existingCourse);
+        Course updatedCourse = courseRepository.save(existingCourse);
+
+        // Re-index the updated course in RAG service
+        try {
+            indexCourseInRag(updatedCourse);
+        } catch (Exception e) {
+            log.error("Failed to re-index course {} in RAG service: {}", courseId, e.getMessage());
+            // Don't fail course update if RAG indexing fails
+        }
 
         log.info("Course updated successfully: {}", courseId);
     }
@@ -586,6 +604,13 @@ public class CourseServiceImpl implements CourseService {
             return "title";
         }
 
+        // Check for match in instructor name
+        if (course.getCreatedBy() != null &&
+                course.getCreatedBy().getName() != null &&
+                course.getCreatedBy().getName().toLowerCase().contains(lowerQuery)) {
+            return "instructor";
+        }
+
         // Check for match in tags
         if (course.getTags() != null && course.getTags().stream()
                 .anyMatch(tag -> tag.getName().toLowerCase().contains(lowerQuery))) {
@@ -605,5 +630,73 @@ public class CourseServiceImpl implements CourseService {
         }
 
         return "other";
+    }
+
+    /**
+     * Index a course in the RAG service for intelligent recommendations
+     * This method is called when courses are created or updated
+     */
+    private void indexCourseInRag(Course course) {
+        try {
+            log.debug("Indexing course {} in RAG service", course.getId());
+            
+            Map<String, Object> courseData = new HashMap<>();
+            courseData.put("name", course.getName());
+            courseData.put("description", course.getDescription());
+            
+            if (course.getCategory() != null) {
+                courseData.put("category", course.getCategory().name());
+            }
+            
+            if (course.getDifficultyLevel() != null) {
+                courseData.put("difficulty_level", course.getDifficultyLevel().name());
+            }
+            
+            // Add tags
+            if (course.getTags() != null && !course.getTags().isEmpty()) {
+                List<String> tagNames = course.getTags().stream()
+                    .map(TagsEntity::getName)
+                    .collect(Collectors.toList());
+                courseData.put("tags", tagNames);
+            }
+            
+            // Add modules information
+            if (course.getCourseModules() != null && !course.getCourseModules().isEmpty()) {
+                List<Map<String, Object>> modules = course.getCourseModules().stream()
+                    .map(courseModule -> {
+                        Map<String, Object> moduleInfo = new HashMap<>();
+                        Module module = courseModule.getModule();
+                        if (module != null) {
+                            moduleInfo.put("title", module.getName()); 
+                            moduleInfo.put("description", module.getDescription());
+                        }
+                        return moduleInfo;
+                    })
+                    .collect(Collectors.toList());
+                courseData.put("modules", modules);
+            }
+            
+            // Additional course metadata
+            if (course.getOneTimePrice() != null) {
+                courseData.put("price", course.getOneTimePrice());
+            }
+            
+            if (course.getCurrency() != null) {
+                courseData.put("currency", course.getCurrency().name());
+            }
+            
+            // Call RAG service to index the course
+            boolean success = ragService.indexCourse(Long.valueOf(course.getId()), courseData);
+            
+            if (success) {
+                log.info("Successfully indexed course {} in RAG service", course.getId());
+            } else {
+                log.warn("Failed to index course {} in RAG service", course.getId());
+            }
+            
+        } catch (Exception e) {
+            log.error("Error indexing course {} in RAG service: {}", course.getId(), e.getMessage(), e);
+            throw e;  // Re-throw to allow caller to handle gracefully
+        }
     }
 }

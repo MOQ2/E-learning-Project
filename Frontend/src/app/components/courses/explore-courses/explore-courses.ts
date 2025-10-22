@@ -10,10 +10,12 @@ import { TagDto } from '../../../Dtos/TagDto';
 import { Subject, takeUntil, debounceTime, distinctUntilChanged, switchMap, of, catchError, tap } from 'rxjs';
 import { CommonModule } from '@angular/common';
 import { NotificationService } from '../../../Services/notification.service';
+import { Chatbot } from '../../chatbot/chatbot';
+
 
 @Component({
   selector: 'app-explore-courses',
-  imports: [SidebarComponent, NavBar, Footer, CourseGridComponent, CommonModule],
+  imports: [SidebarComponent, NavBar, Footer, CourseGridComponent, CommonModule, Chatbot],
   templateUrl: './explore-courses.html',
   styleUrls: ['./explore-courses.css'],
   standalone: true

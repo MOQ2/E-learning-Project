@@ -25,6 +25,14 @@ export class SearchBarComponent implements OnInit {
   // Filter states
   activeFilter: string = 'all'; // 'all', 'courses', 'instructors', 'short', 'popular'
 
+  quickFilters = [
+    { label: 'All results', value: 'all' },
+    { label: 'Courses', value: 'courses' },
+    { label: 'Instructors', value: 'instructors' },
+    { label: '< 2 hours', value: 'short' },
+    { label: 'Popular', value: 'popular' }
+  ];
+
   constructor(
     private courseService: CourseService,
     private router: Router
@@ -111,38 +119,47 @@ export class SearchBarComponent implements OnInit {
   applyFilter(filterType: string) {
     this.activeFilter = filterType;
 
+    const baseResults = Array.isArray(this.allResults) ? [...this.allResults] : [];
+
     switch(filterType) {
       case 'all':
-        this.searchResults = [...this.allResults];
+        this.searchResults = baseResults;
         break;
       case 'courses':
-        // Show all courses (default behavior)
-        this.searchResults = [...this.allResults];
+        // Highlight results that represent course matches (exclude pure instructor hits if provided)
+        const courseCandidates = baseResults.filter(result => !this.isInstructorMatch(result));
+        this.searchResults = courseCandidates.length ? courseCandidates : baseResults;
         break;
       case 'instructors':
-        // Filter by unique instructors - keep one course per instructor
-        const instructorMap = new Map<string, CourseSearchResultDto>();
-        this.allResults.forEach(course => {
-          if (!instructorMap.has(course.instructor)) {
-            instructorMap.set(course.instructor, course);
+        const instructorMatches = baseResults.filter(result => this.isInstructorMatch(result));
+        const fallbackInstructorPool = instructorMatches.length
+          ? instructorMatches
+          : baseResults.filter(result => (result.instructor ?? '').trim().length > 0);
+
+        this.searchResults = fallbackInstructorPool.sort((a, b) => {
+          const instructorCompare = (a.instructor || '').localeCompare(b.instructor || '');
+          if (instructorCompare !== 0) {
+            return instructorCompare;
           }
+
+          return (a.name || '').localeCompare(b.name || '');
         });
-        this.searchResults = Array.from(instructorMap.values());
         break;
       case 'short':
         // Filter courses less than 2 hours
-        this.searchResults = this.allResults.filter(course =>
-          course.estimatedDurationInHours && course.estimatedDurationInHours < 2
+        const shortCourses = baseResults.filter(course =>
+          typeof course.estimatedDurationInHours === 'number' && course.estimatedDurationInHours > 0 && course.estimatedDurationInHours < 2
         );
+        this.searchResults = shortCourses;
         break;
       case 'popular':
         // Sort by popularity (we can use lessonCount as a proxy for now)
-        this.searchResults = [...this.allResults].sort((a, b) =>
+        this.searchResults = baseResults.sort((a, b) =>
           (b.lessonCount || 0) - (a.lessonCount || 0)
         );
         break;
       default:
-        this.searchResults = [...this.allResults];
+        this.searchResults = baseResults;
     }
 
     this.selectedIndex = -1;
@@ -150,6 +167,21 @@ export class SearchBarComponent implements OnInit {
 
   setFilter(filterType: string) {
     this.applyFilter(filterType);
+  }
+
+  getCourseSubtitle(course: CourseSearchResultDto): string {
+    const parts: string[] = ['Course'];
+    if (course.lessonCount) {
+      parts.push(`${course.lessonCount} ${course.lessonCount === 1 ? 'lesson' : 'lessons'}`);
+    }
+    if (course.instructor) {
+      parts.push(`by ${course.instructor}`);
+    }
+    return parts.join(' • ');
+  }
+
+  getActionLabel(): string {
+    return 'Open';
   }
 
   @HostListener('document:keydown.escape')
@@ -182,7 +214,7 @@ export class SearchBarComponent implements OnInit {
     if (target.closest('.search-trigger-btn')) {
       return;
     }
-    if (this.isOpen && !target.closest('.searchbar-container')) {
+    if (this.isOpen && !target.closest('.search-box')) {
       this.closeSearch();
     }
   }
@@ -204,5 +236,20 @@ export class SearchBarComponent implements OnInit {
       return `${Math.round(hours * 60)} mins`;
     }
     return `${hours} ${hours === 1 ? 'hour' : 'hours'}`;
+  }
+
+  private isInstructorMatch(result: CourseSearchResultDto): boolean {
+    const matchType = (result.matchType ?? '').toLowerCase();
+    if (matchType.includes('instructor') || matchType.includes('teacher') || matchType.includes('author')) {
+      return true;
+    }
+
+    const instructorName = (result.instructor ?? '').trim().toLowerCase();
+    if (!instructorName) {
+      return false;
+    }
+
+    const normalizedQuery = this.searchQuery.trim().toLowerCase();
+    return normalizedQuery.length > 0 && instructorName.includes(normalizedQuery);
   }
 }

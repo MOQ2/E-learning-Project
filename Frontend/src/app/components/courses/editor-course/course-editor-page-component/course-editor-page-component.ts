@@ -1063,7 +1063,7 @@ export class CourseEditorPageComponent implements OnInit, OnDestroy {
             lessons: [], // lessons will be lazy-loaded when module is selected
             state: 'saved'
           } as Module;
-        });
+        }).sort((a: Module, b: Module) => a.order - b.order); // Sort modules by their order
 
         this.courseCreated = true;
         this.activePage = 'overview';

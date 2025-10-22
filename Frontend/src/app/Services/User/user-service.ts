@@ -40,15 +40,6 @@ export class UserService {
 
   getUser(): User | null {
     const user = this.userSubject.value;
-   
-      const fakeUser: User = {
-        user_id: 1,
-        name: 'Fake User',
-        role: 'student',
-        email: 'fake@example.com',
-        profile_picture: ''
-      };
-      return fakeUser;
     return user;
   }
 

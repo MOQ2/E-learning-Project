@@ -10,6 +10,7 @@ import { CoursePage } from './components/course-page/course-page';
 import { LessonWrapper } from './components/lesson-wrapper/lesson-wrapper';
 import { EnrolledCoursePageComponent } from './components/enrolled-course-page/enrolled-course-page.component';
 import { MyLearningPage } from './components/my-learning-page/my-learning-page';
+import { MyCoursesPage } from './components/my-courses-page/my-courses-page';
 import { authGuard } from './Services/Auth/auth-guard';
 
 export const routes: Routes = [
@@ -22,10 +23,13 @@ export const routes: Routes = [
   {path: 'login',  component:Login},
   {path: 'signUp',  component:Signup},
   {path: 'payment',  component:Payment},
-  { path: 'courses', component: ExploreCoursesPage, canActivate: [authGuard] },
+  { path: 'courses', component: ExploreCoursesPage}, //, canActivate: [authGuard] 
   {path: 'my-learning', component: MyLearningPage},
+  {path: 'my-courses', component: MyCoursesPage},
   {path: 'course-editor', component: CourseEditorPageComponent},
   {path: 'course-editor/:courseId', component: CourseEditorPageComponent},
+  {path: 'courses/editor/new', component: CourseEditorPageComponent},
+  {path: 'courses/editor/:courseId', component: CourseEditorPageComponent},
   {path: 'homepage', component: HomePage},
   { path: 'payment', component: Payment, canActivate: [authGuard] },
   { path: 'module/:moduleId/lesson/:lessonId', component: LessonWrapper },

@@ -1,185 +1,102 @@
 <div class="enrolled-course-page" *ngIf="!loading && course">
-  <header class="main-header">
-    <div class="logo">
-      <img src="https://storage.googleapis.com/vertex-ai-generative-ai-prod-us-east4-4654/user-4654-files/19d08e1d-4876-4d2d-8b09-a1d2f7a5553e_group-6.svg" alt="Learnly Logo" />
-      <span>Learnly</span>
-    </div>
-    <nav class="main-nav">
-      <a routerLink="/" class="nav-link">Home</a>
-      <a routerLink="/courses" class="nav-link active">Courses</a>
-      <a routerLink="/my-learning" class="nav-link">My Learning</a>
-      <a routerLink="/profile" class="nav-link">Profile</a>
-    </nav>
-  </header>
+
 
   <main class="course-content-container">
     <div class="main-column">
-      <div class="course-header-card">
+      <!-- Course Title Section -->
+      <div class="course-title-section">
         <h1 class="course-title">{{ course?.name }}</h1>
-        <div class="course-meta">
+        <div class="header-top">
           <span class="tag" *ngIf="course?.category">{{ course?.category }}</span>
-          <span class="meta-item" *ngIf="modules.length > 0">{{ modules.length }} modules</span>
-          <span class="meta-item" *ngIf="courseProgress.totalLessons > 0">{{ courseProgress.totalLessons }} lessons</span>
-          <span class="meta-item" *ngIf="course?.estimatedDurationInHours">~{{ course?.estimatedDurationInHours }}h total</span>
-          <span class="meta-item" *ngIf="courseProgress.certificateEligible">Certificate ready</span>
+          <div class="course-meta-inline">
+            <span class="meta-item" *ngIf="modules.length > 0">
+              <span class="meta-icon">📚</span>
+              {{ modules.length }} modules
+            </span>
+            <span class="meta-item" *ngIf="course?.estimatedDurationInHours">
+              <span class="meta-icon">⏱️</span>
+              {{ course?.estimatedDurationInHours }}h total
+            </span>
+            <span class="meta-item">
+              <span class="meta-icon">📜</span>
+              Certificate
+            </span>
+          </div>
         </div>
       </div>
 
-      <div class="course-highlights">
-        <div class="highlight-card highlight-progress">
-          <p class="highlight-label">Progress</p>
-          <div class="highlight-value-group">
-            <span class="highlight-value">{{ courseProgress.percentage | number:'1.0-0' }}%</span>
-            <span class="highlight-status">{{ progressStatusLabel }}</span>
-          </div>
-          <p class="highlight-meta">{{ courseProgress.completedLessons }}/{{ courseProgress.totalLessons }} lessons completed</p>
-          <button type="button" class="link-button" (click)="scrollToSection('progress-section')">
-            View detailed progress →
-          </button>
-        </div>
-
-        <div class="highlight-card highlight-next" *ngIf="nextLesson as nextLessonInfo">
-          <p class="highlight-label">Next up</p>
-          <h3 class="highlight-title">{{ nextLessonInfo.lessonTitle }}</h3>
-          <p class="highlight-meta">Module · {{ nextLessonInfo.moduleName }}</p>
-          <p class="highlight-meta" *ngIf="nextLessonInfo.duration">Estimated {{ nextLessonInfo.duration }}m</p>
-          <button type="button" class="link-button" (click)="goToLesson(nextLessonInfo.lessonId)">
-            Jump to lesson →
-          </button>
-        </div>
-
-        <div class="highlight-card highlight-quiz" *ngIf="availableQuizzes.length">
-          <p class="highlight-label">Assessments</p>
-          <div class="highlight-value-group">
-            <span class="highlight-value">{{ completedQuizzesCount }}/{{ availableQuizzes.length }}</span>
-            <span class="highlight-status">Quizzes completed</span>
-          </div>
-          <p class="highlight-meta" *ngIf="upcomingQuiz as nextQuiz">Next: {{ nextQuiz.title }}</p>
-          <button type="button" class="link-button" *ngIf="upcomingQuiz as nextQuiz" (click)="openQuiz(nextQuiz)">
-            Start next quiz →
-          </button>
-          <p class="highlight-meta" *ngIf="!upcomingQuiz">All quizzes completed 🎉</p>
-        </div>
-      </div>
-
-      <div class="instructor-card" *ngIf="course?.instructor || accessType">
-        <div class="instructor-info">
+      <!-- Course Header Card -->
+      <div class="course-header-card">
+        <div class="instructor-section" *ngIf="course?.instructor">
           <img [src]="course?.instructorAvatar || 'https://storage.googleapis.com/vertex-ai-generative-ai-prod-us-east4-4654/user-4654-files/42071988-1c44-48f5-9b2f-37603c4f2a74_instructor-54.png'"
-               class="instructor-avatar"
-               [alt]="course?.instructor ? 'Instructor ' + course?.instructor : 'Course instructor'" />
-          <div>
-            <p class="instructor-name" *ngIf="course?.instructor">Taught by {{ course?.instructor }}</p>
-            <p class="instructor-meta" *ngIf="course?.lastUpdated">Updated {{ course?.lastUpdated | date:'mediumDate' }}</p>
-            <p class="instructor-meta" *ngIf="accessType">
-              {{ accessType === 'SUBSCRIPTION_ACCESS' ? 'Subscribed' : 'Full access' }}
-              <span *ngIf="accessExpiresAt"> · Expires {{ formatDate(accessExpiresAt) }}</span>
+               class="instructor-avatar-small"
+               [alt]="'Instructor ' + course?.instructor" />
+          <div class="instructor-details">
+            <p class="instructor-name-inline">Taught by {{ course?.instructor }}</p>
+            <p class="instructor-subtitle" *ngIf="course?.instructorTitle || course?.estimatedDurationInHours">
+              <span *ngIf="course?.instructorTitle">{{ course?.instructorTitle }}</span>
+              <span *ngIf="course?.instructorTitle && course?.estimatedDurationInHours"> • </span>
+              <span *ngIf="course?.estimatedDurationInHours">{{ course?.estimatedDurationInHours }}h total</span>
             </p>
           </div>
         </div>
-        <div class="action-buttons">
-          <button type="button" class="btn btn-primary" (click)="startLearning()">
-            <span class="btn-icon">▶</span>
-            {{ courseProgress.percentage > 0 ? 'Continue learning' : 'Start learning' }}
-          </button>
-          <button type="button" class="btn btn-secondary" (click)="viewModule(modules[0])" *ngIf="modules.length">
-            <span class="btn-icon">📘</span>
-            View syllabus
-          </button>
-          <button type="button" class="btn btn-tertiary" (click)="scrollToSection('attachments-section')" [disabled]="!hasAttachments">
-            <span class="btn-icon">📎</span>
-            Attachments
-          </button>
-        </div>
       </div>
 
-      <div class="content-card">
-        <h2 class="card-title">Course overview</h2>
-        <p class="card-description">{{ course?.description }}</p>
-        <hr class="divider" *ngIf="course?.whatYouWillLearn?.length">
-        <div class="learning-outcomes" *ngIf="course?.whatYouWillLearn?.length">
-          <h3 class="section-subtitle">What you'll learn</h3>
-          <ul class="outcomes-list">
-            <li *ngFor="let item of course.whatYouWillLearn" class="outcome-item">
-              <span class="check-icon">✓</span>
-              {{ item }}
-            </li>
-          </ul>
-        </div>
-      </div>
-
-      <div class="content-card" *ngIf="announcements.length > 0">
-        <h2 class="card-title">Announcements</h2>
-        <div class="announcements-list">
-          <div class="announcement-item" *ngFor="let announcement of announcements">
-            <div class="announcement-header">
-              <span class="announcement-type" [class]="announcement.type">{{ announcement.type }}</span>
-              <span class="announcement-date">{{ formatDate(announcement.date) }}</span>
-            </div>
-            <h3 class="announcement-title">{{ announcement.title }}</h3>
-            <p class="announcement-content">{{ announcement.content }}</p>
-          </div>
-        </div>
-      </div>
-
+      <!-- Curriculum & Course Overview -->
       <div class="content-card curriculum-card" id="curriculum-section">
-        <div class="module-header-top">
-          <h2 class="card-title">Curriculum</h2>
-          <p class="card-caption">{{ modules.length }} modules · {{ courseProgress.totalLessons }} lessons</p>
-        </div>
-        <div class="modules-list">
-          <div class="module-item"
-               [class.completed]="getModuleProgress(module.id)?.completed"
-               *ngFor="let module of modules; trackBy: trackByModuleId">
-            <div class="module-header" (click)="toggleModule(module.id)">
-              <div class="module-header-info">
-                <div class="module-title-wrap">
-                  <span class="lesson-icon">{{ isModuleExpanded(module.id) ? '▼' : '▶' }}</span>
-                  <div>
-                    <h3 class="module-title">{{ module.moduleName || module.name || module.title }}</h3>
-                    <p class="module-meta">
-                      <span class="module-meta-item">
-                        {{ (module.videos || module.lessons || []).length }} lessons
-                      </span>
-                      <span class="module-meta-item" *ngIf="module.estimatedDuration">
-                        · {{ module.estimatedDuration }}m
-                      </span>
-                    </p>
-                  </div>
-                </div>
-              </div>
-              <div class="module-chip" *ngIf="getModuleProgress(module.id) as progress">
-                {{ progress.percentage | number:'1.0-0' }}%
-              </div>
-            </div>
-
-            <div class="lessons-list" *ngIf="isModuleExpanded(module.id)">
-              <div class="lesson-item"
-                   *ngFor="let lesson of (module.videos || module.lessons || []); trackBy: trackByLessonId"
-                   (click)="goToLesson(lesson.id || lesson.videoId)"
-                   [class.completed]="lesson.completed">
-                <div class="lesson-details">
-                  <span class="lesson-icon" [class.locked]="lesson.locked">{{ lesson.completed ? '✓' : (lesson.locked ? '🔒' : '▶') }}</span>
-                  <div>
-                    <p class="lesson-title">{{ lesson.videoName || lesson.title || lesson.name }}</p>
-                    <p class="lesson-duration" *ngIf="lesson.duration">{{ lesson.duration }}m</p>
-                  </div>
-                </div>
-                <span class="lesson-status"
-                      [ngClass]="{
-                        'completed': lesson.completed,
-                        'in-progress': !lesson.completed && !lesson.locked,
-                        'locked': lesson.locked
-                      }">
-                  <ng-container *ngIf="lesson.completed">Completed</ng-container>
-                  <ng-container *ngIf="!lesson.completed && !lesson.locked">Not started</ng-container>
-                  <ng-container *ngIf="lesson.locked">Locked until previous complete</ng-container>
-                </span>
-              </div>
-            </div>
+        <div class="curriculum-intro">
+          <div class="curriculum-intro-text">
+            <h2 class="card-title">Course overview</h2>
+            <p class="card-description">{{ course?.description }}</p>
           </div>
+        </div>
+
+        <div class="curriculum-divider"></div>
+
+        <div class="modules-list">
+          <ng-container *ngFor="let module of modules; let moduleIdx = index; trackBy: trackByModuleId">
+            <ng-container *ngIf="getModuleStatus(module.id) as moduleStatus">
+              <div class="module-block"
+                   [class.completed]="moduleStatus.tone === 'completed'"
+                   [class.expanded]="isModuleExpanded(module.id)">
+                <button type="button"
+                        class="module-header"
+                        (click)="toggleModule(module.id)">
+                  <div class="module-header-left">
+                    <div class="module-title-line">
+                      Module {{ moduleIdx + 1 }} • {{ module.moduleName || module.name || module.title }}
+                    </div>
+                  </div>
+                  <div class="module-header-right">
+                    <div class="module-meta-line">{{ getModuleSummary(module) }}</div>
+                  </div>
+                </button>
+
+                <div class="module-lessons" *ngIf="isModuleExpanded(module.id)">
+                  <ng-container *ngFor="let lesson of (module.videos || module.lessons || []); trackBy: trackByLessonId">
+                    <ng-container *ngIf="getLessonStatus(lesson) as lessonStatus">
+                      <div class="lesson-card-wrapper" [class.locked]="lessonStatus.tone === 'locked'">
+                        <app-list-card
+                          [id]="lessonStatus.tone === 'locked' ? undefined : (lesson.id || lesson.videoId)"
+                          [icon]="getLessonIcon(lesson)"
+                          [text]="getLessonTitleWithIcon(lesson)"
+                          [subtitle]="getLessonDurationText(lesson)"
+                          [label]="getLessonStatusLabel(lessonStatus)"
+                          [labelColor]="getLessonStatusColor(lessonStatus.tone)"
+                          [labelIcon]="getLessonLabelIcon(lessonStatus.tone)"
+                          (cardClick)="onLessonCardClick(lesson, lessonStatus, $event)">
+                        </app-list-card>
+                      </div>
+                    </ng-container>
+                  </ng-container>
+                </div>
+              </div>
+            </ng-container>
+          </ng-container>
         </div>
       </div>
 
+      <!-- Attachments Section -->
       <div class="content-card attachments-card" id="attachments-section">
         <div class="card-header-row">
           <div>
@@ -192,21 +109,16 @@
           </button>
         </div>
         <div class="attachments-list" *ngIf="hasAttachments; else noAttachments">
-          <div class="attachment-item" *ngFor="let resource of courseResources">
-            <div class="attachment-info">
-              <span class="attachment-icon">📄</span>
-              <div>
-                <p class="attachment-title">{{ resource.name || resource.title || resource.fileName }}</p>
-                <p class="attachment-meta">
-                  <span *ngIf="resource.moduleName">{{ resource.moduleName }}</span>
-                  <span *ngIf="resource.lessonName"> · {{ resource.lessonName }}</span>
-                  <span *ngIf="resource.fileType"> · {{ resource.fileType }}</span>
-                  <span *ngIf="resource.fileSize"> · {{ resource.fileSize }}</span>
-                </p>
-              </div>
-            </div>
-            <button class="btn btn-download" (click)="downloadResource(resource)">Download</button>
-          </div>
+          <app-list-card
+            *ngFor="let resource of courseResources"
+            [text]="resource.name || resource.title || resource.fileName"
+            [subtitle]="(resource.moduleName ? resource.moduleName : '') + (resource.lessonName ? ' · ' + resource.lessonName : '') + (resource.fileType ? ' · ' + resource.fileType : '')"
+            [rightText]="resource.fileSize || ''"
+            [labelIcon]="'📄'"
+            [icon]="'📎'"
+            (cardClick)="downloadResource(resource)"
+            class="attachment-card">
+          </app-list-card>
         </div>
         <ng-template #noAttachments>
           <div class="empty-state">
@@ -215,98 +127,46 @@
           </div>
         </ng-template>
       </div>
-
-      <div class="content-card discussion-card" id="discussion-card">
-        <h2 class="card-title">Discussion</h2>
-        <div class="coming-soon">
-          <span class="coming-soon-icon">💬</span>
-          <h3 class="coming-soon-title">Discussion Board Coming Soon</h3>
-          <p class="coming-soon-text">Connect with fellow learners, ask questions, and share insights. This feature is under development.</p>
-        </div>
-      </div>
     </div>
 
-    <aside class="sidebar-column">
-      <div class="sidebar-card progress-card" id="progress-section">
-        <h3 class="sidebar-card-title">Your progress</h3>
-        <p class="progress-percentage">{{ courseProgress.percentage | number:'1.0-0' }}% complete</p>
-        <p class="progress-status">{{ progressStatusLabel }}</p>
-        <div class="progress-bar-container">
-          <div class="progress-bar-fill" [style.width.%]="courseProgress.percentage"></div>
+    <!-- Right Sidebar -->
+    <aside class="sidebar">
+      <!-- Progress Card -->
+      <div class="content-card progress-card">
+        <h2 class="card-title">Your Progress</h2>
+        <p class="card-subtitle">{{ courseProgress.percentage }}% complete</p>
+        <div class="progress-bar">
+          <div class="progress-fill" [style.width.%]="courseProgress.percentage"></div>
         </div>
-        <div class="progress-substats">
-          <span>{{ formatDuration(courseProgress.timeSpent) }} spent learning</span>
-          <span>Goal: 80% for certificate</span>
-        </div>
-        <hr class="divider">
+        <button type="button" class="btn btn-continue-learning" (click)="startLearning()" [disabled]="!course || modules.length === 0">
+          <span class="btn-icon">▶</span>
+          {{ courseProgress.percentage > 0 ? 'Resume learning' : 'Start learning' }}
+        </button>
+        <button type="button" class="btn btn-attachment" (click)="downloadAllResources()" *ngIf="hasAttachments" [disabled]="!hasAttachments">
+          <span class="btn-icon">📎</span>
+          Download all files ({{ courseResources.length }})
+        </button>
+      </div>
+
+      <!-- Course Details Card -->
+      <div class="content-card details-card">
+        <h2 class="card-title">Course Details</h2>
         <ul class="details-list">
-          <li>{{ courseProgress.completedLessons }}/{{ courseProgress.totalLessons }} lessons completed</li>
-          <li *ngIf="nextLesson as nextLessonInfo">Next lesson: {{ nextLessonInfo.lessonTitle }}</li>
-          <li *ngIf="courseProgress.certificateEligible">Certificate ready to download</li>
+          <li><strong>Pricing:</strong> {{ course?.pricing || 'Free' }}</li>
+          <li><strong>Level:</strong> {{ course?.level || 'Beginner' }}</li>
+          <li><strong>Language:</strong> {{ course?.language || 'English' }}</li>
+          <li><strong>Category:</strong> {{ course?.category || 'General' }}</li>
         </ul>
       </div>
 
-      <div class="sidebar-card quick-actions-card">
-        <h3 class="sidebar-card-title">Quick actions</h3>
-        <div class="sidebar-actions">
-          <button type="button" class="btn btn-primary full-width" (click)="startLearning()">Resume learning</button>
-          <button type="button" class="btn btn-secondary full-width" (click)="scrollToSection('attachments-section')" [disabled]="!hasAttachments">View attachments</button>
-        </div>
-      </div>
-
-      <div class="sidebar-card access-card" *ngIf="hasAccess">
-        <h3 class="sidebar-card-title">Access & timeline</h3>
-        <ul class="details-list">
-          <li>Access type: {{ accessSummary }}</li>
-          <li *ngIf="daysUntilExpiry !== null">Expires in {{ daysUntilExpiry }} days</li>
-          <li *ngIf="daysUntilExpiry === null">No expiry date on record</li>
-        </ul>
-        <div class="access-badge" *ngIf="daysUntilExpiry !== null">{{ daysUntilExpiry }} days remaining</div>
-      </div>
-
-      <div class="sidebar-card">
-        <h3 class="sidebar-card-title">Course details</h3>
-        <ul class="details-list">
-          <li *ngIf="course?.price">• Pricing: {{ course.price }}</li>
-          <li *ngIf="course?.level">• Level: {{ course.level }}</li>
-          <li *ngIf="course?.language">• Language: {{ course.language }}</li>
-          <li *ngIf="course?.category">• Category: {{ course.category }}</li>
-          <li *ngIf="announcements.length">• {{ announcements.length }} announcements</li>
-          <li *ngIf="availableQuizzes.length">• {{ availableQuizzes.length }} quizzes available</li>
-          <li *ngIf="!course?.price && !course?.level && !course?.language && !course?.category && !announcements.length && !availableQuizzes.length">• Course details coming soon</li>
-        </ul>
-      </div>
-
-      <div class="sidebar-card" *ngIf="availableQuizzes.length > 0" id="quizzes-section">
-        <h3 class="sidebar-card-title">Quizzes</h3>
-        <div class="quiz-list">
-          <div class="quiz-item" *ngFor="let quiz of availableQuizzes" (click)="openQuiz(quiz)">
-            <div>
-              <p class="quiz-title">{{ quiz.title }}</p>
-              <p class="quiz-meta">{{ quiz.questions?.length || 0 }} questions</p>
-            </div>
-            <div class="quiz-action">
-              <span class="quiz-score" *ngIf="quizScores.has(quiz.id)">{{ quizScores.get(quiz.id) }}%</span>
-              <span class="quiz-chevron">→</span>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <div class="sidebar-card certificate-card" *ngIf="courseProgress.certificateEligible" id="certificate-section">
-        <h3 class="sidebar-card-title">Certificate ready!</h3>
-        <p class="certificate-text">You've completed enough to earn your certificate.</p>
-        <button type="button" class="btn btn-primary full-width" (click)="downloadCertificate()">Download certificate</button>
-      </div>
-
-      <div class="sidebar-card tips-card">
-        <h3 class="sidebar-card-title">Learning tips</h3>
-        <ul class="tips-list">
-          <li>Block 30 minutes a day to stay on track.</li>
-          <li *ngIf="upcomingQuiz">Review notes before the next quiz.</li>
-          <li>Use attachments for quick reference while practicing.</li>
-        </ul>
-        <button type="button" class="btn btn-tertiary full-width" (click)="scrollToSection('discussion-card')">Ask in discussion</button>
+      <!-- Instructor Card -->
+      <div class="content-card instructor-card" *ngIf="course?.instructor">
+        <h2 class="card-title">Instructor</h2>
+        <img [src]="course?.instructorAvatar || 'https://storage.googleapis.com/vertex-ai-generative-ai-prod-us-east4-4654/user-4654-files/42071988-1c44-48f5-9b2f-37603c4f2a74_instructor-54.png'"
+             class="instructor-avatar"
+             [alt]="'Instructor ' + course?.instructor" />
+        <p class="instructor-name">{{ course?.instructor }}</p>
+        <p class="instructor-subtitle">{{ course?.instructorTitle || 'Instructor' }}</p>
       </div>
     </aside>
   </main>

@@ -21,9 +21,9 @@ export class MyLearningService {
   /**
    * Get complete learning dashboard for a user
    */
-  getMyLearningDashboard(userId: number): Observable<MyLearningResponseDto> {
+  getMyLearningDashboard(): Observable<MyLearningResponseDto> {
     return this.http.get<ApiResponse<MyLearningResponseDto>>(
-      `${this.api}/api/my-learning/dashboard/${userId}`
+      `${this.api}/api/my-learning/dashboard`
     ).pipe(
       map(response => response.data)
     );

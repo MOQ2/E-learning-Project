@@ -97,6 +97,7 @@ public class Course extends BaseEntity {
     private UserEntity createdBy;
 
     @OneToMany(mappedBy = "course", fetch = FetchType.LAZY, cascade = CascadeType.ALL , orphanRemoval = true)
+    @OrderBy("moduleOrder ASC")
     @EqualsAndHashCode.Exclude
     private Set<CourseModules> courseModules;
 
