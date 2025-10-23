@@ -6,6 +6,7 @@ import { CourseService } from '../../Services/Courses/course-service';
 import { Router, RouterModule } from '@angular/router';
 import { StarRatingComponent } from '../star-rating/star-rating.component';
 import { NotificationService } from '../../Services/notification.service';
+import { UserService } from '../../Services/User/user-service';
 
 @Component({
   selector: 'app-course-view',
@@ -83,7 +84,8 @@ export class CourseViewComponent implements OnInit, OnChanges {
     private http: HttpClient,
     private courseService: CourseService,
     private router: Router,
-    private notificationService: NotificationService
+    private notificationService: NotificationService,
+    private userService: UserService
   ) {}
 
   ngOnInit(): void {
@@ -172,7 +174,13 @@ export class CourseViewComponent implements OnInit, OnChanges {
       return;
     }
 
-    const payload: any = { userId: 1, feedbackText: this.reviewText, rating: this.reviewRating, isAnonymous: this.reviewAnonymous };
+    const userId = this.userService.getUser()?.user_id;
+    if (!userId) {
+      this.notificationService.error('Please log in to submit a review.');
+      return;
+    }
+
+    const payload: any = { userId, feedbackText: this.reviewText, rating: this.reviewRating, isAnonymous: this.reviewAnonymous };
     // optimistic update: show the review immediately and update counts
     const tempReview = {
       id: `temp-${Date.now()}`,
