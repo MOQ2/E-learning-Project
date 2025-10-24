@@ -22,7 +22,7 @@ export const routes: Routes = [
   {path: 'login',  component:Login},
   {path: 'signUp',  component:Signup},
   {path: 'payment',  component:Payment},
-  { path: 'courses', component: ExploreCoursesPage}, //, canActivate: [authGuard] 
+  { path: 'courses', component: ExploreCoursesPage}, //, canActivate: [authGuard]
   {path: 'my-learning', component: MyLearningPage},
   {path: 'my-courses', component: MyCoursesPage},
   {path: 'course-editor', component: CourseEditorPageComponent},

@@ -195,7 +195,7 @@ export class MyCoursesPage implements OnInit {
     if (!thumbnailUrl) {
       return 'assets/default-course.jpg';
     }
-    
+
     return `${thumbnailUrl}/download`;
   }
 
