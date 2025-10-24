@@ -8,11 +8,12 @@ import {
   EnrolledCourseDto,
   MyLearningStatsDto
 } from '../../Dtos/MyLearningDtos';
+import { NavBar } from '../nav-bar/nav-bar';
 
 @Component({
   selector: 'app-my-learning-page',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterModule],
+  imports: [CommonModule, FormsModule, RouterModule, NavBar],
   templateUrl: './my-learning-page.html',
   styleUrl: './my-learning-page.css'
 })

@@ -14,8 +14,7 @@ import { MyCoursesPage } from './components/my-courses-page/my-courses-page';
 import { authGuard } from './Services/Auth/auth-guard';
 
 export const routes: Routes = [
-  // make the course page the home page; it accepts optional id via /course/:id or ?courseId=
-  { path: '', component: CoursePage },
+  { path: '', component: HomePage },
   { path: 'course/:courseId/learn', component: LessonWrapper },
   { path: 'course/:courseId/enrolled', component: EnrolledCoursePageComponent },
   { path: 'my-course/:courseId', component: EnrolledCoursePageComponent },

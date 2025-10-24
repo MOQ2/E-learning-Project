@@ -36,6 +36,8 @@
     display: flex;
     align-items: center;
     gap: 8px;
+    text-decoration: none;
+    color: inherit;
 }
 
 .logo-img {
@@ -138,6 +140,16 @@ a:focus, .btn:focus{outline:3px solid rgba(124,58,237,0.12);outline-offset:2px}
 
 .btn-primary:hover {
     background-color: #0056b3;
+}
+
+.btn-secondary {
+    background-color: #f1f5f9;
+    color: #111827;
+    border: 1px solid #cbd5f5;
+}
+
+.btn-secondary:hover {
+    background-color: #e2e8f0;
 }
 
 
