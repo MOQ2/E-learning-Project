@@ -32,8 +32,17 @@ build/
 ### VS Code ###
 .vscode/
 .env
+*.env
+!.env.example
 
 ###
 logs/
 
 *.pyc
+
+# Sensitive configuration files
+**/application.properties
+!**/application.properties.example
+
+# Secrets file (for reference only, delete before making repo public)
+secrets-to-remove.txt
