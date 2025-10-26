@@ -5,6 +5,7 @@ import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.security.Keys;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import java.nio.charset.StandardCharsets;
@@ -12,11 +13,17 @@ import java.security.Key;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.stream.Collectors;
+
 @Component
 public class JwtUtil {
 
-    private final String secret = "e-learning-e-learning-e-learning";
-    private final long EXPIRATION_TIME = 1000 * 60 * 60 * 24 * 365;
+    @Value("${app.jwt.secret}")
+    private String secret;
+    
+    @Value("${app.jwt.expiration:31536000000}") // Default 1 year in milliseconds
+    private long EXPIRATION_TIME;
+    
     private Key getSigningKey() {
         return Keys.hmacShaKeyFor(secret.getBytes(StandardCharsets.UTF_8));
     }
@@ -27,6 +34,12 @@ public class JwtUtil {
         claims.put("name", user.getName());
         claims.put("role", user.getRole().getName().toString());
         claims.put("profilePictureUrl",user.getProfilePictureUrl());
+        claims.put("permissions", user.getRole()
+                .getPermissions()
+                .stream()
+                .map(p -> p.getName())
+                .collect(Collectors.toList()));
+
         return Jwts.builder()
                 .setClaims(claims)
                 .setSubject(user.getEmail())

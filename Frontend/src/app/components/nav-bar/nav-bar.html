@@ -1,27 +1,55 @@
-    <div class="container">
-      <header class="header">
-        <div class="header-content">
-          <div class="logo">
-            <img class="logo-img" src="/mortarboard_1940690.png" alt="EduPro Logo">
-            <span class="logo-text">EduPro</span>
-          </div>
-          <nav class="nav-links">
-            <a href="#" (click)="setActiveLink('Home')" [class.active]="isActive('Home')">Home</a>
-            <a href="#" (click)="setActiveLink('Courses')" [class.active]="isActive('Courses')">Courses</a>
-            <a href="#" (click)="setActiveLink('My Learning')" [class.active]="isActive('My Learning')">My Learning</a>
-            <a href="#" (click)="setActiveLink('Profile')" [class.active]="isActive('Profile')">Profile</a>
-          </nav>
+<div class="container">
+  <header class="header">
+    <div class="header-content">
+      <a class="logo" routerLink="/">
+        <img class="logo-img" src="/mortarboard_1940690.png" alt="EduPro Logo">
+        <span class="logo-text">EduPro</span>
+      </a>
 
-          <div class="header-actions">
-            <button class="btn btn-explore">
-              <span class="search-icon">⚲</span>
-              Explore Courses
-            </button>
-            <button class="btn btn-primary create-course-btn">
-              <span class="plus-icon">+</span>
-              Create Course
-            </button>
-          </div>
-        </div>
-      </header>
+      <nav class="nav-links">
+      <a *ngFor="let link of visibleLinks()"
+        [routerLink]="link.route"
+        routerLinkActive="active"
+        [routerLinkActiveOptions]="link.exact ? exactMatchOptions : defaultMatchOptions">
+          {{ link.label }}
+        </a>
+      </nav>
+
+      <div class="header-actions">
+        <app-search-bar></app-search-bar>
+
+        <button *ngIf="showExploreCoursesButton()"
+                class="btn btn-explore"
+                type="button"
+                (click)="goToExplore()">
+          <span class="search-icon">⚲</span>
+          Explore Courses
+        </button>
+
+        <button *ngIf="showCreateCourseButton()"
+                class="btn btn-primary create-course-btn"
+                type="button"
+                (click)="goToCreateCourse()">
+          <span class="plus-icon">+</span>
+          Create Course
+        </button>
+
+        <ng-container *ngIf="isAuthenticated(); else authButtons">
+          <button class="btn btn-secondary"
+                  type="button"
+                  (click)="logout()">
+            Log out
+          </button>
+        </ng-container>
+
+        <ng-template #authButtons>
+          <button class="btn btn-primary"
+                  type="button"
+                  (click)="goToLogin()">
+            Log in
+          </button>
+        </ng-template>
+      </div>
     </div>
+  </header>
+</div>

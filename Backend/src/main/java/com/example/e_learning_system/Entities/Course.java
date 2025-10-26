@@ -1,22 +1,23 @@
 package com.example.e_learning_system.Entities;
 
 
-
+import com.example.e_learning_system.Config.Category;
 import com.example.e_learning_system.Config.CourseStatus;
 import com.example.e_learning_system.Config.Currency;
 import com.example.e_learning_system.Config.DifficultyLevel;
 
 import jakarta.persistence.*;
 import lombok.*;
-import lombok.experimental.SuperBuilder;
 import org.hibernate.annotations.JdbcTypeCode;
 
 import org.hibernate.type.SqlTypes;
 
 import java.math.BigDecimal;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
+import lombok.experimental.SuperBuilder;
 
 @EqualsAndHashCode(callSuper = true)
 @Entity
@@ -53,10 +54,20 @@ public class Course extends BaseEntity {
     @Enumerated(EnumType.STRING)
     @JdbcTypeCode(SqlTypes.NAMED_ENUM)
     Currency currency;
-    @Column(name = "thumbnail_url")
-    String thumbnail;
-    @Column(name = "preview_video_url")
-    String previewVideoUrl;
+    @Column(name = "required_plan_level")
+    @Builder.Default
+    Integer requiredPlanLevel = 1;
+
+
+    @Column(name = "category")
+    @Enumerated(EnumType.STRING)
+    Category category;
+    
+    
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "thumbnail")
+    private Attachment thumbnail;
+
     @Column(name = "estimated_duration_hours")
     int estimatedDrationInHours;
     @Column(name = "is_active")
@@ -86,6 +97,8 @@ public class Course extends BaseEntity {
     private UserEntity createdBy;
 
     @OneToMany(mappedBy = "course", fetch = FetchType.LAZY, cascade = CascadeType.ALL , orphanRemoval = true)
+    @OrderBy("moduleOrder ASC")
+    @EqualsAndHashCode.Exclude
     private Set<CourseModules> courseModules;
 
     // New relationships for simplified subscription system
@@ -97,6 +110,22 @@ public class Course extends BaseEntity {
 
     @OneToMany(mappedBy = "course", fetch = FetchType.LAZY)
     private Set<UserCourseAccess> userCourseAccesses;
+
+    @ManyToMany(
+            fetch = FetchType.LAZY,
+            cascade = {
+                    CascadeType.PERSIST,
+                    CascadeType.MERGE
+            }
+    )
+    @JoinTable(
+            name = "course_tags",
+            joinColumns = @JoinColumn(name = "course_id"),
+            inverseJoinColumns = @JoinColumn(name = "tag_id")
+        )
+    @Builder.Default
+    private Set<TagsEntity> tags = new HashSet<>();
+
 
     @Transient
     public Set <Module> getModules (){
@@ -113,7 +142,9 @@ public class Course extends BaseEntity {
 
         if (this.courseModules == null)
             this.courseModules = new HashSet<>();
-
+        if (!isUniqOrder(courseModule.getModuleOrder())) {
+            throw new IllegalArgumentException("Module order must be unique");
+        }
         this.courseModules.add(courseModule);
     }
 
@@ -131,5 +162,20 @@ public class Course extends BaseEntity {
                 return false;
         }
         return true;
+    }
+
+    public void addTag (TagsEntity tag){
+        if(tag == null)
+            return;
+
+        this.tags.add(tag);
+        tag.getCourses().add(this);
+    }
+    public void removeTag (TagsEntity tag){
+        if(tag == null)
+            return;
+
+        this.tags.remove(tag);
+        tag.getCourses().remove(this);
     }
 }

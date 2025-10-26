@@ -6,6 +6,7 @@ package com.example.e_learning_system.Controller;
 import com.example.e_learning_system.Dto.ApiResponse;
 import com.example.e_learning_system.Dto.ModuleDtos.CreateModuleDto;
 import com.example.e_learning_system.Dto.ModuleDtos.DetailedModuleDto;
+import com.example.e_learning_system.Dto.VideoDtos.VideoDto;
 import com.example.e_learning_system.Dto.ModuleDtos.UpdateModuleDto;
 import com.example.e_learning_system.Service.Interfaces.ModuleService;
 import jakarta.validation.Valid;
@@ -22,10 +23,21 @@ public class ModuleController {
     private final ModuleService moduleService;
 
     @PostMapping
-    public ResponseEntity<ApiResponse<Void>> createModule(@Valid @RequestBody CreateModuleDto createModuleDto) {
-        moduleService.createModule(createModuleDto);
-        return ResponseEntity.status(HttpStatus.CREATED)
-                .body(ApiResponse.success("Module created successfully", null));
+    public ResponseEntity<ApiResponse<Integer>> createModule(@Valid @RequestBody CreateModuleDto createModuleDto) {
+        if (createModuleDto.getId() != null) {
+            UpdateModuleDto updateDto = UpdateModuleDto.builder()
+                    .moduleName(createModuleDto.getModuleName())
+                    .moduleDescription(createModuleDto.getModuleDescription())
+                    .isActive(createModuleDto.isActive())
+                    .estimatedDuration(createModuleDto.getEstimatedDuration())
+                    .build();
+            moduleService.updateModule(updateDto, createModuleDto.getId());
+            return ResponseEntity.ok(ApiResponse.success("Module updated successfully", createModuleDto.getId()));
+        } else {
+            int moduleId = moduleService.createModule(createModuleDto);
+            return ResponseEntity.status(HttpStatus.CREATED)
+                    .body(ApiResponse.success("Module created successfully", moduleId));
+        }
     }
 
     @PutMapping("/{moduleId}")
@@ -52,6 +64,34 @@ public class ModuleController {
                 .body(ApiResponse.error("Module not found"));
     }
 
+    /**
+     * Get lessons (videos) within a module - simplified list endpoint
+     */
+    @GetMapping("/{moduleId}/lessons")
+    public ResponseEntity<ApiResponse<java.util.List<VideoDto>>> getModuleLessons(@PathVariable int moduleId) {
+        try {
+            java.util.List<VideoDto> videos = moduleService.getModuleLessons(moduleId);
+            return ResponseEntity.ok(ApiResponse.success("Module lessons retrieved successfully", videos));
+        } catch (RuntimeException ex) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ApiResponse.error(ex.getMessage()));
+        }
+    }
+
+    /**
+     * Get a specific lesson within a module context (includes order from ModuleVideos join table)
+     */
+    @GetMapping("/{moduleId}/lessons/{lessonId}")
+    public ResponseEntity<ApiResponse<VideoDto>> getLessonInModule(
+            @PathVariable int moduleId,
+            @PathVariable int lessonId) {
+        try {
+            VideoDto video = moduleService.getLessonInModule(moduleId, lessonId);
+            return ResponseEntity.ok(ApiResponse.success("Lesson retrieved successfully", video));
+        } catch (RuntimeException ex) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ApiResponse.error(ex.getMessage()));
+        }
+    }
+
     @PostMapping("/{moduleId}/videos/{videoId}")
     public ResponseEntity<ApiResponse<Void>> addVideoToModule(
             @PathVariable int moduleId,
@@ -67,5 +107,39 @@ public class ModuleController {
             @PathVariable int videoId) {
         moduleService.removeVideoFromModule(moduleId, videoId);
         return ResponseEntity.ok(ApiResponse.success("Video removed from module successfully", null));
+    }
+
+    @PutMapping("/{moduleId}/videos/{videoId}/order/{newOrder}")
+    public ResponseEntity<ApiResponse<Void>> updateVideoOrder(
+            @PathVariable int moduleId,
+            @PathVariable int videoId,
+            @PathVariable int newOrder) {
+        moduleService.updateVideoOrderInModule(moduleId, videoId, newOrder);
+        return ResponseEntity.ok(ApiResponse.success("Video order updated successfully", null));
+    }
+
+    @PutMapping("/{moduleId}/videos/order")
+    public ResponseEntity<ApiResponse<Void>> updateVideoOrders(
+            @PathVariable int moduleId,
+            @RequestBody java.util.List<com.example.e_learning_system.Dto.OrderDtos.IdOrderDto> orders) {
+        moduleService.updateVideoOrdersInModule(moduleId, orders);
+        return ResponseEntity.ok(ApiResponse.success("Video orders updated successfully", null));
+    }
+
+    @PostMapping("/{moduleId}/lessons/{lessonId}")
+    public ResponseEntity<ApiResponse<Void>> addLessonToModule(
+            @PathVariable int moduleId,
+            @PathVariable int lessonId,
+            @RequestParam int order) {
+        moduleService.addVideoToModule(moduleId, lessonId, order);
+        return ResponseEntity.ok(ApiResponse.success("Lesson added to module successfully", null));
+    }
+
+    @DeleteMapping("/{moduleId}/lessons/{lessonId}")
+    public ResponseEntity<ApiResponse<Void>> removeLessonFromModule(
+            @PathVariable int moduleId,
+            @PathVariable int lessonId) {
+        moduleService.removeVideoFromModule(moduleId, lessonId);
+        return ResponseEntity.ok(ApiResponse.success("Lesson removed from module successfully", null));
     }
 }

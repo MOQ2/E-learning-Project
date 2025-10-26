@@ -51,4 +51,16 @@ public interface CourseRepository extends JpaRepository<Course, Integer> {
 
     // Find courses by creator and status
     List<Course> findByCreatedByAndStatus(UserEntity createdBy, CourseStatus status);
+
+    // Search courses by query (exact match or like in title, description, tags, category)
+    @Query("SELECT DISTINCT c FROM Course c " +
+        "LEFT JOIN c.tags t " +
+        "LEFT JOIN c.createdBy instructor " +
+        "WHERE c.isActive = true AND c.status = 'PUBLISHED' AND " +
+        "(LOWER(c.name) LIKE LOWER(CONCAT('%', :query, '%')) OR " +
+        "LOWER(c.description) LIKE LOWER(CONCAT('%', :query, '%')) OR " +
+        "LOWER(t.name) LIKE LOWER(CONCAT('%', :query, '%')) OR " +
+        "LOWER(CAST(c.category AS string)) LIKE LOWER(CONCAT('%', :query, '%')) OR " +
+        "LOWER(instructor.name) LIKE LOWER(CONCAT('%', :query, '%')))" )
+    List<Course> searchCourses(@org.springframework.data.repository.query.Param("query") String query);
 }

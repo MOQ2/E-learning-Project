@@ -1,0 +1,427 @@
+<app-nav-bar></app-nav-bar>
+
+<div class="my-learning-container">
+  <div *ngIf="loading" class="loading-container">
+    <div class="loading-spinner"></div>
+    <p>Loading your courses dashboard...</p>
+  </div>
+
+  <div *ngIf="error && !loading" class="error-container">
+    <div class="error-icon">❌</div>
+    <h2>Oops! Something went wrong</h2>
+    <p>{{ error }}</p>
+    <button (click)="loadDashboard()" class="retry-button">Try Again</button>
+  </div>
+
+  <div *ngIf="!loading && !error" class="main-content">
+    <div class="content-wrapper">
+      <header class="page-header">
+        <div class="page-hero">
+          <div class="page-hero-badge">Instructor Dashboard</div>
+          <h1 class="page-title">My Courses</h1>
+          <p class="page-subtitle">
+            Manage your courses, track student progress, and view your teaching statistics.
+          </p>
+        </div>
+        <div class="page-hero-illustration" aria-hidden="true"></div>
+      </header>
+
+      <section class="summary-section" *ngIf="stats">
+        <article class="summary-card">
+          <div class="summary-icon enrolled">📚</div>
+          <div class="summary-meta">
+            <p class="summary-label">Total Courses</p>
+            <p class="summary-value">{{ stats.totalCourses || 0 }}</p>
+          </div>
+        </article>
+        <article class="summary-card">
+          <div class="summary-icon active">🎯</div>
+          <div class="summary-meta">
+            <p class="summary-label">Published</p>
+            <p class="summary-value">{{ stats.publishedCourses || 0 }}</p>
+          </div>
+        </article>
+        <article class="summary-card">
+          <div class="summary-icon completed">👥</div>
+          <div class="summary-meta">
+            <p class="summary-label">Total Students</p>
+            <p class="summary-value">{{ stats.totalStudents || 0 }}</p>
+          </div>
+        </article>
+        <article class="summary-card">
+          <div class="summary-icon progress">⭐</div>
+          <div class="summary-meta">
+            <p class="summary-label">Avg. Rating</p>
+            <p class="summary-value">{{ stats.averageRating || 0 }}</p>
+          </div>
+        </article>
+      </section>
+
+      <div class="dashboard-grid">
+        <section class="primary-column">
+          <div class="status-card">
+            <div class="status-filters">
+              <button
+                type="button"
+                class="status-pill"
+                [class.active]="filterStatus === 'published'"
+                (click)="filterStatus = 'published'"
+              >
+                Published
+              </button>
+              <button
+                type="button"
+                class="status-pill"
+                [class.active]="filterStatus === 'draft'"
+                (click)="filterStatus = 'draft'"
+              >
+                Draft
+              </button>
+              <button
+                type="button"
+                class="status-pill"
+                [class.active]="filterStatus === 'active'"
+                (click)="filterStatus = 'active'"
+              >
+                Active
+              </button>
+              <button
+                type="button"
+                class="status-pill"
+                [class.active]="filterStatus === 'all'"
+                (click)="filterStatus = 'all'"
+              >
+                All Courses
+              </button>
+            </div>
+          </div>
+
+          <div class="action-toolbar">
+            <div class="search-wrapper">
+              <svg class="search-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+              </svg>
+              <input
+                type="text"
+                class="search-input"
+                placeholder="Search your courses"
+                [(ngModel)]="searchQuery"
+                (input)="onSearchChange()"
+              />
+            </div>
+
+            <div class="toolbar-actions">
+              <div class="filter-dropdown">
+                <button type="button" class="toolbar-button" (click)="toggleFilterMenu()">
+                  <svg class="icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      stroke-width="2"
+                      d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z"
+                    ></path>
+                  </svg>
+                  Filter
+                </button>
+                <div class="filter-menu" *ngIf="showFilterMenu">
+                  <button
+                    type="button"
+                    class="filter-option"
+                    [class.active]="filterStatus === 'published'"
+                    (click)="filterStatus = 'published'; showFilterMenu = false"
+                  >
+                    Published
+                  </button>
+                  <button
+                    type="button"
+                    class="filter-option"
+                    [class.active]="filterStatus === 'draft'"
+                    (click)="filterStatus = 'draft'; showFilterMenu = false"
+                  >
+                    Draft
+                  </button>
+                  <button
+                    type="button"
+                    class="filter-option"
+                    [class.active]="filterStatus === 'active'"
+                    (click)="filterStatus = 'active'; showFilterMenu = false"
+                  >
+                    Active
+                  </button>
+                  <button
+                    type="button"
+                    class="filter-option"
+                    [class.active]="filterStatus === 'all'"
+                    (click)="filterStatus = 'all'; showFilterMenu = false"
+                  >
+                    All Courses
+                  </button>
+                </div>
+              </div>
+
+              <div class="sort-dropdown">
+                <button type="button" class="toolbar-button" (click)="toggleSortMenu()">
+                  <svg class="icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      stroke-width="2"
+                      d="M3 4h13M3 8h9m-9 4h6m4 0l4-4m0 0l4 4m-4-4v12"
+                    ></path>
+                  </svg>
+                  Sort: {{ getSortLabel() }}
+                  <svg class="dropdown-arrow" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                  </svg>
+                </button>
+                <div class="sort-menu" *ngIf="showSortMenu">
+                  <button
+                    type="button"
+                    class="sort-option"
+                    [class.active]="sortBy === 'recent'"
+                    (click)="sortBy = 'recent'; showSortMenu = false"
+                  >
+                    Most Recent
+                  </button>
+                  <button
+                    type="button"
+                    class="sort-option"
+                    [class.active]="sortBy === 'enrollments'"
+                    (click)="sortBy = 'enrollments'; showSortMenu = false"
+                  >
+                    Most Enrollments
+                  </button>
+                  <button
+                    type="button"
+                    class="sort-option"
+                    [class.active]="sortBy === 'revenue'"
+                    (click)="sortBy = 'revenue'; showSortMenu = false"
+                  >
+                    Highest Revenue
+                  </button>
+                  <button
+                    type="button"
+                    class="sort-option"
+                    [class.active]="sortBy === 'name'"
+                    (click)="sortBy = 'name'; showSortMenu = false"
+                  >
+                    Name (A-Z)
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <section class="courses-section">
+            <div *ngIf="filteredCourses.length > 0" class="courses-grid">
+              <article *ngFor="let course of filteredCourses" class="course-card">
+                <div class="course-header">
+                  <img
+                    [src]="getThumbnailUrl(course.thumbnailUrl)"
+                    [alt]="course.courseName"
+                    class="course-thumbnail"
+                  />
+                  <div class="course-header-details">
+                    <h3 class="course-title">{{ course.courseName }}</h3>
+                    <div class="course-tags">
+                      <span class="category-chip">{{ course.category || 'General' }}</span>
+                      <span class="difficulty-chip" *ngIf="course.difficultyLevel">
+                        {{ course.difficultyLevel }}
+                      </span>
+                      <span [class]="getStatusBadgeClass(course.status)">
+                        {{ course.status || 'Draft' }}
+                      </span>
+                    </div>
+                  </div>
+                  <button type="button" class="view-button" (click)="viewCourse(course)">
+                    View
+                  </button>
+                </div>
+
+                <div class="course-meta">
+                  <div class="meta-item">
+                    <svg class="meta-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
+                    </svg>
+                    {{ course.totalModules || 0 }} modules
+                  </div>
+                  <div class="meta-item">
+                    <svg class="meta-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                    </svg>
+                    {{ formatDuration(course.totalDurationMinutes) }}
+                  </div>
+                  <div class="meta-item">
+                    <svg class="meta-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"></path>
+                    </svg>
+                    {{ course.totalEnrollments || 0 }} students
+                  </div>
+                </div>
+
+                <div class="course-badges">
+                  <span class="info-badge">
+                    <span class="icon">👥</span>
+                    <span class="text">
+                      {{ course.activeEnrollments || 0 }} active
+                    </span>
+                  </span>
+                  <span class="info-badge">
+                    <span class="icon">📝</span>
+                    <span class="text">
+                      {{ course.totalLessons || 0 }} Lessons
+                    </span>
+                  </span>
+                  <span class="info-badge">
+                    <span class="icon">✅</span>
+                    <span class="text">
+                      {{ course.completions || 0 }} Completed
+                    </span>
+                  </span>
+                  <span class="info-badge" *ngIf="course.totalRevenue">
+                    <span class="icon">💰</span>
+                    <span class="text">
+                      {{ formatCurrency(course.totalRevenue) }}
+                    </span>
+                  </span>
+                </div>
+
+                <div class="progress-section">
+                  <p class="progress-summary">
+                    {{ course.averageProgress || 0 }}% avg. progress
+                    <span *ngIf="course.averageRating">• {{ course.averageRating }}⭐ ({{ course.totalReviews }} reviews)</span>
+                  </p>
+                  <div class="progress-bar">
+                    <div class="progress-fill" [style.width.%]="course.averageProgress || 0"></div>
+                  </div>
+                </div>
+
+                <div class="course-actions">
+                  <button type="button" class="outline-button" (click)="viewCourse(course)">
+                    <svg class="button-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        stroke-width="2"
+                        d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
+                      ></path>
+                      <path
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        stroke-width="2"
+                        d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"
+                      ></path>
+                    </svg>
+                    <span>View Course</span>
+                  </button>
+                  <button type="button" class="primary-button" (click)="editCourse(course)">
+                    <svg class="button-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        stroke-width="2"
+                        d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"
+                      ></path>
+                    </svg>
+                    <span>Edit Course</span>
+                  </button>
+                </div>
+              </article>
+            </div>
+
+            <div *ngIf="filteredCourses.length === 0" class="empty-state">
+              <div class="empty-icon">📭</div>
+              <h3>No courses found</h3>
+              <p *ngIf="searchQuery || filterStatus !== 'all'">Try adjusting your search or filters.</p>
+              <p *ngIf="!searchQuery && filterStatus === 'all'">Start creating your first course!</p>
+              <button
+                *ngIf="!searchQuery && filterStatus === 'all'"
+                type="button"
+                class="primary-button"
+                (click)="createNewCourse()"
+              >
+                Create New Course
+              </button>
+            </div>
+          </section>
+        </section>
+
+        <aside class="sidebar">
+          <section class="sidebar-card streak-card" *ngIf="stats">
+            <h2 class="sidebar-title">Revenue This Month</h2>
+            <div class="streak-meta">
+              <div class="streak-icon">
+                <svg class="icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                  ></path>
+                </svg>
+              </div>
+              <p class="streak-value">{{ formatCurrency(stats.monthlyRevenue || 0) }}</p>
+            </div>
+            <p class="sidebar-caption">Total Revenue: {{ formatCurrency(stats.totalRevenue || 0) }}</p>
+          </section>
+
+          <section class="sidebar-card continue-card" *ngIf="topRecentlyUpdated.length > 0">
+            <h2 class="sidebar-title">Recently Updated</h2>
+            <div class="lesson-item" *ngFor="let course of topRecentlyUpdated">
+              <img
+                [src]="getThumbnailUrl(course.thumbnailUrl)"
+                [alt]="course.courseName"
+                class="lesson-thumb"
+              />
+              <div class="lesson-info">
+                <p class="lesson-title">{{ course.courseName }}</p>
+                <p class="lesson-meta">{{ course.totalEnrollments }} students • {{ formatDate(course.updatedAt || course.createdAt) }}</p>
+              </div>
+              <button type="button" class="pill-button" (click)="editCourse(course)">Edit</button>
+            </div>
+          </section>
+
+          <section class="sidebar-card certificates-card" *ngIf="topPerformingList.length > 0">
+            <h2 class="sidebar-title">Top Performing</h2>
+            <div class="certificate-item" *ngFor="let course of topPerformingList">
+              <div class="certificate-icon">
+                <svg class="icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"></path>
+                </svg>
+              </div>
+              <div class="certificate-info">
+                <p class="certificate-title">{{ course.courseName }}</p>
+                <p class="certificate-meta">{{ course.totalEnrollments }} students • {{ course.averageRating }}⭐</p>
+              </div>
+              <button type="button" class="pill-button" (click)="editCourse(course)">
+                Edit
+              </button>
+            </div>
+          </section>
+
+          <section class="sidebar-card" *ngIf="stats">
+            <h2 class="sidebar-title">Quick Stats</h2>
+            <div class="quick-stats">
+              <div class="stat-row">
+                <span class="stat-label">Active Students:</span>
+                <span class="stat-value">{{ stats.activeStudents || 0 }}</span>
+              </div>
+              <div class="stat-row">
+                <span class="stat-label">New Enrollments (30d):</span>
+                <span class="stat-value">{{ stats.recentEnrollments30Days || 0 }}</span>
+              </div>
+              <div class="stat-row">
+                <span class="stat-label">Total Completions:</span>
+                <span class="stat-value">{{ stats.totalCompletions || 0 }}</span>
+              </div>
+              <div class="stat-row">
+                <span class="stat-label">Avg. Completion Rate:</span>
+                <span class="stat-value">{{ stats.averageCompletionRate || 0 }}%</span>
+              </div>
+            </div>
+          </section>
+        </aside>
+      </div>
+    </div>
+  </div>
+</div>

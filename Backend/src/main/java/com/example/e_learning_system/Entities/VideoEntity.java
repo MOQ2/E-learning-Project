@@ -5,6 +5,7 @@ import lombok.*;
 import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.type.SqlTypes;
 
+
 import java.util.*;
 
 @Getter
@@ -25,14 +26,27 @@ public class VideoEntity extends BaseEntity {
     @Column(name = "video_url", columnDefinition = "TEXT")
     private String videoKey;
 
-    @Column(name = "thumbnail_url", columnDefinition = "TEXT")
-    private String thumbnailUrl;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "thumbnail_id")
+    private Attachment thumbnail;
 
     @Column(name = "duration_seconds")
     private Integer durationSeconds;
 
     @Column(name = "is_active", nullable = false)
     private Boolean isActive = true;
+
+    @Column(name = "explanation", columnDefinition = "TEXT")
+    private String explanation;
+
+    @Column(name = "what_we_will_learn", columnDefinition = "TEXT")
+    private String whatWeWillLearn;
+
+    @Column(name = "status", columnDefinition = "TEXT")
+    private String status;
+
+    @Column(name = "prerequisites", columnDefinition = "TEXT")
+    private String prerequisites;
 
     @Override
     @Transient
@@ -80,15 +94,27 @@ public class VideoEntity extends BaseEntity {
         this.videoAttachments.remove(videoAttachments);
     }
     public void removeVideoAttachmentByids(int videoId , int attachmentid){
+        VideoAttachments toRemove = null;
         for (VideoAttachments videoAttachment : this.videoAttachments) {
-            if (videoAttachment.getAttachment().getId() == videoId && videoAttachment.getAttachment().getId() == attachmentid) {
-                this.videoAttachments.remove(videoAttachment);
-                return;
+            if (videoAttachment.getVideo().getId() == videoId && videoAttachment.getAttachment().getId() == attachmentid) {
+                toRemove = videoAttachment;
+                break;
             }
+        }
+        if (toRemove != null) {
+            this.videoAttachments.remove(toRemove);
         }
     }
 
 
+    public void setAttachments(List<Attachment> attachments) {
+        this.videoAttachments.clear();
+        if (attachments != null) {
+            for (Attachment attachment : attachments) {
+                this.videoAttachments.add(new VideoAttachments(this, attachment, isActive));
+            }
+        }
+    }
 
 
 }

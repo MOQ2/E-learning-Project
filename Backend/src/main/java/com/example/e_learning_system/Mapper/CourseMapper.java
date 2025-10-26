@@ -5,19 +5,30 @@ import com.example.e_learning_system.Dto.CourseDtos.CourseDetailsDto;
 import com.example.e_learning_system.Dto.CourseDtos.CourseModuleDto;
 import com.example.e_learning_system.Dto.CourseDtos.CourseSummaryDto;
 import com.example.e_learning_system.Dto.CourseDtos.CreateCourseDto;
+import com.example.e_learning_system.Dto.CourseDtos.TagDto;
+import com.example.e_learning_system.Dto.CourseDtos.TagDto;
 import com.example.e_learning_system.Dto.CourseDtos.UpdateCourseDto;
+import com.example.e_learning_system.Entities.Attachment;
 import com.example.e_learning_system.Entities.Course;
 import com.example.e_learning_system.Entities.CourseModules;
+import com.example.e_learning_system.Entities.TagsEntity;
+import com.example.e_learning_system.Entities.TagsEntity;
 import com.example.e_learning_system.Entities.UserEntity;
-
+import com.example.e_learning_system.Repository.AttachmentRepository;
+import com.example.e_learning_system.Repository.TagsRepository;
+import com.example.e_learning_system.excpetions.BaseException;
+import com.fasterxml.jackson.databind.JsonSerializable.Base;
+import com.example.e_learning_system.Config.Category;
+import java.math.BigDecimal;
 import java.util.Collections;
+
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-public class CourseMapper {
 
+public class CourseMapper {
     private CourseMapper() {
         // private constructor to prevent instantiation
     }
@@ -32,19 +43,32 @@ public class CourseMapper {
             return null;
         }
 
+        BigDecimal monthly = course.getSubscriptionPriceMonthly();
+        BigDecimal threeMonths = course.getSubscriptionPrice3Months();
+        BigDecimal sixMonths = course.getSubscriptionPrice6Months();
+        boolean hasSubscriptionPricing = (monthly != null && monthly.compareTo(BigDecimal.ZERO) > 0)
+                || (threeMonths != null && threeMonths.compareTo(BigDecimal.ZERO) > 0)
+                || (sixMonths != null && sixMonths.compareTo(BigDecimal.ZERO) > 0);
+
         return CourseDetailsDto.builder()
                 .id(course.getId())
                 .name(course.getName())
                 .description(course.getDescription())
                 .oneTimePrice(course.getOneTimePrice())
+                .subscriptionPriceMonthly(monthly)
+                .subscriptionPrice3Months(threeMonths)
+                .subscriptionPrice6Months(sixMonths)
+                .allowsSubscription(Boolean.TRUE.equals(course.getAllowsSubscription()) || hasSubscriptionPricing)
                 .currency(course.getCurrency())
-                .thumbnail(course.getThumbnail())
-                .previewVideoUrl(course.getPreviewVideoUrl())
+                .thumbnail(course.getThumbnail() != null ? course.getThumbnail().getId() : null)
                 .estimatedDurationInHours(course.getEstimatedDrationInHours())
                 .status(course.getStatus())
                 .difficultyLevel(course.getDifficultyLevel())
                 .isActive(course.isActive())
                 .modules(fromCourseModulesToCourseModuleDtos(course.getCourseModules()))
+                .tags(convertTagsEntityToTagDtos(course.getTags()))
+                .instructor(course.getCreatedBy() != null ? course.getCreatedBy().getName() : null)
+                .category(course.getCategory())
                 .build();
     }
 
@@ -65,6 +89,11 @@ public class CourseMapper {
                 .isActive(course.isActive())
                 .oneTimePrice(course.getOneTimePrice())
                 .currency(course.getCurrency())
+                .tags(convertTagsEntityToTagDtos(course.getTags()))
+                .thumbnail(course.getThumbnail() != null ? course.getThumbnail().getId() : null)
+                .instructor(course.getCreatedBy() != null ? course.getCreatedBy().getName() : null)
+                .estimatedDurationInHours(course.getEstimatedDrationInHours())
+                .category(course.getCategory())
                 .build();
     }
 
@@ -99,30 +128,59 @@ public class CourseMapper {
     /**
      * Maps from CreateCourseDto to Course entity
      */
-    public static Course fromCreateCourseDtoToCourseEntity(CreateCourseDto createCourseDto, UserEntity createdBy) {
+    public static Course fromCreateCourseDtoToCourseEntity(CreateCourseDto createCourseDto, UserEntity createdBy, TagsRepository tagsRepository, AttachmentRepository attachmentRepository) {
         if (createCourseDto == null) {
             return null;
         }
+
+        
+        Set<TagsEntity> tags = createCourseDto.getTags().stream()
+            .filter(tagName -> tagName != null && !tagName.trim().isEmpty())
+            .map(tagName -> {
+                String trimmedName = tagName.trim();
+                TagsEntity existing = tagsRepository.findByName(trimmedName);
+                if (existing != null) {
+                    return existing;
+                } else {
+                TagsEntity newTag = new TagsEntity();
+                newTag.setName(trimmedName);
+                newTag.setColor("#cbdab8");
+                return newTag;
+                }
+            })
+            .collect(Collectors.toSet());
+        Attachment thumbnail = null;
+        if (createCourseDto.getThumbnail() != null) {
+            thumbnail = attachmentRepository.findById(createCourseDto.getThumbnail()).orElseThrow(() -> new ResourceNotFoundException("Thumbnail not found for ID: " + createCourseDto.getThumbnail()));
+        }
+
+        
 
         return Course.builder()
                 .name(createCourseDto.getName())
                 .description(createCourseDto.getDescription())
                 .oneTimePrice(createCourseDto.getOneTimePrice())
+                .subscriptionPriceMonthly(createCourseDto.getSubscriptionPriceMonthly())
+                .subscriptionPrice3Months(createCourseDto.getSubscriptionPrice3Months())
+                .subscriptionPrice6Months(createCourseDto.getSubscriptionPrice6Months())
+                .allowsSubscription(createCourseDto.getAllowsSubscription())
                 .currency(createCourseDto.getCurrency())
-                .thumbnail(createCourseDto.getThumbnail())
-                .previewVideoUrl(createCourseDto.getPreviewVideoUrl())
+                .thumbnail(thumbnail)
+                .category(createCourseDto.getCategory())
                 .estimatedDrationInHours(createCourseDto.getEstimatedDurationInHours())
                 .status(createCourseDto.getStatus())
                 .difficultyLevel(createCourseDto.getDifficultyLevel())
                 .isActive(createCourseDto.isActive())
                 .createdBy(createdBy)
+                .tags(tags)
+                .tags(tags)
                 .build();
     }
 
     /**
      * Maps from UpdateCourseDto to Course entity
      */
-    public static Course fromUpdateCourseDtoToCourseEntity(UpdateCourseDto updateCourseDto, Course existingCourse) {
+    public static Course fromUpdateCourseDtoToCourseEntity(UpdateCourseDto updateCourseDto, Course existingCourse, TagsRepository tagsRepository, AttachmentRepository attachmentRepository) {
         if (updateCourseDto == null ||  existingCourse == null ) {
             return null;
         }
@@ -136,14 +194,27 @@ public class CourseMapper {
         if (updateCourseDto.getOneTimePrice() != null ) {
             existingCourse.setOneTimePrice(updateCourseDto.getOneTimePrice());
         }
+        if (updateCourseDto.getSubscriptionPriceMonthly() != null ) {
+            existingCourse.setSubscriptionPriceMonthly(updateCourseDto.getSubscriptionPriceMonthly());
+        }
+        if (updateCourseDto.getSubscriptionPrice3Months() != null ) {
+            existingCourse.setSubscriptionPrice3Months(updateCourseDto.getSubscriptionPrice3Months());
+        }
+        if (updateCourseDto.getSubscriptionPrice6Months() != null ) {
+            existingCourse.setSubscriptionPrice6Months(updateCourseDto.getSubscriptionPrice6Months());
+        }
+        if (updateCourseDto.getAllowsSubscription() != null ) {
+            existingCourse.setAllowsSubscription(updateCourseDto.getAllowsSubscription());
+        }
         if (updateCourseDto.getCurrency() != null ) {
             existingCourse.setCurrency(updateCourseDto.getCurrency());
         }
-        if (updateCourseDto.getThumbnail() != null ) {
-            existingCourse.setThumbnail(updateCourseDto.getThumbnail());
+        if (updateCourseDto.getCategory() != null ) {
+            existingCourse.setCategory(updateCourseDto.getCategory());
         }
-        if (updateCourseDto.getPreviewVideoUrl() != null ) {
-            existingCourse.setPreviewVideoUrl(updateCourseDto.getPreviewVideoUrl());
+        if (updateCourseDto.getThumbnail() != null ) {
+            Attachment thumbnail = attachmentRepository.findById(updateCourseDto.getThumbnail()).orElse(null);
+            existingCourse.setThumbnail(thumbnail);
         }
         if (updateCourseDto.getEstimatedDurationInHours() != null ) {
             existingCourse.setEstimatedDrationInHours(updateCourseDto.getEstimatedDurationInHours());
@@ -157,16 +228,36 @@ public class CourseMapper {
         if (updateCourseDto.getIsActive() != null ) {
             existingCourse.setActive(updateCourseDto.getIsActive());
         }
+        if (updateCourseDto.getTags() != null && !updateCourseDto.getTags().isEmpty()) {
+            Set<TagsEntity> tags = updateCourseDto.getTags().stream()
+                    .map(tag -> tagsRepository.findByName(tag))
+                    .filter(Objects::nonNull)
+                    .collect(Collectors.toSet());
+            existingCourse.setTags(tags);
+        }
+        if (updateCourseDto.getTags() != null && !updateCourseDto.getTags().isEmpty()) {
+            Set<TagsEntity> tags = updateCourseDto.getTags().stream()
+                    .map(tag -> tagsRepository.findByName(tag))
+                    .filter(Objects::nonNull)
+                    .collect(Collectors.toSet());
+            existingCourse.setTags(tags);
+        }
         return existingCourse;
     }
 
     /**
      * Maps from CourseDetailsDto to Course entity
      */
-    public static Course fromCourseDetailsDtoToCourseEntity(CourseDetailsDto courseDetailsDto) {
+    public static Course fromCourseDetailsDtoToCourseEntity(CourseDetailsDto courseDetailsDto, TagsRepository tagsRepository, AttachmentRepository attachmentRepository) {
         if (courseDetailsDto == null) {
             return null;
         }
+
+        Set<TagsEntity> tags = courseDetailsDto.getTags().stream()
+                .map(tagDto -> tagsRepository.findByName(tagDto.getName()))
+                .filter(Objects::nonNull)
+                .collect(Collectors.toSet());
+
 
         return Course.builder()
                 .id(courseDetailsDto.getId())
@@ -174,12 +265,13 @@ public class CourseMapper {
                 .description(courseDetailsDto.getDescription())
                 .oneTimePrice(courseDetailsDto.getOneTimePrice())
                 .currency(courseDetailsDto.getCurrency())
-                .thumbnail(courseDetailsDto.getThumbnail())
-                .previewVideoUrl(courseDetailsDto.getPreviewVideoUrl())
+                .thumbnail(courseDetailsDto.getThumbnail() != null ? attachmentRepository.findById(courseDetailsDto.getThumbnail()).orElse(null) : null)
                 .estimatedDrationInHours(courseDetailsDto.getEstimatedDurationInHours())
                 .status(courseDetailsDto.getStatus())
                 .difficultyLevel(courseDetailsDto.getDifficultyLevel())
                 .isActive(courseDetailsDto.isActive())
+                .tags(tags)
+                .tags(tags)
                 .build();
     }
 
@@ -188,21 +280,29 @@ public class CourseMapper {
     /**
      * Updates an existing Course entity with data from CreateCourseDto
      */
-    public static void updateCourseEntityFromCreateCourseDto(Course existingCourse, CreateCourseDto createCourseDto) {
+    public static void updateCourseEntityFromCreateCourseDto(Course existingCourse, CreateCourseDto createCourseDto, TagsRepository tagsRepository, AttachmentRepository attachmentRepository) {
         if (existingCourse == null || createCourseDto == null) {
             return;
         }
+
+
+
+        Set<TagsEntity> tags = createCourseDto.getTags().stream()
+                .map(tag -> tagsRepository.findByName(tag))
+                .filter(Objects::nonNull)
+                .collect(Collectors.toSet());
 
         existingCourse.setName(createCourseDto.getName());
         existingCourse.setDescription(createCourseDto.getDescription());
         existingCourse.setOneTimePrice(createCourseDto.getOneTimePrice());
         existingCourse.setCurrency(createCourseDto.getCurrency());
-        existingCourse.setThumbnail(createCourseDto.getThumbnail());
-        existingCourse.setPreviewVideoUrl(createCourseDto.getPreviewVideoUrl());
+        existingCourse.setThumbnail(createCourseDto.getThumbnail() != null ? attachmentRepository.findById(createCourseDto.getThumbnail()).orElse(null) : null);
         existingCourse.setEstimatedDrationInHours(createCourseDto.getEstimatedDurationInHours());
         existingCourse.setStatus(createCourseDto.getStatus());
         existingCourse.setDifficultyLevel(createCourseDto.getDifficultyLevel());
         existingCourse.setActive(createCourseDto.isActive());
+        existingCourse.setTags(tags);
+        existingCourse.setTags(tags);
     }
 
 
@@ -220,6 +320,7 @@ public class CourseMapper {
         return courseModules.stream()
                 .map(CourseMapper::fromCourseModuleToCourseModuleDto)
                 .filter(Objects::nonNull)
+                .sorted((a, b) -> Integer.compare(a.getModuleOrder(), b.getModuleOrder())) // Sort by module order
                 .collect(Collectors.toList());
     }
 
@@ -236,5 +337,17 @@ public class CourseMapper {
         courseModuleDto.setModule(ModuleMapper.fromModuletoModuleSummaryDto(courseModule.getModule()));
 
         return courseModuleDto;
+    }
+
+
+
+    private static Set<TagDto> convertTagsEntityToTagDtos(Set<TagsEntity> tagsEntities) {
+        if (tagsEntities == null || tagsEntities.isEmpty()) {
+            return Collections.emptySet();
+        }
+
+        return tagsEntities.stream()
+                .map(tagEntity -> new TagDto(tagEntity.getName(), tagEntity.getDescription(), tagEntity.getColor().toString()))
+                .collect(Collectors.toSet());
     }
 }

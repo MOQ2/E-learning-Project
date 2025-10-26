@@ -3,15 +3,20 @@ package com.example.e_learning_system.Dto.CourseDtos;
 import com.example.e_learning_system.Config.CourseStatus;
 import com.example.e_learning_system.Config.Currency;
 import com.example.e_learning_system.Config.DifficultyLevel;
+import com.example.e_learning_system.Config.Tags;
+import com.example.e_learning_system.Entities.TagsEntity;
 
+import io.swagger.v3.oas.models.tags.Tag;
 import jakarta.validation.constraints.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import lombok.Builder.Default;
 import lombok.experimental.SuperBuilder;
 
 import java.math.BigDecimal;
-
+import java.util.List;
+import com.example.e_learning_system.Config.Category;
 
 @Data
 @AllArgsConstructor
@@ -30,13 +35,23 @@ public class CreateCourseDto {
     @DecimalMin(value = "0.0", inclusive = true, message = "Course price cannot be negative")
     private BigDecimal oneTimePrice;
 
-    private Currency currency;
+    @DecimalMin(value = "0.0", inclusive = true, message = "Subscription price cannot be negative")
+    private BigDecimal subscriptionPriceMonthly;
 
-    @NotBlank(message = "Thumbnail URL is required")
-    private String thumbnail;
+    @DecimalMin(value = "0.0", inclusive = true, message = "Subscription price cannot be negative")
+    private BigDecimal subscriptionPrice3Months;
+    @DecimalMin(value = "0.0", inclusive = true, message = "Subscription price cannot be negative")
+    private BigDecimal subscriptionPrice6Months;
 
-    @NotBlank(message = "Preview video URL is required")
-    private String previewVideoUrl;
+    private Boolean allowsSubscription;
+    @Default
+    private Currency currency = Currency.USD;
+    @Default
+    private Category category = Category.OTHER;
+
+    @NotNull(message = "Thumbnail is required")
+    @Min(value = 1, message = "Thumbnail must be a positive integer")
+    private Integer thumbnail;
 
     @NotNull(message = "Estimated duration is required")
     @Min(value = 1, message = "Estimated duration must be at least 1 hour")
@@ -46,7 +61,10 @@ public class CreateCourseDto {
     private CourseStatus status;
 
     @NotNull(message = "Difficulty level is required")
-    private DifficultyLevel difficultyLevel;
-
-    private boolean isActive;
+    @Default
+    private DifficultyLevel difficultyLevel = DifficultyLevel.BIGINNER;
+    @NotNull(message = "Tags are required")
+    private List<String> tags;
+    @Default
+    private boolean isActive = true;
 }

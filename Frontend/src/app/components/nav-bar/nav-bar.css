@@ -16,7 +16,9 @@
     display: flex;
     align-items: center;
     padding: 10px 0;
+    min-height: 56px;
     background-color: #fff;
+    border-bottom: 1px solid rgb(181, 160, 178);
 }
 
 .header-content {
@@ -34,10 +36,14 @@
     display: flex;
     align-items: center;
     gap: 8px;
+    text-decoration: none;
+    color: inherit;
 }
 
 .logo-img {
-    height: 40px;
+    max-height: 48px;
+    height: auto;
+    display: block;
 }
 
 .logo-text {
@@ -58,6 +64,19 @@
     border-radius: 8px;
     transition: all 0.3s ease;
 }
+
+/* responsive collapse hint */
+@media (max-width:820px){
+    .nav-links{display:none}
+    .mobile-nav-toggle{display:block}
+}
+
+/* subtle motion on header buttons */
+.btn, .btn-explore, .create-course-btn{transition:transform .12s ease, box-shadow .12s ease}
+.btn:active{transform:scale(.98)}
+
+/* focus outlines for accessibility */
+a:focus, .btn:focus{outline:3px solid rgba(124,58,237,0.12);outline-offset:2px}
 
 .nav-links a:hover {
     color: rgb(70, 36, 0);
@@ -123,6 +142,16 @@
     background-color: #0056b3;
 }
 
+.btn-secondary {
+    background-color: #f1f5f9;
+    color: #111827;
+    border: 1px solid #cbd5f5;
+}
+
+.btn-secondary:hover {
+    background-color: #e2e8f0;
+}
+
 
 .create-course-btn {
   background-color: #fff;
@@ -145,6 +174,4 @@
   box-shadow: 0 1px 4px rgba(0,0,0,0.12);
 }
 
-.header {
-  border-bottom: 1px solid rgb(181, 160, 178);
-}
+/* header border merged into main .header block above */

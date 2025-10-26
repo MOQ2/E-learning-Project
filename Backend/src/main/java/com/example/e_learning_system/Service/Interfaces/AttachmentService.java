@@ -7,7 +7,7 @@ import org.springframework.core.io.Resource;
 import org.springframework.http.ResponseEntity;
 
 public interface AttachmentService {
-    void createAttachment(CreateAttachmentDto createAttachmentDto, int uploadedByUserId);
+    int createAttachment(CreateAttachmentDto createAttachmentDto, int uploadedByUserId);
     AttachmentDto getAttachmentById(Integer id);
     void deleteAttachment(Integer id);
     void updateAttachment(UpdateAttachmentDto updateAttachmentDto, int id, int uploadedByUserId);

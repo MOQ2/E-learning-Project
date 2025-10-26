@@ -9,9 +9,11 @@ import com.example.e_learning_system.Entities.CourseModules;
 import com.example.e_learning_system.Entities.Module;
 import com.example.e_learning_system.Entities.UserEntity;
 import com.example.e_learning_system.Mapper.CourseMapper;
+import com.example.e_learning_system.Repository.AttachmentRepository;
 import com.example.e_learning_system.Repository.CourseModulesRepository;
 import com.example.e_learning_system.Repository.CourseRepository;
 import com.example.e_learning_system.Repository.ModuleRepository;
+import com.example.e_learning_system.Repository.TagsRepository;
 import com.example.e_learning_system.Repository.UserRepository;
 import com.example.e_learning_system.excpetions.ResourceNotFound;
 import jakarta.persistence.EntityManager;
@@ -65,6 +67,12 @@ class CourseServiceImplTest {
     @Mock
     private CourseModules courseModules;
 
+    @Mock
+    private TagsRepository tagsRepository;
+
+    @Mock
+    private AttachmentRepository attachmentRepository;
+
     private CreateCourseDto createCourseDto;
     private UpdateCourseDto updateCourseDto;
     private CourseDetailsDto courseDetailsDto;
@@ -79,8 +87,7 @@ class CourseServiceImplTest {
         createCourseDto.setDifficultyLevel(DifficultyLevel.BIGINNER);
         createCourseDto.setStatus(CourseStatus.DRAFT);
         createCourseDto.setCurrency(Currency.USD);
-        createCourseDto.setThumbnail("http://example.com/thumb.jpg");
-        createCourseDto.setPreviewVideoUrl("http://example.com/preview.mp4");
+        createCourseDto.setThumbnail(1);
         createCourseDto.setEstimatedDurationInHours(10);
 
         updateCourseDto = new UpdateCourseDto();
@@ -210,7 +217,7 @@ class CourseServiceImplTest {
         when(courseRepository.findById(courseId)).thenReturn(Optional.of(course));
         
         try (MockedStatic<CourseMapper> mockedMapper = mockStatic(CourseMapper.class)) {
-            mockedMapper.when(() -> CourseMapper.fromUpdateCourseDtoToCourseEntity(updateCourseDto, course))
+            mockedMapper.when(() -> CourseMapper.fromUpdateCourseDtoToCourseEntity(updateCourseDto, course, tagsRepository, attachmentRepository))
                        .thenAnswer(invocation -> null);
 
             // Act
@@ -219,7 +226,7 @@ class CourseServiceImplTest {
             // Assert
             verify(courseRepository).findById(courseId);
             verify(courseRepository).save(course);
-            mockedMapper.verify(() -> CourseMapper.fromUpdateCourseDtoToCourseEntity(updateCourseDto, course));
+            mockedMapper.verify(() -> CourseMapper.fromUpdateCourseDtoToCourseEntity(updateCourseDto, course, tagsRepository, attachmentRepository));
         }
     }
 
@@ -327,7 +334,7 @@ class CourseServiceImplTest {
         when(course.isUniqOrder(order)).thenReturn(true);
 
         // Act
-        courseService.addMoudelToCourse(courseId, moduleId, order);
+        courseService.addModuleToCourse(courseId, moduleId, order);
 
         // Assert
         verify(courseRepository).findById(courseId);
@@ -349,7 +356,7 @@ class CourseServiceImplTest {
 
         // Act & Assert
         assertThrows(ResourceNotFound.class, () -> 
-            courseService.addMoudelToCourse(courseId, moduleId, order));
+            courseService.addModuleToCourse(courseId, moduleId, order));
         verify(courseRepository).findById(courseId);
         verify(moduleRepository, never()).findById(anyInt());
     }
@@ -366,7 +373,7 @@ class CourseServiceImplTest {
 
         // Act & Assert
         assertThrows(RuntimeException.class, () -> 
-            courseService.addMoudelToCourse(courseId, moduleId, order));
+            courseService.addModuleToCourse(courseId, moduleId, order));
         verify(courseRepository).findById(courseId);
         verify(moduleRepository).findById(moduleId);
     }
@@ -385,7 +392,7 @@ class CourseServiceImplTest {
 
         // Act & Assert
         assertThrows(RuntimeException.class, () -> 
-            courseService.addMoudelToCourse(courseId, moduleId, order));
+            courseService.addModuleToCourse(courseId, moduleId, order));
         verify(courseRepository).findById(courseId);
         verify(moduleRepository).findById(moduleId);
         verify(courseModulesRepository).findByCourseIdAndModuleId(courseId, moduleId);

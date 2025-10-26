@@ -5,6 +5,7 @@ import com.example.e_learning_system.Dto.AttachmentDtos.AttachmentDto;
 import com.example.e_learning_system.Dto.AttachmentDtos.CreateAttachmentDto;
 import com.example.e_learning_system.Dto.AttachmentDtos.UpdateAttachmentDto;
 import com.example.e_learning_system.Service.Interfaces.AttachmentService;
+import com.example.e_learning_system.Service.AuthorizationService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.core.io.Resource;
 import org.springframework.http.HttpStatus;
@@ -19,21 +20,36 @@ import org.springframework.web.multipart.MultipartFile;
 public class AttachmentController {
 
     private final AttachmentService attachmentService;
+    private final AuthorizationService authorizationService;
 
-    //TODO use securty context to add uploaded by
+    /**
+     * Create attachment - Only teachers and admins can create attachments
+     */
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public ResponseEntity<ApiResponse<Void>> createAttachment(
-            @RequestParam("title") String title,
+    public ResponseEntity<ApiResponse<Integer>> createAttachment(
+            @RequestParam("name") String title,
             @RequestParam("file") MultipartFile file
             ) {
-
+        // Only teachers and admins can create attachments
+        authorizationService.requireTeacherOrAdmin();
+        
+        Integer currentUserId = authorizationService.getCurrentUser().getId();
+        
+        System.out.println("Received file:");
+        System.out.println("Name: " + file.getOriginalFilename());
+        System.out.println("Size: " + file.getSize() + " bytes");
+        System.out.println("Content Type: " + file.getContentType());
+        System.out.println("Metadata:");
+        System.out.println(" - Parameter name: " + file.getName());
+        System.out.println(" - Is empty: " + file.isEmpty());
+        
         CreateAttachmentDto createAttachmentDto = new CreateAttachmentDto();
         createAttachmentDto.setTitle(title);
         createAttachmentDto.setFile(file);
 
-        attachmentService.createAttachment(createAttachmentDto, 1);
+        int attachmentId = attachmentService.createAttachment(createAttachmentDto, currentUserId);
         return ResponseEntity.status(HttpStatus.CREATED)
-                .body(ApiResponse.success("Attachment created successfully", null));
+                .body(ApiResponse.success("Attachment created successfully", attachmentId));
     }
 
     @GetMapping("/{id}")
@@ -63,13 +79,19 @@ public class AttachmentController {
         return ResponseEntity.ok(ApiResponse.success("Attachment deleted successfully", null));
     }
 
+
     @GetMapping("/{id}/download")
     public ResponseEntity<Resource> downloadAttachment(@PathVariable Integer id) {
+        authorizationService.requireAttachmentDownloadAccess();
+        
         return attachmentService.downloadAttachment(id);
     }
 
+
     @GetMapping("/{id}/data")
     public ResponseEntity<ApiResponse<byte[]>> getAttachmentData(@PathVariable Integer id) {
+        authorizationService.requireAttachmentDownloadAccess();
+        
         byte[] fileData = attachmentService.getAttachmentFileData(id);
         return ResponseEntity.ok(ApiResponse.success("File data retrieved successfully", fileData));
     }

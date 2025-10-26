@@ -1,4 +1,5 @@
 .course-card {
+  cursor: pointer;
   border: 1px solid #eee;
   border-radius: 16px;
   overflow: hidden;
@@ -16,8 +17,10 @@
 
 .course-img {
   width: 100%;
-  height: 180px;
+  aspect-ratio: 16 / 9;
+  min-height: 120px;
   object-fit: cover;
+  display: block;
 }
 
 .course-body {

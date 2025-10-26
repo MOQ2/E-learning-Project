@@ -4,6 +4,7 @@ import com.example.e_learning_system.Config.AccessType;
 import com.example.e_learning_system.Dto.UserCourseAccessResponseDTO;
 import com.example.e_learning_system.Entities.Course;
 import com.example.e_learning_system.Service.Interfaces.UserCourseAccessService;
+import com.example.e_learning_system.Service.AuthorizationService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
@@ -18,7 +19,13 @@ public class UserCourseAccessController {
 
     @Autowired
     private UserCourseAccessService userCourseAccessService;
+    
+    @Autowired
+    private AuthorizationService authorizationService;
 
+    /**
+     * Grant course access - Only admins can grant access
+     */
     @PostMapping("/grant-course-access")
     public ResponseEntity<UserCourseAccessResponseDTO> grantCourseAccess(
             @RequestParam Integer userId,
@@ -27,11 +34,17 @@ public class UserCourseAccessController {
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime accessUntil,
             @RequestParam(required = false) Integer paymentId) {
         
+        // Only admins can grant course access
+        authorizationService.requireAdmin();
+        
         UserCourseAccessResponseDTO response = userCourseAccessService.grantCourseAccess(
                 userId, courseId, accessType, accessUntil, paymentId);
         return ResponseEntity.ok(response);
     }
 
+    /**
+     * Grant package access - Only admins can grant access
+     */
     @PostMapping("/grant-package-access")
     public ResponseEntity<UserCourseAccessResponseDTO> grantPackageAccess(
             @RequestParam Integer userId,
@@ -40,32 +53,53 @@ public class UserCourseAccessController {
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime accessUntil,
             @RequestParam(required = false) Integer paymentId) {
         
+        // Only admins can grant package access
+        authorizationService.requireAdmin();
+        
         UserCourseAccessResponseDTO response = userCourseAccessService.grantPackageAccess(
                 userId, packageId, accessType, accessUntil, paymentId);
         return ResponseEntity.ok(response);
     }
 
+    /**
+     * Check if user has valid course access - Accessible by the user themselves or admin
+     */
     @GetMapping("/check-access/{userId}/{courseId}")
     public ResponseEntity<Boolean> hasValidAccess(
             @PathVariable Integer userId,
             @PathVariable Integer courseId) {
         
+        // Only the user themselves or admin can check access
+        authorizationService.requireUserDataAccess(userId);
+        
         boolean hasAccess = userCourseAccessService.hasValidAccess(userId, courseId);
         return ResponseEntity.ok(hasAccess);
     }
 
+    /**
+     * Get user course access details - Accessible by the user themselves or admin
+     */
     @GetMapping("/get-access/{userId}/{courseId}")
     public ResponseEntity<UserCourseAccessResponseDTO> getUserCourseAccess(
             @PathVariable Integer userId,
             @PathVariable Integer courseId) {
         
+        // Only the user themselves or admin can get access details
+        authorizationService.requireUserDataAccess(userId);
+        
         UserCourseAccessResponseDTO response = userCourseAccessService.getUserCourseAccess(userId, courseId);
         return ResponseEntity.ok(response);
     }
 
+    /**
+     * Get user's active accesses - Accessible by the user themselves or admin
+     */
     @GetMapping("/user-active-accesses/{userId}")
     public ResponseEntity<List<UserCourseAccessResponseDTO>> getUserActiveAccesses(
             @PathVariable Integer userId) {
+        
+        // Only the user themselves or admin can get active accesses
+        authorizationService.requireUserDataAccess(userId);
         
         List<UserCourseAccessResponseDTO> accesses = userCourseAccessService.getUserActiveAccesses(userId);
         return ResponseEntity.ok(accesses);
