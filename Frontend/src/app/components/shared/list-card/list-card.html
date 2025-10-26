@@ -1,0 +1,31 @@
+ <button
+      (click)="handleClick()"
+      [class]="getButtonClasses()"
+      [style.max-width]="maxWidth">
+
+
+        <!-- Left icon (optional) - pass SVG URL in `icon` or plain text e.g. initials -->
+        <div *ngIf="icon" class="icon-container">
+          <img *ngIf="isUrl(icon)" class="icon-img" [src]="icon" alt="" />
+          <span *ngIf="!isUrl(icon)" class="icon-text">{{ icon }}</span>
+        </div>
+
+        <!-- Text container -->
+        <div class="text-container">
+          <span class="main-text">{{ text }}</span>
+          <span *ngIf="subtitle" class="subtitle-text">{{ subtitle }}</span>
+        </div>
+
+      <!-- Right side container -->
+      <div class="right-container">
+        <span class="right-text">{{ rightText }}</span>
+        <span
+          *ngIf="label || labelIcon"
+          class="label"
+          [style.background-color]="labelColor"
+        >
+          <span *ngIf="labelIcon" class="label-icon" [innerHTML]="getSanitizedLabelIcon()"></span>
+          <span *ngIf="label" class="label-text">{{ label }}</span>
+        </span>
+      </div>
+    </button>

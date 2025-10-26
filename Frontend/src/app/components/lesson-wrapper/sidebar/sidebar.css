@@ -1,0 +1,171 @@
+
+:host {
+  font-family: 'Inter', sans-serif;
+  display: block;
+  width: 100%;
+  overflow: visible; /* allow the sidebar to grow instead of forcing scroll */
+  /* give the sidebar some breathing room from surrounding content */
+  margin: 8px 0;
+}
+
+.sidebar-container {
+  display: block; /* let children flow naturally */
+  flex-direction: column;
+  height: auto; /* allow content to set height */
+  overflow: visible; /* do not clip children */
+  border: 1.5px solid #B099AD;
+  border-radius: 0.5rem;
+  background-color: #FFF1F7;
+  /* internal spacing and subtle elevation for better separation */
+  padding: 14px;
+  box-shadow: 0 6px 18px rgba(16,24,40,0.06);
+  gap: 12px;
+
+}
+
+.list-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: transparent;
+  padding: 10px 6px;
+}
+
+.course-content {
+  font-size: 14px;
+  font-weight: 500;
+  color: #1f2937;
+}
+
+.header-right { display:flex; align-items:center; gap:8px }
+.progress-text { color: #6b7280; background: transparent; font-weight: 500; font-size: 13px }
+.sidebar-hide { background: transparent; border: none; font-size: 12px; padding:6px; cursor: pointer; color: #6b7280 }
+.sidebar-hide:hover { color: #374151 }
+
+.progress {
+  font-size: 14px;
+  font-weight: 500;
+  color: #8b5cf6;
+}
+
+
+.course-progress .bar {
+  width: 100%;
+  height: 6px;
+  background: transparent;
+  border-radius: 9999px;
+  overflow: hidden;
+  margin-top: 6px;
+}
+
+.course-progress .fill {
+  height: 100%;
+  background: linear-gradient(90deg, #8b5cf6 0%, #a78bfa 100%);
+  border-radius: 9999px;
+  transition: width 0.3s ease;
+}
+
+.loader, .empty {
+  padding: 24px;
+  text-align: center;
+  color: #6b7280;
+  font-size: 14px;
+}
+
+.modules-list {
+  overflow-y: visible;
+
+}
+
+.module-block {
+  /* remove inline border top and use a full-width pseudo element so the
+     separator spans the entire sidebar width (including container padding) */
+  position: relative;
+  width: 100%;
+}
+
+.module-block:last-child {
+  border-bottom: none;
+}
+
+.module-block::before {
+  content: '';
+  position: absolute;
+  left: -14px; /* match sidebar-container padding */
+  right: -14px;
+  top: 0;
+  height: 1px;
+  background:#B099AD;
+}
+
+.module-label {
+  display: flex;
+  align-items: center;
+  background: transparent;
+  cursor: pointer;
+  user-select: none;
+}
+
+.module-label .icon {
+  width: 20px;
+  height: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #6b7280;
+  font-size: 16px;
+}
+
+.module-title {
+  /* take available space but stay on a single line */
+  flex: 0 1 auto;
+  font-size: 15px; /* slightly larger */
+  font-weight: 600;
+  color: #374151;
+  margin-left: -4px; /* nudge left a little without overlapping the icon */
+  line-height: 1.2;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: block;
+  min-width: 0; /* allow truncation in flex layouts */
+}
+
+.spacer {
+  /* spacer should be a small flexible gap so title gets priority for width */
+  flex: 0 0 8px;
+}
+
+.collapse-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 4px 8px;
+  font-size: 18px;
+  color: #6b7280;
+  transition: color 0.2s;
+}
+
+.collapse-btn:hover {
+  color: #374151;
+}
+
+.module-lessons {
+  background: transparent;
+  margin-top: 8px;
+  padding-left: 6px;
+}
+
+.sidebar-footer {
+  margin-top: 12px;
+  text-align: center;
+  color: #6b7280;
+  font-size: 13px;
+}
+
+.sidebar-divider {
+  height: 1px;
+  background: rgba(229, 231, 235, 1);
+  margin: 16px -14px;
+  border-radius: 1px;
+}

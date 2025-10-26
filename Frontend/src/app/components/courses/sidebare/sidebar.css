@@ -1,0 +1,176 @@
+.sidebar {
+  /* allow the sidebar to participate in a flex layout without forcing the overall layout
+     to collapse on smaller screens. Keep a comfortable min-width and reasonable max. */
+   flex: 0 0 clamp(220px, 22vw, 340px);
+   min-width: 180px;
+   max-width: 360px;
+  box-sizing: border-box;
+  background: #fde9ef;
+  border-radius: 12px;
+  padding: 20px;
+  height: fit-content;
+  box-shadow: none;
+}
+
+.discover-section {
+  margin-bottom: 24px;
+}
+
+.discover-btn {
+  width: 100%;
+  background: #f59e0b;
+  color: white;
+  border: none;
+  padding: 12px 16px;
+  border-radius: 20px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.discover-btn:hover {
+  background: #d97706;
+}
+
+.filter-section {
+  margin-bottom: 24px;
+  background: white;
+  border-radius: 16px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.04);
+  padding: 18px 16px;
+  border: 1px solid #f3f4f6;
+}
+
+.filter-title {
+  font-size: 18px;
+  font-weight: 600;
+  color: #4b2e09;
+  margin-bottom: 16px;
+}
+
+.filter-options {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.filter-option {
+  background: transparent;
+  border: none;
+  border-radius: 12px;
+  padding: 10px 14px;
+  font-size: 16px;
+  color: #1f2937;
+  text-align: left;
+  cursor: pointer;
+  transition: background 0.2s, color 0.2s;
+  font-weight: 400;
+}
+
+.filter-option:hover {
+  background: #f3f4f6;
+}
+
+.filter-option.selected {
+  background: #fde9c6;
+  color: #92400e;
+  font-weight: 500;
+}
+
+.duration-options {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.duration-option {
+  background: transparent;
+  border: none;
+  border-radius: 12px;
+  padding: 10px 14px;
+  font-size: 16px;
+  color: #1f2937;
+  text-align: left;
+  cursor: pointer;
+  transition: background 0.2s, color 0.2s;
+  font-weight: 400;
+}
+
+.duration-option:hover {
+  background: #f3f4f6;
+}
+
+.duration-option.selected {
+  background: #fde9c6;
+  color: #92400e;
+  font-weight: 500;
+}
+
+.price-option {
+  background: transparent;
+  border: none;
+  border-radius: 12px;
+  padding: 10px 14px;
+  font-size: 16px;
+  color: #1f2937;
+  text-align: left;
+  cursor: pointer;
+  transition: background 0.2s, color 0.2s;
+  font-weight: 400;
+}
+
+.price-option.selected {
+  background: #fde9c6;
+  color: #92400e;
+  font-weight: 500;
+}
+
+.toggle-label {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  cursor: pointer;
+  font-size: 14px;
+  color: #6b7280;
+}
+
+.toggle-checkbox {
+  display: none;
+}
+
+.toggle-slider {
+  position: relative;
+  width: var(--toggle-width, 44px);
+  height: calc(var(--toggle-knob, 18px) + 6px);
+  background: #e5e7eb;
+  border-radius: 999px;
+  transition: background-color 0.2s;
+  width: var(--toggle-width, clamp(40px, 14vw, 56px));
+}
+
+.toggle-slider:before {
+  content: '';
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  width: var(--toggle-knob, 18px);
+  height: var(--toggle-knob, 18px);
+  background: white;
+  border-radius: 50%;
+  transition: transform 0.2s;
+}
+
+.toggle-checkbox:checked + .toggle-slider {
+  background: #8b5cf6;
+}
+
+.toggle-checkbox:checked + .toggle-slider:before {
+  transform: translateX(calc(var(--toggle-width, 44px) - var(--toggle-knob, 18px) - 6px));
+}
+
+.option-icon,
+.level-icon,
+.price-icon,
+.feature-icon {
+  display: none;
+}

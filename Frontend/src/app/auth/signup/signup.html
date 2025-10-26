@@ -1,0 +1,59 @@
+<div class="d-flex justify-content-center align-items-center vh-100">
+  <div class="container col-md-6 col-lg-4 border rounded-5 p-4">
+    <h2 class="text-center mb-4">Sign Up</h2>
+
+    <form [formGroup]="signUpForm" (ngSubmit)="onSubmit()">
+      <div class="mb-2">
+        <label for="name" class="form-label">Name</label>
+        <input type="text" id="name" formControlName="name" class="form-control" placeholder="Enter your full name"/>
+        @for (error of getErrors('name'); let i = $index; track i) {
+          <small class="text-danger">{{ error }}</small>
+        }
+      </div>
+
+      <div class="mb-2">
+        <label for="email" class="form-label">Email</label>
+        <input type="email" id="email" formControlName="email" class="form-control" placeholder="Enter your email"/>
+        @for (error of getErrors('email'); let i = $index; track i) {
+          <small class="text-danger">{{ error }}</small>
+        }
+      </div>
+
+      <div class="mb-2">
+        <label for="password" class="form-label">Password</label>
+        <input [type]="showPassword ? 'text' : 'password'" id="password" formControlName="password" class="form-control" placeholder="Enter your password"/>
+        @for (error of getErrors('password'); let i = $index; track i) {
+          <small class="text-danger">{{ error }}</small>
+        }
+      </div>
+
+      <div class="mb-2">
+        <label for="confirmPassword" class="form-label">Confirm Password</label>
+        <input type="password" id="confirmPassword" formControlName="confirmPassword" class="form-control" placeholder="Confirm your password"/>
+        @for (error of getErrors('confirmPassword'); let i = $index; track i) {
+          <small class="text-danger">{{ error }}</small>
+        }
+      </div>
+
+      <div class="mb-2">
+        <label for="phone" class="form-label">Phone</label>
+        <input type="text" id="phone" formControlName="phone" class="form-control" placeholder="Enter your phone number"/>
+      </div>
+
+      <div class="mb-2">
+        <label for="bio" class="form-label">Bio </label>
+        <textarea id="bio" formControlName="bio" class="form-control" placeholder="Tell us about yourself"></textarea>
+      </div>
+
+
+      <div class="d-flex justify-content-center">
+        <button type="submit" class="btn w-50 mb-3" style="background-color: #deb80e">Sign Up</button>
+      </div>
+
+      <div class="text-center mb-3">
+        <span>Already have an account? </span>
+        <a routerLink="/login" class="text-decoration-none" style="color: #deb80e; cursor: pointer">Login</a>
+      </div>
+    </form>
+  </div>
+</div>

@@ -1,0 +1,32 @@
+<div class="d-flex justify-content-center align-items-center vh-100">
+  <div class="container col-md-6 col-lg-4 border rounded-5">
+    <h2 class="text-center mb-4">Login</h2>
+
+    <form [formGroup]="loginForm" (ngSubmit)="onSubmit()">
+      <div class="mb-3">
+        <label for="email" class="form-label">Email</label>
+        <input type="email" id="email" formControlName="email" class="form-control" placeholder="Enter your email"/>
+        @for (error of getErrors('email'); let i = $index; track i) {
+          <small class="text-danger">{{ error }}</small>
+        }
+      </div>
+
+      <div class="mb-3">
+        <label for="password" class="form-label">Password</label>
+        <input type="password" id="password" formControlName="password" class="form-control" placeholder="Enter your password"/>
+        @for (error of getErrors('password'); let i = $index; track i) {
+          <small class="text-danger">{{ error }}</small>
+        }
+      </div>
+
+
+      <div class="d-flex justify-content-center">
+        <button type="submit" class="btn  w-50 mb-3" style="background-color: #deb80e">Login</button>
+      </div>
+      <div class="text-center mb-3">
+        <span>Don't have an account? </span>
+        <a routerLink="/signUp" class="text-decoration-none" style="color: #deb80e; cursor: pointer">Sign Up</a>
+      </div>
+    </form>
+  </div>
+</div>

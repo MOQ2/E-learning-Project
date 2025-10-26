@@ -1,0 +1,22 @@
+<aside class="sidebar">
+  <h2 class="sidebar__title">Create Course</h2>
+  <nav class="sidebar__nav">
+    <ul>
+      <li [class.active]="activeLink === 'overview'">
+        <a href="#" (click)="setActiveLink('overview'); $event.preventDefault()">
+          <img src="assets/images/vector-32.svg" alt="" /> Overview
+        </a>
+      </li>
+      <li [class.active]="activeLink === 'modules'" [class.disabled]="!courseCreated">
+        <a href="#" [class.disabled-link]="!courseCreated" (click)="courseCreated && setActiveLink('modules'); $event.preventDefault()">
+          <img src="assets/images/vector-40.svg" alt="" /> Modules
+        </a>
+      </li>
+      <li [class.active]="activeLink === 'publish'" [class.disabled]="!courseCreated">
+        <a href="#" [class.disabled-link]="!courseCreated" (click)="courseCreated && setActiveLink('publish'); $event.preventDefault()">
+          <img src="assets/images/vector-61.svg" alt="" /> Review & Publish
+        </a>
+      </li>
+    </ul>
+  </nav>
+</aside>

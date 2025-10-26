@@ -1,0 +1,173 @@
+.module-form-card{
+  display: flex;
+  gap: 16px;
+  padding: 16px;
+  flex: 1;
+}
+
+
+.module-details-form {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    padding: 16px;
+    border: 1px solid var(--color-border);
+    border-radius: var(--border-radius-md);
+}
+
+.module-details-form h3 {
+    font-size: 14px;
+    margin: 0;
+}
+
+.form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.form-group-inline {
+    display: flex;
+    gap: 16px;
+}
+
+.form-group-inline .form-group {
+    flex: 1;
+}
+
+.form-group label {
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--color-text-light);
+}
+
+.form-group input[type="text"],
+.form-group input[type="number"],
+.form-group textarea {
+    width: 100%;
+    padding: 12px;
+    border-radius: var(--border-radius-sm);
+    border: 1px solid var(--color-border);
+    font-family: var(--font-family-main);
+    font-size: 14px;
+}
+
+.form-group--checkbox {
+    flex-direction: row;
+    align-items: center;
+}
+
+.form-group--checkbox input {
+    margin-right: 8px;
+}
+
+/* --- Radio Button Status Toggle --- */
+.status-toggle {
+    display: flex;
+    gap: 8px;
+}
+
+.status-toggle input[type="radio"] {
+    display: none;
+}
+
+.status-toggle label {
+    cursor: pointer;
+    background-color: var(--color-light-gray-bg);
+    color: var(--color-text-light);
+    border: 1px solid var(--color-border);
+    /* Re-uses tag styles for pill shape */
+    padding: 7px 10px;
+    font-size: 12px;
+    font-weight: 700;
+    border-radius: 48px;
+    transition: all 0.2s ease;
+}
+
+.status-toggle input[type="radio"]:checked + label {
+    background-color: var(--color-success);
+    color: var(--color-white);
+    border-color: var(--color-success);
+}
+
+/* --- Lesson Manager --- */
+.lesson-manager {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    padding: 16px;
+    border: 1px solid var(--color-border);
+    border-radius: var(--border-radius-md);
+    /* make the manager responsive: allows short and tall viewports to behave well */
+    max-height: clamp(240px, 48vh, 720px);
+    min-height: clamp(160px, 22vh, 260px);
+}
+
+.lesson-manager-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.lesson-manager-header h3 {
+    font-size: 14px;
+    margin: 0;
+}
+
+.lesson-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    /* responsive scrollable area */
+    max-height: clamp(180px, 36vh, 420px);
+    overflow-y: auto;
+    padding-right: 8px;
+}
+
+.lesson-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px;
+    border: 1px solid var(--color-border);
+    border-radius: var(--border-radius-sm);
+}
+
+.lesson-item__handle {
+    color: var(--color-text-light);
+    cursor: grab;
+    background: transparent;
+    border: none;
+    padding: 0;
+}
+
+.lesson-item__title {
+    margin-right: auto;
+    font-weight: 700;
+    font-size: 14px;
+}
+
+.lesson-item__actions {
+    display: flex;
+    gap: 8px;
+}
+
+/* --- Error Messages --- */
+.error-message {
+  color: #dc2626;
+  font-size: 12px;
+  margin-top: 4px;
+  background-color: rgba(220, 38, 38, 0.1);
+  padding: 4px 8px;
+  border-radius: var(--border-radius-sm);
+  border: 1px solid rgba(220, 38, 38, 0.2);
+}
+
+/* --- Responsive Design --- */
+@media (max-width: 768px) {
+  .module-form-card {
+    flex-direction: column;
+  }
+}

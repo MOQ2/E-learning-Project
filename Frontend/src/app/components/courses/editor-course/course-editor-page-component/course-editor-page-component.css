@@ -1,0 +1,245 @@
+/* --- Global Styles & Variables --- */
+:root {
+  --color-primary: rgba(124, 58, 237, 1); /* Purple */
+  --color-secondary: rgba(70, 36, 0, 1); /* Brown Text */
+  --color-secondary-bg: rgba(255, 228, 181, 1); /* Light Orange/Yellow */
+  --color-text-dark: rgba(15, 23, 36, 1);
+  --color-text-medium: rgba(48, 25, 52, 1);
+  --color-text-light: rgba(107, 114, 128, 1);
+  --color-white: rgba(255, 255, 255, 1);
+  --color-background: rgba(255, 247, 250, 1);
+  --color-border: rgba(176, 153, 173, 1);
+  --color-sidebar-bg: rgba(255, 241, 247, 1); /* Light Pink */
+  --color-sidebar-active-bg: rgba(243, 223, 240, 1);
+  --font-family-main: 'Inter', sans-serif;
+  --border-radius-sm: 8px;
+  --border-radius-md: 14px;
+
+  /* Styles for Module Editor */
+  --color-primary-light: rgba(255, 228, 181, 1);
+  --color-secondary-darker: #F3DFF0;
+  --color-text-accent: rgba(70, 36, 0, 1);
+  --color-success: rgba(16, 185, 129, 1);
+  --color-info: rgba(6, 182, 212, 1);
+  --color-light-gray-bg: rgba(248, 250, 252, 1);
+}
+
+/* --- Layout (Shared between Overview and Modules) --- */
+.course-editor, .course-creation-page {
+  display: flex;
+  gap: 24px;
+  padding: 24px 0;
+}
+
+.content-panel {
+  flex: 1; /* Grow to fill available space */
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  background-color: var(--color-white);
+  border: 1px solid var(--color-border);
+  border-radius: var(--border-radius-md);
+  overflow: hidden;
+}
+
+.content-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px 24px;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.content-header h1 {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 18px;
+}
+
+.content-header__actions {
+  display: flex;
+  gap: 8px;
+}
+
+.content-footer {
+  margin-top: auto;
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  padding: 16px 24px;
+  border-top: 1px solid var(--color-border);
+  background-color: var(--color-white);
+}
+
+/* --- Buttons for Overview Page --- */
+.button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 10px 16px;
+  font-family: var(--font-family-main);
+  font-size: 14px;
+  font-weight: 700;
+  border-radius: var(--border-radius-sm);
+  border: 1px solid var(--color-border);
+  background-color: var(--color-white);
+  color: var(--color-text-dark);
+  cursor: pointer;
+  transition: background-color 0.2s, border-color 0.2s;
+}
+
+.button:hover {
+    background-color: #f8f8f8;
+}
+
+.button--primary {
+  background-color: var(--color-primary);
+  border-color: var(--color-primary);
+  color: var(--color-white);
+}
+
+.button--primary:hover {
+    background-color: #6d28d9;
+    border-color: #6d28d9;
+}
+
+.button--secondary {
+  background-color: var(--color-secondary-bg);
+  border-color: var(--color-secondary-bg);
+  color: var(--color-secondary);
+}
+
+.button--secondary:hover {
+    background-color: #fde0a5;
+    border-color: #fde0a5;
+}
+
+
+/* --- Buttons & Tags for Module Editor (Preserved) --- */
+.btn {
+  font-family: var(--font-family-main);
+  font-weight: 700;
+  font-size: 14px;
+  padding: 10px 16px;
+  border-radius: var(--border-radius-sm);
+  border: 1px solid transparent;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  transition: opacity 0.2s ease;
+}
+.btn:hover { opacity: 0.9; }
+.btn--primary { background-color: var(--color-primary); color: var(--color-white); }
+.btn--primary-light { background-color: var(--color-primary-light); color: var(--color-text-accent); }
+.btn--secondary { background-color: var(--color-white); color: var(--color-text-dark); border: 1px solid var(--color-border); }
+.btn--small { padding: 6px 10px; font-size: 12px; }
+
+.tag { display: inline-flex; align-items: center; gap: 6px; padding: 7px 10px; border-radius: 48px; font-size: 12px; font-weight: 700; }
+.tag--green { background-color: var(--color-success); color: var(--color-white); }
+.tag--gray { background-color: var(--color-light-gray-bg); color: var(--color-text-light); border: 1px solid var(--color-border); }
+.tag--cyan { background-color: var(--color-info); color: var(--color-text-dark); }
+
+/* --- Editor Layout (for Modules & Lessons) --- */
+.editor-content {
+  flex: 1; /* This is the key: allows this column to grow and fill space */
+  display: flex;
+  flex-direction: column;
+}
+
+.editor-card {
+  display: flex;
+  flex-direction: column;
+  background-color: var(--color-white);
+  border: 1px solid var(--color-border);
+  border-radius: var(--border-radius-md);
+  overflow: hidden;
+}
+
+.editor-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px 24px;
+  border-bottom: 1px solid var(--color-border);
+  flex-shrink: 0; /* Prevents the header from shrinking */
+}
+
+.editor-header__title h2 {
+  font-size: 18px;
+  font-weight: 700;
+  margin: 0;
+}
+
+.editor-header__status,
+.editor-header__actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.editor-body {
+  overflow-y: auto; /* Adds scrolling if the form content is long */
+  display:flex;
+  flex:1;
+  flex-direction: column;
+}
+
+.editor-footer {
+  margin-top: auto; /* Pushes the footer to the bottom */
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  padding: 16px 24px;
+  border-top: 1px solid var(--color-border);
+  background-color: var(--color-white);
+  flex-shrink: 0; /* Prevents the footer from shrinking */
+}
+
+
+/* --- Loading Overlay --- */
+.loading-overlay {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 40px;
+  background-color: rgba(255, 255, 255, 0.9);
+  border-radius: var(--border-radius-sm);
+  min-height: 200px;
+}
+
+.loading-overlay p {
+  color: var(--color-primary);
+  font-size: 16px;
+  font-weight: 500;
+  animation: pulse 1.5s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
+}
+
+/* --- Responsive Design --- */
+@media (max-width: 768px) {
+  .course-editor, .course-creation-page {
+    flex-direction: column;
+  }
+  .content-header {
+      flex-direction: column;
+      gap: 16px;
+      align-items: flex-start;
+  }
+  .content-footer {
+      flex-direction: column;
+  }
+  .button {
+      width: 100%;
+  }
+}
