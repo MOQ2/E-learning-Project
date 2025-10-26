@@ -6,10 +6,10 @@ class Settings(BaseSettings):
     """Application settings loaded from environment variables."""
     
     # Database settings
-    database_url: str = "postgresql://postgres:mohammad@localhost:5432/eLearning"
+    database_url: str = "postgresql://postgres:password@localhost:5432/eLearning"
     
     # Gemini API settings
-    gemini_api_key: str = "AIzaSyB6r6HmGASd2zjVMKi7_FzcVA_O9qd3ef8"
+    gemini_api_key: str = "your-gemini-api-key-here"
     
     # Backend API settings
     backend_url: str = "http://localhost:8080"

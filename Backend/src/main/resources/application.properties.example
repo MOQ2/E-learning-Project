@@ -1,21 +1,17 @@
-pring.application.name=e-learning-system
+spring.application.name=e-learning-system
 
-
-
+# Database Configuration
 spring.datasource.url=${DATABASE_URL:jdbc:postgresql://localhost:5432/eLearning}
 spring.datasource.username=${DATABASE_USERNAME:postgres}
 spring.datasource.password=${DATABASE_PASSWORD}
 
-
-## logging configration
+## Logging Configuration
 logging.level.root=INFO
 logging.level.com.example.e_learning_system.Service.AdminService=DEBUG
 logging.level.com.example.e_learning_system.Repository=DEBUG
 logging.level.org.springframework.transaction=DEBUG
 logging.level.org.hibernate.SQL=DEBUG
 logging.level.org.hibernate.type.descriptor.sql.BasicBinder=TRACE
-
-
 
 spring.datasource.driver-class-name=org.postgresql.Driver
 
@@ -32,7 +28,7 @@ spring.flyway.locations=classpath:migrations
 server.port=5000
 
 # AWS S3 Configuration
-aws.s3.bucket-name=${AWS_S3_BUCKET_NAME:e-learning-app-videos}
+aws.s3.bucket-name=${AWS_S3_BUCKET_NAME:your-bucket-name}
 aws.region=${AWS_REGION:us-east-1}
 aws.access-key-id=${AWS_ACCESS_KEY_ID}
 aws.secret-access-key=${AWS_SECRET_ACCESS_KEY}
