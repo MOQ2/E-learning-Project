@@ -1,0 +1,54 @@
+<div class="sidebar-container">
+  <!-- Header -->
+  <div class="list-header">
+    <div class="course-content">Course content</div>
+    <div class="header-right">
+      <div class="progress-text">{{ progress || 0 }}% done</div>
+      <button class="sidebar-hide" (click)="toggleSidebar.emit()" title="Hide sidebar">◀</button>
+    </div>
+  </div>
+
+
+  <!-- Loading State -->
+  <div *ngIf="loading && (!groupedModules || groupedModules.length === 0)" class="loader">
+    Loading...
+  </div>
+
+  <!-- Empty State -->
+  <div *ngIf="!loading && (!groupedModules || groupedModules.length === 0)" class="empty">
+    No lessons available
+  </div>
+
+  <!-- Modules List -->
+  <div class="modules-list">
+    <div *ngFor="let module of groupedModules; trackBy: trackByModule" class="module-block">
+      <div class="module-label" (click)="toggleModuleCollapse(module.key)" tabindex="0" (keyup.enter)="toggleModuleCollapse(module.key)" (keyup.space)="toggleModuleCollapse(module.key)">
+        <div class="icon">≡</div>
+  <div class="module-title" [title]="module.title" aria-label="{{ module.title }}">{{ module.title }}</div>
+        <div class="spacer"></div>
+        <button
+          class="collapse-btn"
+          [attr.aria-expanded]="!moduleCollapsed[module.key]"
+          (click)="$event.stopPropagation(); toggleModuleCollapse(module.key)">
+          <span *ngIf="!moduleCollapsed[module.key]">−</span>
+          <span *ngIf="moduleCollapsed[module.key]">+</span>
+        </button>
+      </div>
+
+      <div *ngIf="!moduleCollapsed[module.key]" class="module-lessons">
+        <app-list-card
+          *ngFor="let l of module.items; trackBy: trackByLesson"
+          [id]="l.id || l.videoId"
+          [icon]="'play'"
+          [text]="l.title || l.name || ('Lesson ' + (l.order || l.id))"
+          [rightText]="l.durationSeconds ? (l.durationSeconds/60 | number:'1.0-0') + ':00' : ''"
+          [labelIcon]="l.completed ? '<svg viewBox=&quot;0 0 24 24&quot; fill=&quot;none&quot; stroke=&quot;currentColor&quot; stroke-width=&quot;2&quot;><polyline points=&quot;20 6 9 17 4 12&quot;></polyline></svg>' : ''"
+          [labelColor]="l.completed ? '#10B981' : '#10B981'"
+          [maxWidth]="'100%'"
+          [selected]="activeLessonId === (l.id || l.videoId)"
+          (cardClick)="selectLesson($event)">
+        </app-list-card>
+      </div>
+    </div>
+  </div>
+</div>

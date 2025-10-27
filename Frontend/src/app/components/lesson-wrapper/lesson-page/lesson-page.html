@@ -1,0 +1,179 @@
+<div class="lesson-page">
+  <!-- Floating show sidebar button (visible when sidebar is hidden) -->
+  <button *ngIf="!showSidebar" class="floating-show-sidebar" (click)="toggleSidebar()" title="Show sidebar">
+    ▶ Show Lessons
+  </button>
+
+  <div class="content-grid" [class.sidebar-hidden]="!showSidebar">
+    <aside class="lesson-list">
+      <app-sidebar
+        [groupedModules]="getGroupedModules()"
+        [activeLessonId]="lesson?.id || lesson?.videoId || lessonId"
+        [progress]="lesson?.progress || 0"
+        [loading]="loading && (!fullModules || fullModules.length === 0) && lessons.length === 0"
+        [moduleCollapsed]="moduleCollapsed"
+        (lessonSelected)="onLessonCardClick($event)"
+        (moduleToggled)="toggleModuleCollapse($event)"
+        (toggleSidebar)="toggleSidebar()">
+      </app-sidebar>
+    </aside>
+
+    <main class="lesson-main">
+      <div *ngIf="loadingLesson" style="padding:12px;text-align:center">Loading lesson...</div>
+      <div class="course-header">
+        <div class="left">
+          <div class="course-breadcrumb"
+               style="color:#666; font-weight:400; display:flex; align-items:center; gap:0.5rem; white-space:nowrap;">
+            <span class="crumb-course">{{ courseTitle || 'Course' }}</span>
+            <span class="crumb-sep" aria-hidden="true">·</span>
+            <span class="crumb-module" *ngIf="selectedModuleTitle">{{ selectedModuleTitle }}</span>
+            <span class="crumb-sep" *ngIf="selectedModuleTitle && (lesson?.title || lesson?.name)" aria-hidden="true">·</span>
+            <span class="crumb-lesson">{{ lesson?.title || lesson?.name || '' }}</span>
+          </div>
+        </div>
+
+
+      </div>
+
+      <div class="video-wrap">
+  <video id="player" controls crossorigin playsinline [attr.poster]="lesson?.thumbnail?.fileDownloadUrl || ''">
+          <source *ngIf="videoSrc" [src]="videoSrc" type="video/mp4" />
+          Your browser does not support HTML5 video.
+        </video>
+        <!-- minimal controls - floating next removed per request -->
+      </div>
+
+      <div class="video-nav">
+        <button class="btn-prev" (click)="prevLesson()">Prev</button>
+        <div class="lesson-info">Lesson {{ lessonIndex }} of {{ lessonCount }} • {{ lesson?.durationSeconds ? (lesson.durationSeconds/60 | number:'1.0-0') + ':00' : '' }}</div>
+        <button class="btn-next" (click)="nextLesson()">Next</button>
+      </div>
+      <!-- compact info row (three cards) under the video -->
+      <div class="info-grid">
+        <div class="info-card info-learn">
+          <div class="card-header">
+            <h4>What you'll learn</h4>
+            <div class="card-sub">Key outcomes from this lesson</div>
+          </div>
+          <ul class="dot-list" *ngIf="whatYouWillLearnList && whatYouWillLearnList.length">
+            <li *ngFor="let item of whatYouWillLearnList">{{ item }}</li>
+          </ul>
+          <div *ngIf="!whatYouWillLearnList || whatYouWillLearnList.length === 0" class="muted">No bullet points available.</div>
+        </div>
+
+        <div class="info-card info-prereq">
+          <div class="card-header">
+            <h4>Prerequisites</h4>
+            <div class="card-sub">What we expect you to know</div>
+          </div>
+          <ul class="dot-list" *ngIf="prerequisitesList && prerequisitesList.length">
+            <li *ngFor="let p of prerequisitesList">{{ p }}</li>
+          </ul>
+          <div *ngIf="!prerequisitesList || prerequisitesList.length === 0" class="muted">No prerequisites.</div>
+        </div>
+
+        <!-- Attachments / Quizzes card (moved into info-grid) -->
+        <div class="info-card attachments-card">
+          <div class="tabs-header">
+            <button class="tab-button"
+                    [class.active]="attachmentsTab==='attachments'"
+                    (click)="setAttachmentsTab('attachments')">
+              <span class="tab-icon">📎</span>
+              <span class="tab-label">Attachments</span>
+            </button>
+            <button class="tab-button"
+                    [class.active]="attachmentsTab==='quizzes'"
+                    (click)="setAttachmentsTab('quizzes')">
+              <span class="tab-icon">📝</span>
+              <span class="tab-label">Quizzes</span>
+            </button>
+          </div>
+
+          <div class="tab-content" role="region" aria-label="Attachments and quizzes">
+            <!-- Attachments Tab -->
+            <div *ngIf="attachmentsTab === 'attachments'" class="tab-panel">
+              <div *ngIf="attachments && attachments.length > 0; else noAttachments" class="attachments-list">
+                <div *ngFor="let a of attachments" class="resource-item">
+                  <div class="resource-icon">📄</div>
+                  <div class="resource-info">
+                    <div class="resource-name">{{ a.fileName }}</div>
+                    <div class="resource-size">{{ a.fileSize || 'Unknown size' }}</div>
+                  </div>
+                  <a class="resource-action" [href]="a.fileDownloadUrl" target="_blank" rel="noopener noreferrer">
+                    <span>↓</span>
+                  </a>
+                </div>
+              </div>
+              <ng-template #noAttachments>
+                <div class="empty-state">
+                  <span class="empty-icon">📎</span>
+                  <p class="empty-text">No attachments available</p>
+                </div>
+              </ng-template>
+            </div>
+
+            <!-- Quizzes Tab -->
+            <div *ngIf="attachmentsTab === 'quizzes'" class="tab-panel">
+              <div *ngIf="quizzes && quizzes.length > 0; else noQuizzes" class="quizzes-list">
+                <div *ngFor="let q of quizzes" class="resource-item clickable" (click)="showQuiz(q)">
+                  <div class="resource-icon">📝</div>
+                  <div class="resource-info">
+                    <div class="resource-name">{{ q.title || q.name || ('Quiz ' + (q.id || '')) }}</div>
+                    <div class="resource-size">
+                      {{ q.totalScore ? (q.totalScore + ' pts') : '' }}
+                      <span *ngIf="!q.isActive" class="inactive-badge">Inactive</span>
+                    </div>
+                  </div>
+                  <div class="resource-action">
+                    <span>→</span>
+                  </div>
+                </div>
+              </div>
+              <ng-template #noQuizzes>
+                <div class="empty-state">
+                  <span class="empty-icon">📝</span>
+                  <p class="empty-text">No quizzes available</p>
+                </div>
+              </ng-template>
+
+              <!-- Selected Quiz Details -->
+              <div *ngIf="selectedQuiz" class="quiz-details">
+                <h4 class="quiz-title">{{ selectedQuiz.title }}</h4>
+                <div class="quiz-score">Total: {{ selectedQuiz.totalScore }} pts</div>
+                <div *ngIf="selectedQuiz.questions && selectedQuiz.questions.length > 0" class="quiz-questions">
+                  <div *ngFor="let qq of selectedQuiz.questions; let i = index" class="quiz-question">
+                    <div class="question-header">
+                      <strong>{{ i + 1 }}. {{ qq.text }}</strong>
+                      <span class="question-points">({{ qq.questionMark }} pts)</span>
+                    </div>
+                    <ul class="question-options">
+                      <li *ngFor="let o of qq.options" [class.correct]="o.isCorrect">
+                        {{ o.text }}
+                        <span *ngIf="o.isCorrect" class="correct-mark">✓</span>
+                      </li>
+                    </ul>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </main>
+
+
+  </div>
+  <!-- Move lesson-details below grid so wider content doesn't shift side columns -->
+  <section class="lesson-details fullwidth">
+    <div class="container">
+      <h3 class="lesson-title">{{ lesson?.title || lesson?.name || 'Lesson' }}</h3>
+      <div class="description-box">
+        <h4>Description</h4>
+        <div class="explanation" [innerHTML]="explanationHtml"></div>
+      </div>
+    </div>
+  </section>
+</div>
+  <!-- Chatbot component (floating assistant) -->
+  <app-chatbot></app-chatbot>
