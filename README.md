@@ -118,6 +118,11 @@ npm start
 - Update environment files for production builds (`npm run build`).
 
 ### 4. RAG Service (optional, required for chatbot features)
+
+
+https://github.com/user-attachments/assets/08c1c29c-37e4-4f1e-8070-92cd51a4c8b3
+
+
 ```powershell
 cd RAG-Service
 python -m venv .venv
